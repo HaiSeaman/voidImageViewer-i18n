@@ -479,6 +479,10 @@ static int  _viv_transition_get_alpha(void);
 static void _viv_set_transition_type(int type);
 static void _viv_set_transition_duration(void);
 static void _viv_paint_transition_fade(HDC hdc);
+static void _viv_hover_hide_ui(void);
+static void _viv_hover_show_ui(void);
+static void _viv_hover_timer_start(void);
+static void _viv_hover_timer_stop(void);
 static void _viv_rename(void);
 static void _viv_delete(int permanently);
 static void _viv_copy(int cut);
@@ -716,6 +720,30 @@ static int           _viv_transition_screen_high;
 static VIV_UINT64    _viv_transition_start_tick;         // GetTickCount at transition start
 static BYTE          _viv_transition_active;             // 1 while a transition is running
 
+// Hover-show-UI state: when config_hover_show_ui is on and the mouse leaves
+// the window, we hide all chrome (menu/toolbar/status/border) and set this
+// flag. When the mouse re-enters (WM_MOUSEMOVE), we restore the UI based on
+// config_show_* and clear the flag. Fullscreen mode disables this feature.
+//
+// _viv_modal_dialog_count is incremented while a modal dialog is open so that
+// mouse-leave events do not hide the UI behind the dialog.
+//
+// A polling timer (VIV_ID_HOVER_TIMER) is used instead of WM_MOUSELEAVE so
+// that the UI stays visible while the mouse is over the non-client area
+// (menu bar / title bar / caption). The UI is only hidden when the mouse
+// leaves the entire window outer rect.
+//
+// When the UI is hidden, the window is also resized to exactly fit the
+// displayed image rect, removing any letterbox margins. The original window
+// rect and view state are saved and restored when the UI is shown again.
+static BYTE          _viv_is_hover_hide;
+static int           _viv_modal_dialog_count;
+static BYTE          _viv_is_hover_timer;         // 1 = hover polling timer is running
+static RECT          _viv_hover_saved_client_rect; // client rect in screen coords before hover-hide
+static int           _viv_hover_saved_view_x;     // saved _viv_view_x before hover-hide
+static int           _viv_hover_saved_view_y;     // saved _viv_view_y before hover-hide
+static BYTE          _viv_hover_did_resize;       // 1 = window was resized to image rect
+
 static VIV_UINT64 _viv_timer_tick = 0; // the current tick for the current frame.
 static BYTE _viv_is_animation_timer = 0; // animation timer started?
 static VIV_UINT64 _viv_animation_timer_tick_start = 0; // the current start tick
@@ -918,6 +946,7 @@ static _viv_command_t _viv_commands[] =
 	{LOCALIZATION_ID_TRANSITION_NONE,MF_STRING|MFT_RADIOCHECK,_VIV_MENU_VIEW_TRANSITION,VIV_ID_VIEW_TRANSITION_NONE},
 	{LOCALIZATION_ID_TRANSITION_FADE,MF_STRING|MFT_RADIOCHECK,_VIV_MENU_VIEW_TRANSITION,VIV_ID_VIEW_TRANSITION_FADE},
 	{LOCALIZATION_ID_TRANSITION_DURATION,MF_STRING,_VIV_MENU_VIEW_TRANSITION,VIV_ID_VIEW_TRANSITION_DURATION},
+	{LOCALIZATION_ID_HOVER_SHOW_UI,MF_STRING,_VIV_MENU_VIEW,VIV_ID_VIEW_HOVER_SHOW_UI},
 	{LOCALIZATION_ID_SLIDESHOW_MENU,MF_POPUP,_VIV_MENU_ROOT,_VIV_MENU_SLIDESHOW},
 	{LOCALIZATION_ID_PLAY_PAUSE,MF_STRING,_VIV_MENU_SLIDESHOW,VIV_ID_SLIDESHOW_PAUSE},
 	{LOCALIZATION_ID_INVALID,MF_SEPARATOR,_VIV_MENU_SLIDESHOW,0},
@@ -1722,7 +1751,14 @@ static void _viv_command_with_is_key_repeat(int command_id,int is_key_repeat)
 			break;
 			
 		case VIV_ID_HELP_ABOUT:
+			// Make sure the main window UI is visible while a modal dialog is open.
+			if (_viv_is_hover_hide)
+			{
+				_viv_hover_show_ui();
+			}
+			_viv_modal_dialog_count++;
 			DialogBox(os_hinstance,MAKEINTRESOURCE(IDD_ABOUT),_viv_hwnd,_viv_about_proc);
+			_viv_modal_dialog_count--;
 			break;
 			
 		case VIV_ID_HELP_WEBSITE:
@@ -2377,6 +2413,25 @@ debug_printf("SWP %d %d %d %d\n",rect.left,rect.top,rect.right - rect.left,rect.
 			_viv_check_menus(GetMenu(_viv_hwnd));
 			break;
 
+		case VIV_ID_VIEW_HOVER_SHOW_UI:
+			config_hover_show_ui = !config_hover_show_ui;
+			if (config_hover_show_ui)
+			{
+				// Start the polling timer.
+				_viv_hover_timer_start();
+			}
+			else
+			{
+				// Stop the polling timer and restore the UI if it's hidden.
+				_viv_hover_timer_stop();
+				if (_viv_is_hover_hide)
+				{
+					_viv_hover_show_ui();
+				}
+			}
+			_viv_check_menus(GetMenu(_viv_hwnd));
+			break;
+
 		case VIV_ID_EDIT_COPY:
 			_viv_copy(0);
 			break;
@@ -2781,6 +2836,8 @@ static LRESULT CALLBACK _viv_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
 			break;
 		
 		case WM_DESTROY:
+			// Stop the hover polling timer if it's running.
+			_viv_hover_timer_stop();
 			// don't free the menu again.
 			_viv_hmenu = 0;
 			break;
@@ -3235,13 +3292,40 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 							_viv_transition_end();
 						}
 						else
-						{
-							InvalidateRect(_viv_hwnd, NULL, FALSE);
-						}
+					{
+						InvalidateRect(_viv_hwnd, NULL, FALSE);
 					}
-					break;
+				}
+				break;
 
-				case VIV_ID_ANIMATION_TIMER:
+			case VIV_ID_HOVER_TIMER:
+				// Polling-based hover detection. Check whether the cursor is
+				// within the window's outer rect (which includes the menu bar,
+				// title bar and borders when the UI is visible). Only hide the
+				// UI when the cursor truly leaves the entire window.
+				if (config_hover_show_ui && !_viv_is_fullscreen && _viv_modal_dialog_count == 0)
+				{
+					POINT pt;
+					RECT wr;
+					int inside;
+
+					GetCursorPos(&pt);
+					GetWindowRect(_viv_hwnd, &wr);
+					inside = (pt.x >= wr.left && pt.x < wr.right &&
+					          pt.y >= wr.top && pt.y < wr.bottom);
+
+					if (inside && _viv_is_hover_hide)
+					{
+						_viv_hover_show_ui();
+					}
+					else if (!inside && !_viv_is_hover_hide)
+					{
+						_viv_hover_hide_ui();
+					}
+				}
+				break;
+
+			case VIV_ID_ANIMATION_TIMER:
 				{
 					if ((_viv_is_animation_timer) && (_viv_frame_count))
 					{
@@ -3633,10 +3717,10 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 			break;
 			
 		case WM_MOUSELEAVE:
-		
+
 			_viv_is_tracking_mouse = 0;
 			_viv_is_mouseover = 0;
-			
+
 			_viv_mousemove_x = -1;
 			_viv_mousemove_y = -1;
 
@@ -3650,32 +3734,43 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 					_viv_status_update();
 				}
 			}
-			
+
 			_viv_show_cursor();
 //			_viv_tooltip_hide();
 			_viv_update_src_pixel(0,1);
 
+			// Note: hover-hide is now driven by the VIV_ID_HOVER_TIMER polling
+			// timer, which checks the cursor against the full window outer
+			// rect (including non-client areas like the menu bar). This avoids
+			// the old behavior where moving the mouse to the menu immediately
+			// hid the UI via WM_MOUSELEAVE.
+
 			break;
-			
+
 		case WM_MOUSEMOVE:
 
 			if (!_viv_is_tracking_mouse)
 			{
 				TRACKMOUSEEVENT tme;
-				
+
 				// ui must come first, as TrackMouseEvent can SEND WM_MOUSELEAVE
 				_viv_is_tracking_mouse = 1;
-				
+
 				tme.cbSize = sizeof(TRACKMOUSEEVENT);
 				tme.dwFlags = TME_LEAVE;
 				tme.dwHoverTime = 0;
 				tme.hwndTrack = hwnd;
-				
+
 				_TrackMouseEvent(&tme);
 			}
-			
+
 			_viv_is_mouseover = 1;
-							
+
+			// Hover-show is driven by the polling timer (VIV_ID_HOVER_TIMER),
+			// which detects cursor re-entry into the window outer rect and
+			// calls _viv_hover_show_ui(). We don't call it here to keep mouse
+			// move handling fast and avoid fighting the timer's state checks.
+
 			_viv_mousemove();
 			
 			switch(_viv_doing)
@@ -5521,12 +5616,19 @@ static int _viv_init(int nCmdShow)
 	
 	_viv_process_command_line(GetCommandLineW());
 
-	// if we didn't show the window above, make sure it 
+	// if we didn't show the window above, make sure it
 	// is shown now.
 	if (si.wShowWindow == SW_SHOWNORMAL)
 	{
 		ShowWindow(_viv_hwnd,SW_SHOW);
 		UpdateWindow(_viv_hwnd);
+	}
+
+	// Start the hover polling timer if hover-show-UI is enabled in the
+	// saved configuration.
+	if (config_hover_show_ui)
+	{
+		_viv_hover_timer_start();
 	}
 
 	return 1;
@@ -6658,7 +6760,14 @@ static void _viv_toggle_fullscreen(void)
 	int old_rh;
 	int zoom_wide_array[_VIV_ZOOM_MAX];
 	int zoom_high_array[_VIV_ZOOM_MAX];
-	
+
+	// If hover-hide-UI is currently active, restore the UI first so the
+	// fullscreen toggle computes correct window geometry.
+	if (_viv_is_hover_hide)
+	{
+		_viv_hover_show_ui();
+	}
+
 	_viv_get_render_size(&old_rw,&old_rh);
 
 	// precalculate all zoom levels for comparison later to find the zoom offset.
@@ -7105,6 +7214,12 @@ static void _viv_get_render_size(int *prw,int *prh)
 
 static void _viv_set_custom_rate(void)
 {
+	// Make sure the main window UI is visible while a modal dialog is open.
+	if (_viv_is_hover_hide)
+	{
+		_viv_hover_show_ui();
+	}
+	_viv_modal_dialog_count++;
 	if (DialogBox(os_hinstance,MAKEINTRESOURCE(IDD_CUSTOM_RATE),_viv_hwnd,_viv_custom_rate_proc))
 	{
 		// selecting a custom rate turns off the animation-duration mode.
@@ -7137,6 +7252,7 @@ static void _viv_set_custom_rate(void)
 
 		_viv_status_update_slideshow_rate();
 	}
+	_viv_modal_dialog_count--;
 }
 
 static void _viv_set_rate(int rate)
@@ -7536,6 +7652,7 @@ static void _viv_check_menus(HMENU hmenu)
 
 	CheckMenuItem(hmenu,VIV_ID_VIEW_TRANSITION_NONE,config_transition_type == 0 ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
 	CheckMenuItem(hmenu,VIV_ID_VIEW_TRANSITION_FADE,config_transition_type == 1 ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
+	CheckMenuItem(hmenu,VIV_ID_VIEW_HOVER_SHOW_UI,config_hover_show_ui ? MF_CHECKED : MF_UNCHECKED);
 
 	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_PAUSE,_viv_is_slideshow ? MF_CHECKED : MF_UNCHECKED);
 
@@ -7777,7 +7894,14 @@ static void _viv_rename(void)
 {
 	if (*_viv_current_fd->cFileName)
 	{
+		// Make sure the main window UI is visible while a modal dialog is open.
+		if (_viv_is_hover_hide)
+		{
+			_viv_hover_show_ui();
+		}
+		_viv_modal_dialog_count++;
 		DialogBoxParam(os_hinstance,MAKEINTRESOURCE(IDD_RENAME),_viv_hwnd,_viv_rename_proc,(LPARAM)_viv_current_fd->cFileName);
+		_viv_modal_dialog_count--;
 	}
 }
 
@@ -9233,8 +9357,15 @@ static INT_PTR CALLBACK _viv_options_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARA
 }
 
 static void _viv_options(void)
-{	
+{
+	// Make sure the main window UI is visible while a modal dialog is open.
+	if (_viv_is_hover_hide)
+	{
+		_viv_hover_show_ui();
+	}
+	_viv_modal_dialog_count++;
 	DialogBox(os_hinstance,MAKEINTRESOURCE(IDD_OPTIONS),_viv_hwnd,_viv_options_proc);
+	_viv_modal_dialog_count--;
 }
 
 // use the default class description, ie: TXT File
@@ -10228,6 +10359,303 @@ static INT_PTR CALLBACK _viv_about_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 	}
 	
 	return FALSE;
+}
+
+// =============================================================================
+// Hover-show-UI implementation.
+//
+// When config_hover_show_ui is enabled, a polling timer (VIV_ID_HOVER_TIMER,
+// ~80ms) checks whether the cursor is within the window's outer rect. When the
+// cursor leaves the entire window (including non-client areas like the menu
+// bar and title bar), _viv_hover_hide_ui() is called.
+//
+// _viv_hover_hide_ui() does two things:
+//   1. Removes all chrome (menu/toolbar/status/border) so only the image is
+//      visible. The client area expands to fill the space freed by the chrome.
+//   2. Resizes the window's client area to exactly match the displayed image
+//      rect, removing any letterbox margins. The original window rect and view
+//      state are saved so they can be restored when the UI is shown again.
+//
+// When the cursor re-enters the window, _viv_hover_show_ui() restores the
+// saved window rect and view state, then calls _viv_update_frame() to rebuild
+// the chrome according to config_show_*.
+//
+// Fullscreen mode disables this feature: entering fullscreen while hover-hide
+// is active first restores the UI so the fullscreen toggle works correctly.
+// =============================================================================
+
+// Start the hover polling timer. Called when config_hover_show_ui is turned on.
+static void _viv_hover_timer_start(void)
+{
+	if (!_viv_is_hover_timer)
+	{
+		_viv_is_hover_timer = 1;
+		SetTimer(_viv_hwnd, VIV_ID_HOVER_TIMER, 80, NULL);
+	}
+}
+
+// Stop the hover polling timer. Called when config_hover_show_ui is turned off
+// or on exit.
+static void _viv_hover_timer_stop(void)
+{
+	if (_viv_is_hover_timer)
+	{
+		_viv_is_hover_timer = 0;
+		KillTimer(_viv_hwnd, VIV_ID_HOVER_TIMER);
+	}
+}
+
+// Compute the displayed image rect in client coordinates.
+// Replicates the positioning logic from WM_PAINT / _viv_setview.
+// Returns 0 if there is no image, 1 on success.
+static int _viv_hover_get_image_rect(int *out_rx, int *out_ry, int *out_rw, int *out_rh)
+{
+	RECT rect;
+	int wide;
+	int high;
+	int rw;
+	int rh;
+	int rx;
+	int ry;
+
+	if (!((_viv_image_wide) && (_viv_image_high)))
+	{
+		return 0;
+	}
+
+	GetClientRect(_viv_hwnd, &rect);
+	wide = rect.right - rect.left;
+	high = rect.bottom - rect.top - _viv_get_status_high() - _viv_get_controls_high();
+
+	if (!((wide) && (high)))
+	{
+		return 0;
+	}
+
+	_viv_get_render_size(&rw, &rh);
+	if (rw <= 0 || rh <= 0)
+	{
+		return 0;
+	}
+
+	rw = (int)(rw * _viv_dst_zoom_values[_viv_dst_zoom_x_pos]);
+	rh = (int)(rh * _viv_dst_zoom_values[_viv_dst_zoom_y_pos]);
+
+	if (rw <= 0) rw = 1;
+	if (rh <= 0) rh = 1;
+
+	rx = (((_viv_dst_pos_x - 250) * (wide * 2)) / 1000) - (rw / 2) - _viv_view_x;
+	ry = (((_viv_dst_pos_y - 250) * (high * 2)) / 1000) - (rh / 2) - _viv_view_y;
+
+	*out_rx = rx;
+	*out_ry = ry;
+	*out_rw = rw;
+	*out_rh = rh;
+	return 1;
+}
+
+static void _viv_hover_hide_ui(void)
+{
+	DWORD style;
+	DWORD newstyle;
+	RECT windowrect;
+	RECT clientrect;
+	RECT oldrect;
+	RECT newrect;
+	int wide;
+	int high;
+	int img_rx;
+	int img_ry;
+	int img_rw;
+	int img_rh;
+	int new_client_wide;
+	int new_client_high;
+	int do_resize_to_image;
+
+	if (_viv_is_fullscreen)
+	{
+		return;
+	}
+
+	if (_viv_is_hover_hide)
+	{
+		return;
+	}
+
+	// Don't hide the UI while a modal dialog is open: the user needs the
+	// main window chrome visible behind the dialog, and hiding it now
+	// would leave the dialog floating over a frameless window.
+	if (_viv_modal_dialog_count > 0)
+	{
+		return;
+	}
+
+	// Don't hide if there's nothing to hide (all config_show_* already off).
+	if (!config_show_menu && !config_show_status && !config_show_controls &&
+		!config_show_caption && !config_show_thickframe)
+	{
+		return;
+	}
+
+	_viv_is_hover_hide = 1;
+	_viv_prevent_on_size = 1;
+	_viv_hover_did_resize = 0;
+
+	// Cancel any transition to avoid painting issues during resize.
+	_viv_transition_abort();
+
+	// Save the current client rect in screen coords and view state so we can
+	// restore them exactly when the UI is shown again. We save the CLIENT rect
+	// (not the outer window rect) because _viv_update_frame() keeps the client
+	// area fixed when adding chrome back. Restoring the client rect ensures
+	// the window returns to its original client size and position.
+	{
+		POINT pt;
+		GetClientRect(_viv_hwnd, &clientrect);
+		pt.x = clientrect.left;
+		pt.y = clientrect.top;
+		ClientToScreen(_viv_hwnd, &pt);
+		_viv_hover_saved_client_rect.left = pt.x;
+		_viv_hover_saved_client_rect.top = pt.y;
+		_viv_hover_saved_client_rect.right = pt.x + (clientrect.right - clientrect.left);
+		_viv_hover_saved_client_rect.bottom = pt.y + (clientrect.bottom - clientrect.top);
+	}
+	_viv_hover_saved_view_x = _viv_view_x;
+	_viv_hover_saved_view_y = _viv_view_y;
+
+	style = GetWindowLong(_viv_hwnd, GWL_STYLE);
+	newstyle = style;
+
+	GetClientRect(_viv_hwnd, &clientrect);
+	wide = clientrect.right - clientrect.left;
+	high = clientrect.bottom - clientrect.top - _viv_get_status_high() - _viv_get_controls_high();
+
+	CopyRect(&oldrect, &clientrect);
+	AdjustWindowRect(&oldrect, style, GetMenu(_viv_hwnd) ? TRUE : FALSE);
+	oldrect.bottom += _viv_get_status_high() + _viv_get_controls_high();
+
+	// Remove caption and thick frame.
+	newstyle &= ~(WS_CAPTION | WS_SYSMENU | WS_THICKFRAME);
+
+	// Hide menu, status bar, controls.
+	SetMenu(_viv_hwnd, 0);
+	_viv_status_show(0);
+	_viv_controls_show(0);
+
+	// Compute new outer rect keeping the client rect fixed (so the image
+	// appears to fill the space that was previously chrome).
+	CopyRect(&newrect, &clientrect);
+	AdjustWindowRect(&newrect, newstyle, FALSE);
+	newrect.bottom += 0;  // no status/controls
+
+	GetWindowRect(_viv_hwnd, &windowrect);
+	windowrect.left += newrect.left - oldrect.left;
+	windowrect.top += newrect.top - oldrect.top;
+	windowrect.right += newrect.right - oldrect.right;
+	windowrect.bottom += newrect.bottom - oldrect.bottom;
+
+	SetWindowLong(_viv_hwnd, GWL_STYLE, newstyle);
+	SetWindowPos(_viv_hwnd, HWND_TOP, windowrect.left, windowrect.top,
+		windowrect.right - windowrect.left, windowrect.bottom - windowrect.top,
+		SWP_FRAMECHANGED | SWP_NOACTIVATE | SWP_NOCOPYBITS);
+
+	// Now the window is borderless: window rect == client rect.
+	// Additionally shrink the client area to exactly fit the displayed image,
+	// removing letterbox margins. The image stays at the same screen position.
+	do_resize_to_image = 0;
+	new_client_wide = windowrect.right - windowrect.left;
+	new_client_high = windowrect.bottom - windowrect.top;
+
+	if (_viv_hover_get_image_rect(&img_rx, &img_ry, &img_rw, &img_rh))
+	{
+		// Only resize when the entire image is visible within the client area
+		// (not clipped/zoomed-in) AND smaller than the client area (so there
+		// is letterboxing to remove). If the image is zoomed in or panned so
+		// part of it is clipped, we leave the window as-is to avoid jumps.
+		if (img_rx >= 0 && img_ry >= 0 &&
+		    img_rx + img_rw <= new_client_wide &&
+		    img_ry + img_rh <= new_client_high &&
+		    (img_rw < new_client_wide || img_rh < new_client_high))
+		{
+			do_resize_to_image = 1;
+			new_client_wide = img_rw;
+			new_client_high = img_rh;
+		}
+	}
+
+	if (do_resize_to_image)
+	{
+		// The image's top-left in screen coords (relative to the current
+		// borderless window, which has window rect == client rect).
+		int img_screen_x = windowrect.left + img_rx;
+		int img_screen_y = windowrect.top + img_ry;
+
+		// Adjust view_x / view_y so the image sits at (0,0) in the new
+		// smaller client area. From the positioning formula:
+		//   rx = (((dst_pos_x - 250) * (wide * 2)) / 1000) - (rw/2) - view_x
+		// We want rx_new = 0 with new_wide, solving for view_x_new:
+		//   view_x_new = (((dst_pos_x - 250) * (new_wide * 2)) / 1000) - (rw/2)
+		_viv_view_x = (((_viv_dst_pos_x - 250) * (new_client_wide * 2)) / 1000) - (img_rw / 2);
+		_viv_view_y = (((_viv_dst_pos_y - 250) * (new_client_high * 2)) / 1000) - (img_rh / 2);
+
+		SetWindowPos(_viv_hwnd, HWND_TOP, img_screen_x, img_screen_y,
+			new_client_wide, new_client_high,
+			SWP_NOACTIVATE | SWP_NOCOPYBITS);
+
+		_viv_hover_did_resize = 1;
+	}
+
+	_viv_prevent_on_size = 0;
+
+	// Repaint so the new client area shows only the image.
+	InvalidateRect(_viv_hwnd, NULL, TRUE);
+
+	// Cursor visibility is handled by _viv_should_show_cursor() returning 0
+	// when _viv_is_hover_hide is set and the mouse is not over the window.
+	// Trigger a cursor state refresh so the cursor hides immediately.
+	_viv_update_show_cursor();
+}
+
+static void _viv_hover_show_ui(void)
+{
+	if (!_viv_is_hover_hide)
+	{
+		return;
+	}
+
+	_viv_is_hover_hide = 0;
+	_viv_prevent_on_size = 1;
+
+	// Restore the saved view state first so _viv_update_frame computes the
+	// correct client area positioning.
+	_viv_view_x = _viv_hover_saved_view_x;
+	_viv_view_y = _viv_hover_saved_view_y;
+
+	// If we resized the window to the image rect, restore the saved client
+	// rect (in screen coords). The window is currently borderless, so setting
+	// the window rect to the saved client rect restores the client area to
+	// its original size and position. Then _viv_update_frame() will add chrome
+	// around it, keeping the client area fixed.
+	if (_viv_hover_did_resize)
+	{
+		SetWindowPos(_viv_hwnd, HWND_TOP,
+			_viv_hover_saved_client_rect.left,
+			_viv_hover_saved_client_rect.top,
+			_viv_hover_saved_client_rect.right - _viv_hover_saved_client_rect.left,
+			_viv_hover_saved_client_rect.bottom - _viv_hover_saved_client_rect.top,
+			SWP_NOACTIVATE | SWP_NOCOPYBITS);
+		_viv_hover_did_resize = 0;
+	}
+
+	_viv_prevent_on_size = 0;
+
+	// _viv_update_frame restores menu/toolbar/status/border per config_show_*
+	// and resizes the window to keep the client area stable.
+	_viv_update_frame();
+
+	// Cursor visibility is handled by _viv_should_show_cursor(); now that
+	// _viv_is_hover_hide is cleared, it will return 1 and the cursor shows.
+	_viv_update_show_cursor();
 }
 
 static void _viv_update_frame(void)
@@ -13793,7 +14221,14 @@ static INT_PTR CALLBACK _viv_search_everything_proc(HWND hwnd,UINT msg,WPARAM wP
 
 static void _viv_search_everything(int add)
 {
+	// Make sure the main window UI is visible while a modal dialog is open.
+	if (_viv_is_hover_hide)
+	{
+		_viv_hover_show_ui();
+	}
+	_viv_modal_dialog_count++;
 	DialogBoxParam(os_hinstance,MAKEINTRESOURCE(IDD_EVERYTHING),_viv_hwnd,_viv_search_everything_proc,add);
+	_viv_modal_dialog_count--;
 }
 
 static int _viv_send_everything_search(HWND hwnd,int add,int randomize,const wchar_t *search)
@@ -14809,6 +15244,15 @@ static void _viv_start_first_frame(void)
 	InvalidateRect(_viv_hwnd,NULL,FALSE);
 	UpdateWindow(_viv_hwnd);
 
+	// If hover-hide is active, the window was resized to fit the previous
+	// image. Restore the UI so this new image displays at the correct size;
+	// the polling timer will re-hide (and re-resize) when the mouse next
+	// leaves the window. This keeps slideshows correct while hover-hide is on.
+	if (_viv_is_hover_hide)
+	{
+		_viv_hover_show_ui();
+	}
+
 	// If we are in animation-duration slideshow mode, re-arm the slideshow
 	// timer using the newly displayed image's total loop duration.
 	// (For static images, _viv_get_slideshow_duration falls back to config_slideshow_rate.)
@@ -15041,10 +15485,19 @@ static int _viv_should_show_cursor(void)
 						}
 					}
 				}
+				else
+				{
+					// Mouse is NOT over the window. If hover-hide-UI is active,
+					// the UI is hidden and the cursor should be hidden too.
+					if (_viv_is_hover_hide)
+					{
+						return 0;
+					}
+				}
 			}
 		}
 	}
-			
+
 	return 1;
 }
 

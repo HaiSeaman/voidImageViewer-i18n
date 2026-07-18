@@ -119,6 +119,7 @@ static const utf8_t *_localization_string_array_zh_cn[LOCALIZATION_ID_COUNT] =
 	"时长(&D)...", // LOCALIZATION_ID_TRANSITION_DURATION,
 	"设置转场时长", // LOCALIZATION_ID_SET_TRANSITION_DURATION_CAPTION,
 	"时长(&D) (毫秒):", // LOCALIZATION_ID_TRANSITION_DURATION_STATIC,
+	"鼠标悬停时显示界面(&S)", // LOCALIZATION_ID_HOVER_SHOW_UI,
 	
 	// Slideshow menu
 	"幻灯片(&S)", // LOCALIZATION_ID_SLIDESHOW_MENU,

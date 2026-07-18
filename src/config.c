@@ -80,6 +80,7 @@ BYTE config_slideshow_custom_rate_type = 1; // 0 = milliseconds, 1 = seconds, 2 
 BYTE config_slideshow_use_animation_duration = 0; // 1 = use the animated image's own loop duration as the slideshow rate; falls back to config_slideshow_rate for static images.
 BYTE config_transition_type = 1;     // 0 = none, 1 = fade
 int  config_transition_duration = 300; // milliseconds
+BYTE config_hover_show_ui = 0;        // 1 = show UI on mouse hover, hide on mouse leave
 BYTE config_scroll_window = 1;
 BYTE config_preload_next = 1;
 BYTE config_cache_last = 1;
@@ -161,6 +162,7 @@ static void _config_load_settings_by_location(const wchar_t *path,int is_root)
 		config_transition_duration = ini_get_int(ini,(const utf8_t *)"transition_duration",config_transition_duration);
 		if (config_transition_duration < 50) config_transition_duration = 50;
 		if (config_transition_duration > 2000) config_transition_duration = 2000;
+		config_hover_show_ui = ini_get_int(ini,(const utf8_t *)"hover_show_ui",config_hover_show_ui);
 		config_scroll_window = ini_get_int(ini,(const utf8_t *)"scroll_window",config_scroll_window);
 		config_preload_next = ini_get_int(ini,(const utf8_t *)"preload_next",config_preload_next);
 		config_cache_last = ini_get_int(ini,(const utf8_t *)"cache_last",config_cache_last);
@@ -348,6 +350,7 @@ static void _config_save_settings_by_location(const wchar_t *path,int is_root)
 			_config_write_int(h,"slideshow_use_animation_duration",config_slideshow_use_animation_duration);
 			_config_write_int(h,"transition_type",config_transition_type);
 			_config_write_int(h,"transition_duration",config_transition_duration);
+			_config_write_int(h,"hover_show_ui",config_hover_show_ui);
 			_config_write_int(h,"scroll_window",config_scroll_window);
 			_config_write_int(h,"preload_next",config_preload_next);
 			_config_write_int(h,"cache_last",config_cache_last);

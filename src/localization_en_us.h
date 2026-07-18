@@ -119,6 +119,7 @@ static const utf8_t *_localization_string_array_en_us[LOCALIZATION_ID_COUNT] =
 	"Duration...", // LOCALIZATION_ID_TRANSITION_DURATION,
 	"Set Transition Duration", // LOCALIZATION_ID_SET_TRANSITION_DURATION_CAPTION,
 	"&Duration (ms):", // LOCALIZATION_ID_TRANSITION_DURATION_STATIC,
+	"&Show UI on Mouse Hover", // LOCALIZATION_ID_HOVER_SHOW_UI,
 	
 	// Slideshow menu
 	"&Slideshow", // LOCALIZATION_ID_SLIDESHOW_MENU,

@@ -109,6 +109,7 @@ extern BYTE config_slideshow_custom_rate_type;
 extern BYTE config_slideshow_use_animation_duration; // 1 = use the animated image's own loop duration as the slideshow rate; falls back to config_slideshow_rate for static images.
 extern BYTE config_transition_type;    // 0 = none, 1 = fade
 extern int  config_transition_duration; // milliseconds, 50..2000
+extern BYTE config_hover_show_ui;      // 1 = show UI on mouse hover, hide on mouse leave
 extern BYTE config_scroll_window;
 extern BYTE config_preload_next;
 extern BYTE config_cache_last;
