@@ -28,6 +28,7 @@ extern "C" {
 // compiler options
 #pragma warning(disable : 4311) // type cast void * to unsigned int
 #pragma warning(disable : 4312) // type cast unsigned int to void *
+#pragma comment(lib, "msimg32.lib")
 #pragma warning(disable : 4244) // warning C4244: 'argument' : conversion from 'LONG_PTR' to 'LONG', possible loss of data
 #pragma warning(disable : 4201) // nonstandard extension used : nameless struct/union
 #pragma warning(disable : 4313) // 'debug_printf' : '%x' in format string conflicts with argument 2 of type 'line_t *'

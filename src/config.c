@@ -47,14 +47,15 @@ BYTE config_fill_window = 0; // stretch the image to fill the window
 BYTE config_fullscreen_fill_window = 1; // same as fill_window, except this setting is used when we are fullscreen
 BYTE config_auto_zoom = 0; // automatically resize the window to fit the newly loaded image
 BYTE config_auto_zoom_type = 1; // 0 = 50%, 1 = 100%, 2 = 200%
+BYTE config_fit_window_to_image = 1; // 1 = 窗口自动贴合图片实际显示大小，消除白边（默认开启）
 int config_auto_fit_wide_mul = 3;
 int config_auto_fit_wide_div = 5;
 int config_auto_fit_high_mul = 3;
 int config_auto_fit_high_div = 5;
 BYTE config_frame_minus = 0; // show frame counter or remaining frames in status bar
 BYTE config_multiple_instances = 0; // all multiple instances or use a single instance.
-BYTE config_show_status = 1;
-BYTE config_show_controls = 1;
+BYTE config_show_status = 0;       // 无边框改造：状态栏默认隐藏
+BYTE config_show_controls = 0;     // 无边框改造：工具栏默认隐藏
 BYTE config_prevent_sleep = 1;
 BYTE config_loop_animations_once = 1;
 BYTE config_mouse_wheel_action = 0; // 0 = zoom, 1 = next/prev, 2=prev/next
@@ -85,9 +86,9 @@ BYTE config_scroll_window = 1;
 BYTE config_preload_next = 1;
 BYTE config_cache_last = 1;
 BYTE config_icm = 1;
-BYTE config_show_menu = 1;
-BYTE config_show_caption = 1;
-BYTE config_show_thickframe = 1;
+BYTE config_show_menu = 0;         // 无边框改造：菜单栏默认隐藏（改用右键菜单）
+BYTE config_show_caption = 0;      // 无边框改造：系统标题栏默认隐藏
+BYTE config_show_thickframe = 0;   // 无边框改造：系统粗边框默认隐藏
 BYTE config_toolbar_move_window = 1;
 BYTE config_windowed_hide_cursor = 1;
 BYTE config_pixel_info = 0;
@@ -128,6 +129,7 @@ static void _config_load_settings_by_location(const wchar_t *path,int is_root)
 		config_show_controls = ini_get_int(ini,(const utf8_t *)"show_controls",config_show_controls);
 		config_auto_zoom = ini_get_int(ini,(const utf8_t *)"auto_zoom",config_auto_zoom);
 		config_auto_zoom_type = ini_get_int(ini,(const utf8_t *)"auto_zoom_type",config_auto_zoom_type);
+		config_fit_window_to_image = ini_get_int(ini,(const utf8_t *)"fit_window_to_image",config_fit_window_to_image);
 		config_auto_fit_wide_mul = ini_get_int(ini,(const utf8_t *)"auto_fit_wide_mul",config_auto_fit_wide_mul);
 		config_auto_fit_wide_div = ini_get_int(ini,(const utf8_t *)"auto_fit_wide_div",config_auto_fit_wide_div);
 		config_auto_fit_high_mul = ini_get_int(ini,(const utf8_t *)"auto_fit_high_mul",config_auto_fit_high_mul);
@@ -230,11 +232,11 @@ static void _config_load_settings_by_location(const wchar_t *path,int is_root)
 void config_load_settings(void)
 {
 	wchar_t path[STRING_SIZE];
-	
+
 	string_get_exe_path(path);
-	
+
 	_config_load_settings_by_location(path,1);
-		
+
 	if (config_appdata)
 	{
 		if (string_get_appdata_voidimageviewer_path(path))
@@ -242,6 +244,33 @@ void config_load_settings(void)
 			_config_load_settings_by_location(path,0);
 		}
 	}
+
+	// ============================================================================
+	// 无边框改造：强制配置覆盖说明
+	// ============================================================================
+	// 以下配置在 INI 文件加载后被强制覆盖，用户在 INI 中修改这些值不会生效：
+	//   - show_caption      (强制 0) 系统标题栏隐藏，改用自绘按钮
+	//   - show_thickframe   (强制 0) 系统粗边框隐藏
+	//   - show_menu         (强制 0) 菜单栏隐藏，改用右键菜单
+	//   - show_status       (强制 0) 状态栏默认隐藏（仍可通过右键菜单临时显示）
+	//   - show_controls     (强制 0) 工具栏默认隐藏（仍可通过右键菜单临时显示）
+	//   - hover_show_ui     (强制 0) 鼠标悬停显示界面功能永久关闭
+	//   - auto_zoom         (强制 1) 打开图片时自动调整缩放
+	//   - auto_zoom_type    (强制 1) 缩放类型 = 100% 显示
+	//
+	// 所有原菜单栏功能通过右键菜单访问，窗口操作通过右上角三按钮（最小化/最大化/关闭）
+	// 和顶部拖动条实现。如需恢复有边框模式，请注释掉以下强制赋值。
+	config_show_caption = 0;
+	config_show_thickframe = 0;
+	config_show_menu = 0;
+	config_show_status = 0;
+	config_show_controls = 0;
+	config_hover_show_ui = 0;
+
+	// 图片显示修复：打开图片时自动把窗口调整到图片大小（1:1 显示），
+	// 这样窗口客户区刚好等于图片尺寸，不会有左右两侧的白色填充区域。
+	config_auto_zoom = 1;
+	config_auto_zoom_type = 1; // 0=50%, 1=100%, 2=200%, 3=auto-fit
 }
 
 
@@ -318,6 +347,7 @@ static void _config_save_settings_by_location(const wchar_t *path,int is_root)
 			_config_write_int(h,"show_controls",config_show_controls);
 			_config_write_int(h,"auto_zoom",config_auto_zoom);
 			_config_write_int(h,"auto_zoom_type",config_auto_zoom_type);
+			_config_write_int(h,"fit_window_to_image",config_fit_window_to_image);
 			_config_write_int(h,"auto_fit_wide_mul",config_auto_fit_wide_mul);
 			_config_write_int(h,"auto_fit_wide_div",config_auto_fit_wide_div);
 			_config_write_int(h,"auto_fit_high_mul",config_auto_fit_high_mul);

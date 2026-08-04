@@ -549,6 +549,13 @@ static void _viv_reply_clear_all(void);
 static void _viv_reply_free(_viv_reply_t *e);
 static void _viv_controls_show(int show);
 static void _viv_status_show(int show);
+// Frameless mod: custom title bar forward declarations
+static void _viv_cap_get_btn_rect(int btn_index, RECT *out, const RECT *wnd_rect);
+static int  _viv_cap_hit_test(int screen_x, int screen_y);
+static void _viv_cap_draw_all(HDC hdc);
+static void _viv_cap_invalidate(void);
+static int  _viv_cap_update_hover(int screen_x, int screen_y);
+static int  _viv_cap_is_in_caption_bar(int screen_x, int screen_y, const RECT *wnd_rect);
 static void _viv_status_update(void);
 static void _viv_status_set(int part,const wchar_t *text);
 static int _viv_get_status_high(void);
@@ -743,6 +750,23 @@ static RECT          _viv_hover_saved_client_rect; // client rect in screen coor
 static int           _viv_hover_saved_view_x;     // saved _viv_view_x before hover-hide
 static int           _viv_hover_saved_view_y;     // saved _viv_view_y before hover-hide
 static BYTE          _viv_hover_did_resize;       // 1 = window was resized to image rect
+
+// =============================================================================
+// Frameless mod: custom title bar state
+// =============================================================================
+// Three buttons in top-right corner: minimize(-), maximize/restore([]), close(x)
+// A horizontal strip at top acts as draggable caption (replaces system title bar drag).
+#define _VIV_CAP_BTN_W       46    // button width
+#define _VIV_CAP_BTN_H       28    // button height (also caption strip height)
+#define _VIV_CAP_BTN_COUNT   3     // button count
+#define _VIV_CAP_BTN_NONE    0     // no hover
+#define _VIV_CAP_BTN_MIN     1     // minimize button
+#define _VIV_CAP_BTN_MAX     2     // maximize/restore button
+#define _VIV_CAP_BTN_CLOSE   3     // close button
+static int  _viv_cap_btn_hover   = _VIV_CAP_BTN_NONE;  // currently hovered button
+static int  _viv_cap_btn_pressed = _VIV_CAP_BTN_NONE;  // currently pressed button
+static BYTE _viv_cap_btns_enabled = 1;                  // 1=enable custom buttons (disabled in fullscreen)
+static BYTE _viv_cap_nc_tracking = 0;                   // 1=NC mouse-leave tracking active (修复悬停残留)
 
 static VIV_UINT64 _viv_timer_tick = 0; // the current tick for the current frame.
 static BYTE _viv_is_animation_timer = 0; // animation timer started?
@@ -946,7 +970,6 @@ static _viv_command_t _viv_commands[] =
 	{LOCALIZATION_ID_TRANSITION_NONE,MF_STRING|MFT_RADIOCHECK,_VIV_MENU_VIEW_TRANSITION,VIV_ID_VIEW_TRANSITION_NONE},
 	{LOCALIZATION_ID_TRANSITION_FADE,MF_STRING|MFT_RADIOCHECK,_VIV_MENU_VIEW_TRANSITION,VIV_ID_VIEW_TRANSITION_FADE},
 	{LOCALIZATION_ID_TRANSITION_DURATION,MF_STRING,_VIV_MENU_VIEW_TRANSITION,VIV_ID_VIEW_TRANSITION_DURATION},
-	{LOCALIZATION_ID_HOVER_SHOW_UI,MF_STRING,_VIV_MENU_VIEW,VIV_ID_VIEW_HOVER_SHOW_UI},
 	{LOCALIZATION_ID_SLIDESHOW_MENU,MF_POPUP,_VIV_MENU_ROOT,_VIV_MENU_SLIDESHOW},
 	{LOCALIZATION_ID_PLAY_PAUSE,MF_STRING,_VIV_MENU_SLIDESHOW,VIV_ID_SLIDESHOW_PAUSE},
 	{LOCALIZATION_ID_INVALID,MF_SEPARATOR,_VIV_MENU_SLIDESHOW,0},
@@ -1140,6 +1163,8 @@ WORD _viv_context_menu_items[] =
 	_VIV_MENU_SLIDESHOW_RATE,
 	0,
 	VIV_ID_VIEW_MENU,
+	VIV_ID_VIEW_STATUS,
+	VIV_ID_VIEW_CONTROLS,
 	0,
 	VIV_ID_VIEW_ALLOW_SHRINKING,
 	VIV_ID_VIEW_KEEP_ASPECT_RATIO,
@@ -2413,25 +2438,6 @@ debug_printf("SWP %d %d %d %d\n",rect.left,rect.top,rect.right - rect.left,rect.
 			_viv_check_menus(GetMenu(_viv_hwnd));
 			break;
 
-		case VIV_ID_VIEW_HOVER_SHOW_UI:
-			config_hover_show_ui = !config_hover_show_ui;
-			if (config_hover_show_ui)
-			{
-				// Start the polling timer.
-				_viv_hover_timer_start();
-			}
-			else
-			{
-				// Stop the polling timer and restore the UI if it's hidden.
-				_viv_hover_timer_stop();
-				if (_viv_is_hover_hide)
-				{
-					_viv_hover_show_ui();
-				}
-			}
-			_viv_check_menus(GetMenu(_viv_hwnd));
-			break;
-
 		case VIV_ID_EDIT_COPY:
 			_viv_copy(0);
 			break;
@@ -2691,6 +2697,16 @@ static LRESULT CALLBACK _viv_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
 			{
 				if (DefWindowProc(hwnd,msg,wParam,lParam) == HTCLIENT)
 				{
+					// === 无边框改造：先检测右上角三按钮（关闭/最大化/最小化） ===
+					{
+						int htx = GET_X_LPARAM(lParam);
+						int hty = GET_Y_LPARAM(lParam);
+						int cap_btn = _viv_cap_hit_test(htx, hty);
+						if (cap_btn == _VIV_CAP_BTN_CLOSE) return HTCLOSE;
+						if (cap_btn == _VIV_CAP_BTN_MAX)   return HTMAXBUTTON;
+						if (cap_btn == _VIV_CAP_BTN_MIN)   return HTMINBUTTON;
+					}
+
 					if (!config_show_thickframe)
 					{
 						int x;
@@ -2757,13 +2773,35 @@ static LRESULT CALLBACK _viv_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
 							return HTBOTTOM;
 						}
 					}
+
+					// === 无边框改造：顶部拖动条（代替系统标题栏拖动） ===
+					{
+						int cbx = GET_X_LPARAM(lParam);
+						int cby = GET_Y_LPARAM(lParam);
+						if (_viv_cap_is_in_caption_bar(cbx, cby, NULL))
+						{
+							return HTCAPTION;
+						}
+					}
 				}
 			}
 			
 			break;
 			
 		case WM_NCLBUTTONDOWN:
-			
+
+			// === 无边框改造：处理右上角三按钮按下 ===
+			// 记录按下状态，刷新绘制，等 WM_NCLBUTTONUP 在原按钮上释放才执行操作。
+			if (!_viv_is_fullscreen && _viv_cap_btns_enabled)
+			{
+				if (wParam == HTCLOSE || wParam == HTMAXBUTTON || wParam == HTMINBUTTON)
+				{
+					_viv_cap_btn_pressed = _viv_cap_btn_hover;
+					_viv_cap_invalidate();
+					return 0;
+				}
+			}
+
 			if (config_toolbar_move_window)
 			{
 				if (wParam == HTMENU)
@@ -2835,6 +2873,90 @@ static LRESULT CALLBACK _viv_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
 			
 			break;
 		
+		case WM_NCLBUTTONUP:
+			// === 无边框改造：右上角三按钮释放 = 执行操作 ===
+			if (!_viv_is_fullscreen && _viv_cap_btns_enabled && _viv_cap_btn_pressed != _VIV_CAP_BTN_NONE)
+			{
+				int released_btn = _viv_cap_hit_test(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				int pressed = _viv_cap_btn_pressed;
+				_viv_cap_btn_pressed = _VIV_CAP_BTN_NONE;
+				_viv_cap_invalidate();
+
+				// 只在原按钮上释放才执行操作（按住拖出按钮则取消）
+				if (released_btn == pressed)
+				{
+					switch (pressed)
+					{
+						case _VIV_CAP_BTN_CLOSE:
+							SendMessage(hwnd, WM_SYSCOMMAND, SC_CLOSE, 0);
+							break;
+						case _VIV_CAP_BTN_MAX:
+							SendMessage(hwnd, WM_SYSCOMMAND, _viv_is_window_maximized(hwnd) ? SC_RESTORE : SC_MAXIMIZE, 0);
+							break;
+						case _VIV_CAP_BTN_MIN:
+							SendMessage(hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+							break;
+					}
+				}
+				return 0;
+			}
+			break;
+
+		case WM_NCMOUSEMOVE:
+			// === 无边框改造：更新三按钮悬停高亮 ===
+			if (!_viv_is_fullscreen && _viv_cap_btns_enabled)
+			{
+				_viv_cap_update_hover(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				// 修复：注册 WM_NCMOUSELEAVE 追踪，鼠标离开非客户区时清除悬停高亮。
+				// 否则鼠标从按钮移到客户区时，悬停状态会残留不消失。
+				if (!_viv_cap_nc_tracking)
+				{
+					TRACKMOUSEEVENT tme;
+					tme.cbSize = sizeof(TRACKMOUSEEVENT);
+					tme.dwFlags = TME_LEAVE | TME_NONCLIENT;
+					tme.dwHoverTime = 0;
+					tme.hwndTrack = hwnd;
+					if (_TrackMouseEvent(&tme))
+					{
+						_viv_cap_nc_tracking = 1;
+					}
+				}
+			}
+			break;
+
+		case WM_NCMOUSELEAVE:
+			// 修复：鼠标离开非客户区时清除悬停状态。
+			// WM_NCMOUSEMOVE 不再触发时，这个消息保证悬停高亮被清除。
+			_viv_cap_nc_tracking = 0;
+			if (_viv_cap_btn_hover != _VIV_CAP_BTN_NONE)
+			{
+				_viv_cap_btn_hover = _VIV_CAP_BTN_NONE;
+				_viv_cap_invalidate();
+			}
+			break;
+
+		case WM_NCLBUTTONDBLCLK:
+			// === 无边框改造：双击顶部拖动条 = 最大化/还原 ===
+			if (!_viv_is_fullscreen && _viv_cap_btns_enabled && wParam == HTCAPTION)
+			{
+				SendMessage(hwnd, WM_SYSCOMMAND, _viv_is_window_maximized(hwnd) ? SC_RESTORE : SC_MAXIMIZE, 0);
+				return 0;
+			}
+			break;
+
+		case WM_CAPTURECHANGED:
+			// === 无边框改造修复：鼠标捕获丢失时清除按钮按下状态 ===
+			// 用户按下按钮后如果按 Alt+Tab 切走、或者别的窗口抢走鼠标捕获，
+			// WM_NCLBUTTONUP 可能收不到，按钮会一直显示"被按住"的样子。
+			// 这里在捕获丢失时清除按下状态并重绘。
+			if (_viv_cap_btn_pressed != _VIV_CAP_BTN_NONE)
+			{
+				_viv_cap_btn_pressed = _VIV_CAP_BTN_NONE;
+				_viv_cap_btn_hover = _VIV_CAP_BTN_NONE;
+				_viv_cap_invalidate();
+			}
+			break;
+
 		case WM_DESTROY:
 			// Stop the hover polling timer if it's running.
 			_viv_hover_timer_stop();
@@ -3535,6 +3657,7 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 			HMENU hmenu;
 			POINT pt;
 			DWORD tpm_flags;
+			int before_append_count = 0;
 			
 			tpm_flags = 0;
 			
@@ -3581,7 +3704,9 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 								break;
 						}
 						
-						if ((_viv_context_menu_items[i] != VIV_ID_VIEW_MENU) || (!config_show_menu))
+						// 修复bug：右键菜单中的"显示菜单"选项永久显示，
+						// 不管是否勾选都保留在右键菜单中，方便用户随时切换。
+						// 用花括号作为代码块作用域，隔离 command_index 等局部变量。
 						{
 							int command_index;
 							
@@ -3690,24 +3815,95 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 			
 			_viv_in_popup_menu = 1;
 			
-			TrackPopupMenu(hmenu,tpm_flags,pt.x,pt.y,0,hwnd,0);
+			// === 无边框改造：追加原菜单栏的完整子菜单（文件/编辑/查看/导航/帮助） ===
+			// 菜单栏已永久隐藏，这里把原菜单栏的全部内容追加到右键菜单，
+			// 确保用户通过右键能访问到原菜单栏的所有功能。
+			// 修复：DestroyMenu 会递归销毁子菜单，所以先记录追加前的菜单项数量，
+			// 在销毁前移除追加的子菜单项，避免销毁 _viv_hmenu 共享的子菜单。
+			before_append_count = 0;
+			if (_viv_hmenu)
+			{
+				int top_count = GetMenuItemCount(_viv_hmenu);
+				int i;
+				before_append_count = GetMenuItemCount(hmenu);
+				AppendMenu(hmenu, MF_SEPARATOR, 0, NULL);
+				for (i = 0; i < top_count; i++)
+				{
+					HMENU submenu = GetSubMenu(_viv_hmenu, i);
+					if (submenu)
+					{
+						wchar_t name[256];
+						MENUITEMINFOW mii;
+						mii.cbSize = sizeof(mii);
+						mii.fMask = MIIM_STRING;
+						mii.dwTypeData = name;
+						mii.cch = 256;
+						name[0] = 0;
+						if (GetMenuItemInfoW(_viv_hmenu, i, TRUE, &mii))
+						{
+							AppendMenuW(hmenu, MF_POPUP, (UINT_PTR)submenu, name);
+						}
+					}
+				}
+				_viv_check_menus(hmenu);
+			}
+
+			// 右键菜单交互：使用 TPM_RETURNCMD 让 TrackPopupMenu 返回选中的命令ID，
+			// 而不是直接发送命令。收到命令后执行它，然后菜单关闭。
+			// 这是标准 Windows 行为——执行命令后关闭菜单，避免弹出文件对话框后菜单又出现。
+			// 用户想再次操作可以再次右键。
+			{
+				int cmd = TrackPopupMenu(hmenu, tpm_flags | TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, 0);
+				if (cmd)
+				{
+					// 执行用户选中的命令
+					SendMessage(hwnd, WM_COMMAND, cmd, 0);
+				}
+			}
 
 			// start the hide cursor timer again.
 			_viv_in_popup_menu = 0;
 			_viv_update_show_cursor();
-			
+
+			// 修复：在销毁右键菜单前，先移除从 _viv_hmenu 追加的共享子菜单项，
+			// 避免 DestroyMenu 递归销毁 _viv_hmenu 的子菜单。
+			// 用 RemoveMenu（不销毁弹出菜单），从后往前移除。
+			// 修复：原条件 before_append_count > 0 在 hmenu 为空但 _viv_hmenu 非空时会跳过清理，
+			// 导致 DestroyMenu 销毁共享子菜单。改为直接判断 _viv_hmenu 是否非空（即是否追加过）。
+			if (_viv_hmenu)
+			{
+				int total = GetMenuItemCount(hmenu);
+				while (total > before_append_count)
+				{
+					RemoveMenu(hmenu, total - 1, MF_BYPOSITION);
+					total--;
+				}
+			}
+
 			DestroyMenu(hmenu);
 			
 			break;
 		}
 			
 		case WM_ACTIVATE:
-			
+
 			if (wParam == WA_INACTIVE)
 			{
 				if (!_viv_prevent_on_deactivate)
 				{
 					_viv_show_cursor();
+				}
+				// 修复：窗口失活时（如 Alt+Tab 切走）清除自绘按钮的按下/悬停状态。
+				// 否则用户按下按钮后切走窗口再释放鼠标，按钮会一直显示"被按下"。
+				// WM_NCLBUTTONUP 在窗口失活时可能不会触发，WM_CAPTURECHANGED 也不会
+				// （因为 WM_NCLBUTTONDOWN 没有调用 SetCapture）。
+				if (_viv_cap_btn_pressed != _VIV_CAP_BTN_NONE ||
+					_viv_cap_btn_hover != _VIV_CAP_BTN_NONE)
+				{
+					_viv_cap_btn_pressed = _VIV_CAP_BTN_NONE;
+					_viv_cap_btn_hover = _VIV_CAP_BTN_NONE;
+					_viv_cap_nc_tracking = 0;
+					_viv_cap_invalidate();
 				}
 			}
 			else
@@ -3748,6 +3944,18 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 			break;
 
 		case WM_MOUSEMOVE:
+
+			// 修复：鼠标从非客户区（按钮）移入客户区时，清除 NC 悬停状态。
+			// 这是 WM_NCMOUSELEAVE 的双重保险，确保按钮高亮不会残留。
+			if (_viv_cap_nc_tracking)
+			{
+				_viv_cap_nc_tracking = 0;
+			}
+			if (_viv_cap_btn_hover != _VIV_CAP_BTN_NONE && !_viv_cap_btn_pressed)
+			{
+				_viv_cap_btn_hover = _VIV_CAP_BTN_NONE;
+				_viv_cap_invalidate();
+			}
 
 			if (!_viv_is_tracking_mouse)
 			{
@@ -4580,6 +4788,9 @@ debug_printf("PAINT %d %d %d\n",_viv_frame_position,rw,rh);
 			// snapshot with decreasing alpha so the old image fades out.
 			_viv_paint_transition_fade(ps.hdc);
 
+			// === 无边框改造：在图片之上绘制右上角三按钮 ===
+			_viv_cap_draw_all(ps.hdc);
+
 			EndPaint(hwnd,&ps);
 		}
 		else
@@ -4600,21 +4811,35 @@ debug_printf("PAINT %d %d %d\n",_viv_frame_position,rw,rh);
 				int high;
 				RECT rect;
 				BOOL is_menu;
-				
+				MINMAXINFO *mmi = (MINMAXINFO *)lParam;
+
 				wide = _viv_toolbar_get_wide();
 				high = _viv_get_status_high() + _viv_get_controls_high();
-				
+
 				is_menu = GetMenu(_viv_hwnd) ? TRUE : FALSE;
-			
+
 				rect.left = 0;
 				rect.top = 0;
 				rect.right = wide;
 				rect.bottom = high;
-				
+
 				AdjustWindowRectEx(&rect,os_get_window_style(hwnd),is_menu,os_get_window_ex_style(hwnd));
 
-				((MINMAXINFO *)lParam)->ptMinTrackSize.x = rect.right - rect.left; 
-				((MINMAXINFO *)lParam)->ptMinTrackSize.y = rect.bottom - rect.top;
+				mmi->ptMinTrackSize.x = rect.right - rect.left;
+				mmi->ptMinTrackSize.y = rect.bottom - rect.top;
+
+				// === 无边框改造：WS_POPUP 最大化默认会覆盖任务栏 ===
+				// 这里把最大化尺寸限制为工作区（避开任务栏），与有边框窗口行为一致。
+				// 全屏模式有自己的覆盖逻辑，不在这里处理。
+				if (!_viv_is_fullscreen)
+				{
+					RECT work_area;
+					SystemParametersInfo(SPI_GETWORKAREA, 0, &work_area, 0);
+					mmi->ptMaxSize.x = work_area.right - work_area.left;
+					mmi->ptMaxSize.y = work_area.bottom - work_area.top;
+					mmi->ptMaxPosition.x = work_area.left;
+					mmi->ptMaxPosition.y = work_area.top;
+				}
 			}
 
 			break;
@@ -5558,7 +5783,9 @@ static int _viv_init(int nCmdShow)
 		rect.bottom = rect.top + default_high;
 	}
 	
-	window_style = WS_CAPTION | WS_THICKFRAME | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+	// 无边框改造：直接用 WS_POPUP 创建纯客户区窗口，没有任何系统标题栏/边框/按钮，
+	// 避免创建后再拆除造成的视觉闪烁。
+	window_style = WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
 	_viv_hwnd = os_CreateWindowEx(
 		0,
@@ -5567,11 +5794,8 @@ static int _viv_init(int nCmdShow)
 		window_style,
 		rect.left,rect.top,rect.right - rect.left,rect.bottom - rect.top,
 		0,config_show_menu ? _viv_hmenu : NULL,os_hinstance,NULL);
-	
-	if ((!config_show_caption) || (!config_show_thickframe))
-	{
-		_viv_update_frame();
-	}
+
+	// 无边框改造：默认配置已全部为 0，无需再调用 _viv_update_frame() 调整边框。
 		
 	os_make_rect_completely_visible(_viv_hwnd,&rect);
 		
@@ -6803,6 +7027,8 @@ debug_printf("toggle fullscreen %d\n",!_viv_is_fullscreen);
 		// set before restore
 		// otherwise get_render_size will return the wrong size.
 		_viv_is_fullscreen = 0;
+		// 无边框改造修复：退出全屏时重新启用自绘按钮
+		_viv_cap_btns_enabled = 1;
 
 		if (config_show_caption)	
 		{
@@ -6852,6 +7078,8 @@ debug_printf("toggle fullscreen %d\n",!_viv_is_fullscreen);
 			
 		// set fullscreen before we resize.
 		_viv_is_fullscreen = 1;
+		// 无边框改造修复：进入全屏时禁用自绘按钮（全屏有自己的退出逻辑）
+		_viv_cap_btns_enabled = 0;
 			
 		os_MonitorRectFromWindow(_viv_hwnd,1,&monitor_rect);
 		
@@ -7652,7 +7880,6 @@ static void _viv_check_menus(HMENU hmenu)
 
 	CheckMenuItem(hmenu,VIV_ID_VIEW_TRANSITION_NONE,config_transition_type == 0 ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
 	CheckMenuItem(hmenu,VIV_ID_VIEW_TRANSITION_FADE,config_transition_type == 1 ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
-	CheckMenuItem(hmenu,VIV_ID_VIEW_HOVER_SHOW_UI,config_hover_show_ui ? MF_CHECKED : MF_UNCHECKED);
 
 	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_PAUSE,_viv_is_slideshow ? MF_CHECKED : MF_UNCHECKED);
 
@@ -10658,6 +10885,308 @@ static void _viv_hover_show_ui(void)
 	_viv_update_show_cursor();
 }
 
+// =============================================================================
+// 无边框改造：自绘标题栏实现
+// =============================================================================
+// 窗口右上角三个按钮的布局（屏幕坐标，从右到左）：
+//   [关闭 ×][最大化 □][最小化 ─]
+// 按钮区域下方是一条可拖动的"标题条"（高度同按钮高度）。
+// 全屏模式下按钮和拖动条都禁用（_viv_cap_btns_enabled = 0）。
+
+// 获取指定按钮的屏幕坐标矩形。
+// btn_index: _VIV_CAP_BTN_MIN / _VIV_CAP_BTN_MAX / _VIV_CAP_BTN_CLOSE
+// wnd_rect  : 窗口屏幕坐标 RECT（NULL 时自动获取）
+static void _viv_cap_get_btn_rect(int btn_index, RECT *out, const RECT *wnd_rect)
+{
+	RECT wr;
+	int right_edge;
+	int offset; // 从右边数第几个按钮（0=最右关闭，1=最大化，2=最小化）
+
+	if (!out) return;
+	if (!wnd_rect)
+	{
+		GetWindowRect(_viv_hwnd, &wr);
+		wnd_rect = (const RECT *)&wr;
+	}
+
+	// 按钮从右到左排列：关闭(0) 最大化(1) 最小化(2)
+	switch (btn_index)
+	{
+		case _VIV_CAP_BTN_CLOSE: offset = 0; break;
+		case _VIV_CAP_BTN_MAX:   offset = 1; break;
+		case _VIV_CAP_BTN_MIN:   offset = 2; break;
+		default: offset = -1; break;
+	}
+
+	if (offset < 0)
+	{
+		SetRectEmpty(out);
+		return;
+	}
+
+	right_edge = wnd_rect->right;
+	out->right = right_edge - offset * _VIV_CAP_BTN_W;
+	out->left  = out->right - _VIV_CAP_BTN_W;
+	out->top   = wnd_rect->top;
+	out->bottom = wnd_rect->top + _VIV_CAP_BTN_H;
+}
+
+// 命中测试：屏幕坐标 (screen_x, screen_y) 落在哪个按钮上。
+// 返回 _VIV_CAP_BTN_MIN / _VIV_CAP_BTN_MAX / _VIV_CAP_BTN_CLOSE，不在按钮上返回 _VIV_CAP_BTN_NONE。
+static int _viv_cap_hit_test(int screen_x, int screen_y)
+{
+	RECT wr;
+	RECT br;
+	int i;
+
+	if (!_viv_cap_btns_enabled) return _VIV_CAP_BTN_NONE;
+	if (_viv_is_fullscreen) return _VIV_CAP_BTN_NONE;
+
+	GetWindowRect(_viv_hwnd, &wr);
+
+	// 先用整体区域快速排除（右上角 _VIV_CAP_BTN_W*3 宽，_VIV_CAP_BTN_H 高）
+	if (screen_x < wr.right - _VIV_CAP_BTN_W * _VIV_CAP_BTN_COUNT) return _VIV_CAP_BTN_NONE;
+	if (screen_x > wr.right) return _VIV_CAP_BTN_NONE;
+	if (screen_y < wr.top) return _VIV_CAP_BTN_NONE;
+	if (screen_y > wr.top + _VIV_CAP_BTN_H) return _VIV_CAP_BTN_NONE;
+
+	for (i = _VIV_CAP_BTN_MIN; i <= _VIV_CAP_BTN_CLOSE; i++)
+	{
+		_viv_cap_get_btn_rect(i, &br, &wr);
+		if (screen_x >= br.left && screen_x < br.right &&
+			screen_y >= br.top && screen_y < br.bottom)
+		{
+			return i;
+		}
+	}
+
+	return _VIV_CAP_BTN_NONE;
+}
+
+// 判断屏幕坐标是否在顶部拖动条区域内（不含按钮区域）。
+// 拖动条 = 顶部 _VIV_CAP_BTN_H 高度内、按钮区域左侧的横条。
+static int _viv_cap_is_in_caption_bar(int screen_x, int screen_y, const RECT *wnd_rect)
+{
+	RECT wr;
+
+	if (!_viv_cap_btns_enabled) return 0;
+	if (_viv_is_fullscreen) return 0;
+
+	if (!wnd_rect)
+	{
+		GetWindowRect(_viv_hwnd, &wr);
+		wnd_rect = (const RECT *)&wr;
+	}
+
+	// 顶部 _VIV_CAP_BTN_H 像素高度内
+	if (screen_y < wnd_rect->top) return 0;
+	if (screen_y >= wnd_rect->top + _VIV_CAP_BTN_H) return 0;
+
+	// 排除按钮区域（右上角 _VIV_CAP_BTN_W*3 宽）
+	if (screen_x >= wnd_rect->right - _VIV_CAP_BTN_W * _VIV_CAP_BTN_COUNT) return 0;
+	if (screen_x < wnd_rect->left) return 0;
+
+	return 1;
+}
+
+// 绘制单个按钮图标（× / □ / ─）到指定 HDC，居中绘制。
+// color: 线条颜色；size: 图标大致尺寸（像素）。
+static void _viv_cap_draw_icon(HDC hdc, int btn_index, int cx, int cy, COLORREF color, int size)
+{
+	HPEN hpen;
+	HPEN oldpen;
+	HBRUSH oldbr;
+	int half;
+
+	half = size / 2;
+	hpen = CreatePen(PS_SOLID, 1, color);
+	if (!hpen) return;
+	oldpen = (HPEN)SelectObject(hdc, hpen);
+	oldbr = (HBRUSH)SelectObject(hdc, GetStockObject(NULL_BRUSH));
+
+	switch (btn_index)
+	{
+		case _VIV_CAP_BTN_CLOSE:
+			// 画 ×
+			MoveToEx(hdc, cx - half, cy - half, NULL);
+			LineTo(hdc, cx + half, cy + half);
+			MoveToEx(hdc, cx + half, cy - half, NULL);
+			LineTo(hdc, cx - half, cy + half);
+			break;
+
+		case _VIV_CAP_BTN_MAX:
+			// 画方框 □
+			Rectangle(hdc, cx - half, cy - half, cx + half + 1, cy + half + 1);
+			break;
+
+		case _VIV_CAP_BTN_MIN:
+			// 画横线 ─
+			MoveToEx(hdc, cx - half, cy + half - 1, NULL);
+			LineTo(hdc, cx + half + 1, cy + half - 1);
+			break;
+	}
+
+	SelectObject(hdc, oldpen);
+	SelectObject(hdc, oldbr);
+	DeleteObject(hpen);
+}
+
+// 绘制所有三个按钮。在 WM_PAINT 中调用。
+static void _viv_cap_draw_all(HDC hdc)
+{
+	RECT wr;
+	RECT br;
+	int i;
+	int is_maximized;
+	COLORREF icon_color;
+	COLORREF bg_color;
+	HBRUSH bg_brush;
+	RECT client_rect;
+	int saved;
+
+	if (!_viv_cap_btns_enabled) return;
+	if (_viv_is_fullscreen) return;
+	if (!hdc) return;
+
+	GetWindowRect(_viv_hwnd, &wr);
+	is_maximized = _viv_is_window_maximized(_viv_hwnd);
+
+	// 把 HDC 坐标系从客户区转换到窗口坐标（因为按钮在窗口顶部，可能超出客户区）
+	// WS_POPUP 窗口客户区=窗口区，所以按钮区域就是客户区顶部。
+	// 但保险起见，用窗口坐标减去客户区原点偏移。
+	GetClientRect(_viv_hwnd, &client_rect);
+	MapWindowPoints(_viv_hwnd, NULL, (LPPOINT)&client_rect, 2);
+
+	saved = SaveDC(hdc);
+	// 设置裁剪到按钮整体区域，避免画到图片上
+	{
+		RECT clip;
+		clip.left = wr.right - _VIV_CAP_BTN_W * _VIV_CAP_BTN_COUNT;
+		clip.top = wr.top;
+		clip.right = wr.right;
+		clip.bottom = wr.top + _VIV_CAP_BTN_H;
+		// 转换到 HDC 坐标（客户区相对坐标）
+		OffsetRect(&clip, -client_rect.left, -client_rect.top);
+		SelectClipRgn(hdc, NULL);
+		IntersectClipRect(hdc, clip.left, clip.top, clip.right, clip.bottom);
+	}
+
+	for (i = _VIV_CAP_BTN_MIN; i <= _VIV_CAP_BTN_CLOSE; i++)
+	{
+		_viv_cap_get_btn_rect(i, &br, &wr);
+		// 转换到 HDC 坐标
+		OffsetRect(&br, -client_rect.left, -client_rect.top);
+
+		// 决定背景色和图标色
+		// 默认状态：完全透明背景，只显示图标本身，不遮挡图片
+		bg_color = 0;
+		icon_color = RGB(255, 255, 255);
+		{
+			int has_bg = 0; // 0 = 不画背景（透明），1 = 画背景
+
+			if (_viv_cap_btn_pressed == i && _viv_cap_btn_hover == i)
+			{
+				// 按下状态：保留视觉反馈
+				bg_color = (i == _VIV_CAP_BTN_CLOSE) ? RGB(200, 40, 40) : RGB(90, 90, 90);
+				icon_color = RGB(255, 255, 255);
+				has_bg = 1;
+			}
+			else if (_viv_cap_btn_hover == i)
+			{
+				// 悬停状态：保留视觉反馈，让用户知道按钮在哪里
+				bg_color = (i == _VIV_CAP_BTN_CLOSE) ? RGB(232, 17, 35) : RGB(110, 110, 110);
+				icon_color = RGB(255, 255, 255);
+				has_bg = 1;
+			}
+			else
+			{
+				// 默认状态：完全透明，只画图标
+				icon_color = RGB(255, 255, 255);
+				has_bg = 0;
+			}
+
+			// 只在悬停/按下时画背景，默认状态不画（透明）
+			if (has_bg)
+			{
+				bg_brush = CreateSolidBrush(bg_color);
+				if (bg_brush)
+				{
+					FillRect(hdc, &br, bg_brush);
+					DeleteObject(bg_brush);
+				}
+			}
+		}
+
+		// 画图标
+		{
+			int cx = (br.left + br.right) / 2;
+			int cy = (br.top + br.bottom) / 2;
+			int icon_size = 10;
+			// 最大化时画"还原"图标（两个重叠方框），否则画"最大化"图标
+			if (i == _VIV_CAP_BTN_MAX && is_maximized)
+			{
+				// 还原图标：画两个错位方框
+				HPEN hpen = CreatePen(PS_SOLID, 1, icon_color);
+				HPEN oldpen = (HPEN)SelectObject(hdc, hpen);
+				HBRUSH oldbr = (HBRUSH)SelectObject(hdc, GetStockObject(NULL_BRUSH));
+				Rectangle(hdc, cx - 4, cy - 2, cx + 6, cy + 8);
+				Rectangle(hdc, cx - 6, cy - 4, cx + 4, cy + 6);
+				SelectObject(hdc, oldpen);
+				SelectObject(hdc, oldbr);
+				DeleteObject(hpen);
+			}
+			else
+			{
+				_viv_cap_draw_icon(hdc, i, cx, cy, icon_color, icon_size);
+			}
+		}
+	}
+
+	RestoreDC(hdc, saved);
+}
+
+// 刷新按钮区域（触发重绘）。悬停状态变化时调用。
+static void _viv_cap_invalidate(void)
+{
+	RECT wr;
+	RECT br_all;
+	RECT client_rect;
+
+	if (!_viv_cap_btns_enabled) return;
+	if (_viv_is_fullscreen) return;
+	if (!_viv_hwnd) return;
+
+	GetWindowRect(_viv_hwnd, &wr);
+	GetClientRect(_viv_hwnd, &client_rect);
+	MapWindowPoints(_viv_hwnd, NULL, (LPPOINT)&client_rect, 2);
+
+	br_all.left = wr.right - _VIV_CAP_BTN_W * _VIV_CAP_BTN_COUNT;
+	br_all.top = wr.top;
+	br_all.right = wr.right;
+	br_all.bottom = wr.top + _VIV_CAP_BTN_H;
+
+	// 转换到客户区坐标
+	OffsetRect(&br_all, -client_rect.left, -client_rect.top);
+
+	InvalidateRect(_viv_hwnd, &br_all, FALSE);
+	UpdateWindow(_viv_hwnd);
+}
+
+// 根据屏幕坐标更新悬停状态，必要时重绘。
+// 返回 1 表示悬停状态有变化（已触发重绘），0 表示无变化。
+static int _viv_cap_update_hover(int screen_x, int screen_y)
+{
+	int new_hover;
+
+	new_hover = _viv_cap_hit_test(screen_x, screen_y);
+
+	if (new_hover == _viv_cap_btn_hover) return 0;
+
+	_viv_cap_btn_hover = new_hover;
+	_viv_cap_invalidate();
+	return 1;
+}
+
 static void _viv_update_frame(void)
 {
 	if (!_viv_is_fullscreen)
@@ -10746,9 +11275,10 @@ static void _viv_update_frame(void)
 		
 		SetWindowPos(_viv_hwnd,HWND_TOP,windowrect.left,windowrect.top,windowrect.right - windowrect.left,windowrect.bottom - windowrect.top,SWP_FRAMECHANGED|SWP_NOACTIVATE|SWP_NOCOPYBITS);
 
-		// if there is no catpion or thick frame we should not allow maximize
-		// avoid our resize borders when maximized.
-		if ((was_maximized) && (config_show_caption) && (config_show_thickframe))
+		// 无边框改造修复：只要原本是最大化状态，调整完边框后就恢复最大化。
+		// 原来的条件要求同时开启标题栏和粗边框才恢复，在无边框模式下永远不成立，
+		// 导致用户切换状态栏/工具栏后最大化状态丢失。
+		if (was_maximized)
 		{
 			ShowWindow(_viv_hwnd,SW_MAXIMIZE);
 		}
@@ -15165,6 +15695,137 @@ static void _viv_preload_next(void)
 	}
 }
 
+// =============================================================================
+// 无边框改造：窗口自动贴合图片实际显示大小
+// =============================================================================
+// 把窗口客户区调整到与图片当前显示尺寸完全一致，消除图片周围的白色填充。
+// 窗口保持屏幕居中。仅在窗口模式且未处于 hover-hide 时调用。
+static void _viv_fit_window_to_image(void)
+{
+	RECT window_rect;
+	RECT monitor_rect;
+	int rw;
+	int rh;
+	int client_wide;
+	int client_high;
+	int new_wide;
+	int new_high;
+	int center_x;
+	int center_y;
+	BOOL is_menu;
+
+	// 全屏模式下不调整（全屏有自己的显示逻辑）
+	if (_viv_is_fullscreen)
+	{
+		return;
+	}
+
+	// hover-hide 模式有自己的窗口贴合逻辑，这里不重复处理
+	if (_viv_is_hover_hide)
+	{
+		return;
+	}
+
+	// 修复：最大化状态下不调整窗口尺寸。
+	// 用户主动最大化窗口表示希望保持最大化，不应在切换图片时被强制缩小。
+	if (_viv_is_window_maximized(_viv_hwnd))
+	{
+		return;
+	}
+
+	// 没有图片则不处理
+	if (!(( _viv_image_wide) && (_viv_image_high)))
+	{
+		return;
+	}
+
+	// 计算图片当前应该显示多大（受缩放比例影响）
+	_viv_get_render_size(&rw, &rh);
+
+	if ((rw <= 0) || (rh <= 0))
+	{
+		return;
+	}
+
+	// 需要的客户区尺寸 = 图片显示尺寸 + 状态栏高度 + 工具栏高度
+	client_wide = rw;
+	client_high = rh + _viv_get_status_high() + _viv_get_controls_high();
+
+	// 根据当前窗口样式，从客户区尺寸反推整个窗口尺寸
+	window_rect.left = 0;
+	window_rect.top = 0;
+	window_rect.right = client_wide;
+	window_rect.bottom = client_high;
+
+	is_menu = GetMenu(_viv_hwnd) ? TRUE : FALSE;
+
+	AdjustWindowRectEx(&window_rect, os_get_window_style(_viv_hwnd), is_menu, os_get_window_ex_style(_viv_hwnd));
+
+	new_wide = window_rect.right - window_rect.left;
+	new_high = window_rect.bottom - window_rect.top;
+
+	// 取当前窗口的中心点，用于保持屏幕居中
+	GetWindowRect(_viv_hwnd, &window_rect);
+	center_x = (window_rect.left + window_rect.right) / 2;
+	center_y = (window_rect.top + window_rect.bottom) / 2;
+
+	// 修复：如果当前窗口尺寸已经等于目标尺寸，跳过 SetWindowPos，避免冗余重绘和闪烁。
+	// auto-zoom 可能已经把窗口调整到正确尺寸，此检查防止第二次调整产生闪烁。
+	if ((window_rect.right - window_rect.left) == new_wide &&
+		(window_rect.bottom - window_rect.top) == new_high)
+	{
+		return;
+	}
+
+	// 计算新窗口位置（以中心点为基准）
+	window_rect.left = center_x - (new_wide / 2);
+	window_rect.top = center_y - (new_high / 2);
+	window_rect.right = window_rect.left + new_wide;
+	window_rect.bottom = window_rect.top + new_high;
+
+	// 确保窗口完全显示在显示器工作区内（不会被屏幕边缘截断）
+	os_MonitorRectFromWindow(_viv_hwnd, 0, &monitor_rect);
+
+	if (window_rect.left < monitor_rect.left)
+	{
+		window_rect.right += monitor_rect.left - window_rect.left;
+		window_rect.left = monitor_rect.left;
+	}
+
+	if (window_rect.top < monitor_rect.top)
+	{
+		window_rect.bottom += monitor_rect.top - window_rect.top;
+		window_rect.top = monitor_rect.top;
+	}
+
+	if (window_rect.right > monitor_rect.right)
+	{
+		window_rect.left -= window_rect.right - monitor_rect.right;
+		window_rect.right = monitor_rect.right;
+	}
+
+	if (window_rect.bottom > monitor_rect.bottom)
+	{
+		window_rect.top -= window_rect.bottom - monitor_rect.bottom;
+		window_rect.bottom = monitor_rect.bottom;
+	}
+
+	// 再次确保左上角不超出屏幕
+	if (window_rect.left < monitor_rect.left)
+	{
+		window_rect.left = monitor_rect.left;
+	}
+
+	if (window_rect.top < monitor_rect.top)
+	{
+		window_rect.top = monitor_rect.top;
+	}
+
+	SetWindowPos(_viv_hwnd, 0, window_rect.left, window_rect.top,
+		window_rect.right - window_rect.left, window_rect.bottom - window_rect.top,
+		SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOCOPYBITS);
+}
+
 static void _viv_start_first_frame(void)
 {
 	// Start a fade transition if enabled. MUST be called before InvalidateRect
@@ -15238,6 +15899,13 @@ static void _viv_start_first_frame(void)
 					_viv_command(VIV_ID_VIEW_WINDOW_SIZE_50 + config_auto_zoom_type);
 					break;
 			}
+		}
+		
+		// 无边框改造：窗口自动贴合图片实际显示大小，消除白边
+		// 放在 auto-zoom 之后、绘制之前，确保窗口尺寸与图片一致再刷新
+		if (config_fit_window_to_image)
+		{
+			_viv_fit_window_to_image();
 		}
 	}
 

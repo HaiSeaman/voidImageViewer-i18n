@@ -76,6 +76,7 @@ extern BYTE config_fill_window;
 extern BYTE config_fullscreen_fill_window;
 extern BYTE config_auto_zoom;
 extern BYTE config_auto_zoom_type;
+extern BYTE config_fit_window_to_image; // 1 = 窗口自动贴合图片大小，消除白边
 extern int config_auto_fit_wide_mul;
 extern int config_auto_fit_wide_div;
 extern int config_auto_fit_high_mul;
