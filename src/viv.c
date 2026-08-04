@@ -15764,6 +15764,10 @@ static void _viv_fit_window_to_image(void)
 	new_wide = window_rect.right - window_rect.left;
 	new_high = window_rect.bottom - window_rect.top;
 
+	// 最小窗口尺寸限制，防止极小图片导致自绘标题栏按钮叠压或无法操作
+	if (new_wide < 180) new_wide = 180;
+	if (new_high < 120) new_high = 120;
+
 	// 取当前窗口的中心点，用于保持屏幕居中
 	GetWindowRect(_viv_hwnd, &window_rect);
 	center_x = (window_rect.left + window_rect.right) / 2;
