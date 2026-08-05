@@ -2568,7 +2568,7 @@ debug_printf("SWP %d %d %d %d\n",rect.left,rect.top,rect.right - rect.left,rect.
 
 				string_copy(tobuf,_viv_last_open_file ? _viv_last_open_file : L"");
 				
-				string_printf(filter_wbuf,"%s (*.bmp;*.gif;*.ico;*.jpeg;*.jpg;*.png;*.tif;*.tiff;*.webp)%c*.bmp;*.gif;*.ico;*.jpeg;*.jpg;*.png;*.tif;*.tiff;*.webp%c%s (*.*)%c*.*%c",localization_get_string(LOCALIZATION_ID_OPEN_ALL_IMAGE_FILES),0,0,localization_get_string(LOCALIZATION_ID_OPEN_ALL_FILES),0,0);
+				string_printf(filter_wbuf,"%s (*.ani;*.apng;*.avif;*.bmp;*.cur;*.emf;*.gif;*.heic;*.heif;*.ico;*.jpeg;*.jpg;*.png;*.tga;*.tif;*.tiff;*.webp;*.wmf)%c*.ani;*.apng;*.avif;*.bmp;*.cur;*.emf;*.gif;*.heic;*.heif;*.ico;*.jpeg;*.jpg;*.png;*.tga;*.tif;*.tiff;*.webp;*.wmf%c%s (*.*)%c*.*%c",localization_get_string(LOCALIZATION_ID_OPEN_ALL_IMAGE_FILES),0,0,localization_get_string(LOCALIZATION_ID_OPEN_ALL_FILES),0,0);
 
 				string_copy_utf8_string(title_wbuf,localization_get_string(LOCALIZATION_ID_OPEN_IMAGE_CAPTION));
 				
@@ -11678,6 +11678,11 @@ static int _viv_webp_info_proc(_viv_webp_t *viv_webp,DWORD frame_count,DWORD wid
 		{
 			ret = 1;
 		}
+		else
+		{
+			ReleaseDC(NULL, viv_webp->screen_hdc);
+			viv_webp->screen_hdc = NULL;
+		}
 	}
 	
 	return ret;
@@ -13445,9 +13450,9 @@ static void _viv_command_line_options(void)
 //		"/everything <search> Open files from an Everything search.\n"
 //		"/random <search>\tOpen random files from an Everything search.\n"
 		"/shuffle\t\tShuffle playlist.\n"
-		"/<bmp|gif|ico|jpeg|jpg|png|tif|tiff|webp>\n"
+		"\t\t/<ani|apng|avif|bmp|cur|emf|gif|heic|heif|ico|jpeg|jpg|png|tga|tif|tiff|webp|wmf>\n"
 		"\t\tInstall association.\n"
-		"/no<bmp|gif|ico|jpeg|jpg|png|tif|tiff|webp>\n"
+		"\t\t/no<ani|apng|avif|bmp|cur|emf|gif|heic|heif|ico|jpeg|jpg|png|tga|tif|tiff|webp|wmf>\n"
 		"\t\tUninstall association.\n"
 		"/appdata\t\tSave settings in appdata.\n"
 		"/noappdata\tSave settings in exe path.\n"
@@ -14992,7 +14997,7 @@ static int _viv_send_everything_search(HWND hwnd,int add,int randomize,const wch
 			DWORD size;
 			wchar_t new_search[STRING_SIZE];
 			
-			string_copy_utf8_string(new_search,"ext:bmp;gif;ico;jpeg;jpg;png;tif;tiff;webp <");
+			string_copy_utf8_string(new_search,"ext:ani;apng;avif;bmp;cur;emf;gif;heic;heif;ico;jpeg;jpg;png;tga;tif;tiff;webp;wmf <");
 			string_cat(new_search,search);
 			string_cat_utf8(new_search,">");
 
@@ -15298,10 +15303,21 @@ static HBITMAP _viv_orientate_hbitmap(HBITMAP hbitmap,int orientation)
 					bi.biBitCount = 32;
 					bi.biCompression = BI_RGB;
 										
-					old_pixels = mem_alloc(bitmap.bmWidth * bitmap.bmHeight * sizeof(DWORD));
-					new_pixels = mem_alloc(ret_wide * ret_high * sizeof(DWORD));
+					SIZE_T old_size = safe_size_mul(safe_size_mul(bitmap.bmWidth, bitmap.bmHeight), sizeof(DWORD));
+					SIZE_T new_size = safe_size_mul(safe_size_mul(ret_wide, ret_high), sizeof(DWORD));
+
+					if (old_size != SIZE_MAX && new_size != SIZE_MAX)
+					{
+						old_pixels = mem_alloc(old_size);
+						new_pixels = mem_alloc(new_size);
+					}
+					else
+					{
+						old_pixels = NULL;
+						new_pixels = NULL;
+					}
 				
-					if (GetDIBits(mem_hdc,hbitmap,0,bitmap.bmHeight,old_pixels,(BITMAPINFO *)&bi,DIB_RGB_COLORS))
+					if (old_pixels && new_pixels && GetDIBits(mem_hdc,hbitmap,0,bitmap.bmHeight,old_pixels,(BITMAPINFO *)&bi,DIB_RGB_COLORS))
 					{
 						int y;
 
@@ -15428,8 +15444,8 @@ static HBITMAP _viv_orientate_hbitmap(HBITMAP hbitmap,int orientation)
 						ret_hbitmap = 0;	
 					}
 					
-					mem_free(new_pixels);
-					mem_free(old_pixels);
+					if (new_pixels) mem_free(new_pixels);
+					if (old_pixels) mem_free(old_pixels);
 				}
 				
 				DeleteDC(mem_hdc);
@@ -15455,7 +15471,7 @@ static void _viv_send_random_everything_search(void)
 		DWORD size;
 		wchar_t new_search[STRING_SIZE];
 		
-		string_copy_utf8_string(new_search,"ext:bmp;gif;ico;jpeg;jpg;png;tif;tiff;webp <");
+		string_copy_utf8_string(new_search,"ext:ani;apng;avif;bmp;cur;emf;gif;heic;heif;ico;jpeg;jpg;png;tga;tif;tiff;webp;wmf <");
 		string_cat(new_search,_viv_random);
 		string_cat_utf8(new_search,">");
 
