@@ -45,7 +45,7 @@ BYTE config_nav_sort_ascending = 0; // sort navigation ascending or descending.
 BYTE config_keep_aspect_ratio = 1; // stretch images with the original aspect ratio.
 BYTE config_fill_window = 1; // stretch the image to fill the window
 BYTE config_fullscreen_fill_window = 1; // same as fill_window, except this setting is used when we are fullscreen
-BYTE config_auto_zoom = 0; // automatically resize the window to fit the newly loaded image
+BYTE config_auto_zoom = 1; // automatically resize the window to fit the newly loaded image
 BYTE config_auto_zoom_type = 1; // 0 = 50%, 1 = 100%, 2 = 200%
 BYTE config_fit_window_to_image = 1; // 1 = 窗口自动贴合图片实际显示大小，消除白边（默认开启）
 int config_auto_fit_wide_mul = 3;
@@ -95,6 +95,7 @@ BYTE config_pixel_info = 0;
 BYTE config_orientation = 1;
 BYTE config_title_bar_format = 1; // 0=full path, 1=filename, 2=none
 int config_add_command_line_timeout = 500; // in milliseconds
+int config_language = -1; // -1 = auto detect, 0-9 = specific language
 
 static void _config_load_settings_by_location(const wchar_t *path,int is_root)
 {
@@ -173,6 +174,11 @@ static void _config_load_settings_by_location(const wchar_t *path,int is_root)
 		config_toolbar_move_window = ini_get_int(ini,(const utf8_t *)"toolbar_move_window",config_toolbar_move_window);
 		config_title_bar_format = ini_get_int(ini,(const utf8_t *)"title_bar_format",config_title_bar_format);
 		config_add_command_line_timeout = ini_get_int(ini,(const utf8_t *)"add_command_line_timeout",config_add_command_line_timeout);
+		config_language = ini_get_int(ini,(const utf8_t *)"language",config_language);
+		if (config_language < -1 || config_language >= LOCALIZATION_LANGUAGE_COUNT)
+		{
+			config_language = -1;
+		}
 
 		if (is_root)
 		{
@@ -365,6 +371,7 @@ static void _config_save_settings_by_location(const wchar_t *path,int is_root)
 			_config_write_int(h,"toolbar_move_window",config_toolbar_move_window);
 			_config_write_int(h,"title_bar_format",config_title_bar_format);
 			_config_write_int(h,"add_command_line_timeout",config_add_command_line_timeout);
+			_config_write_int(h,"language",config_language);
 					
 			// save keys
 			{

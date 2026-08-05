@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright 2026 hesphoros
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,12 +20,24 @@
 // SOFTWARE.
 //
 // English (US) localization
-// Save as UTF-8 without BOM.
+// Save as UTF-8 with BOM (required for MSVC to parse non-ASCII correctly).
 
 static const utf8_t *_localization_string_array_en_us[LOCALIZATION_ID_COUNT] = 
 {
 	// Application name
 	"English (US)", // LOCALIZATION_ID_LANGUAGE
+
+	// Language names (for the language selection menu)
+	"English (US)", // LOCALIZATION_ID_LANGUAGE_ENGLISH
+	"简体中文", // LOCALIZATION_ID_LANGUAGE_CHINESE_SIMPLIFIED
+	"日本語", // LOCALIZATION_ID_LANGUAGE_JAPANESE
+	"한국어", // LOCALIZATION_ID_LANGUAGE_KOREAN
+	"Français", // LOCALIZATION_ID_LANGUAGE_FRENCH
+	"Deutsch", // LOCALIZATION_ID_LANGUAGE_GERMAN
+	"Español", // LOCALIZATION_ID_LANGUAGE_SPANISH
+	"Português", // LOCALIZATION_ID_LANGUAGE_PORTUGUESE
+	"Italiano", // LOCALIZATION_ID_LANGUAGE_ITALIAN
+	"العربية", // LOCALIZATION_ID_LANGUAGE_ARABIC
 	
 	// Application name
 	"void Image Viewer", // LOCALIZATION_ID_APP_NAME

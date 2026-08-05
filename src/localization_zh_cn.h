@@ -20,12 +20,24 @@
 // SOFTWARE.
 //
 // Chinese (Simplified) localization
-// Save as UTF-8 without BOM.
+// Save as UTF-8 with BOM (required for MSVC to parse non-ASCII correctly).
 
 static const utf8_t *_localization_string_array_zh_cn[LOCALIZATION_ID_COUNT] = 
 {
 	// Language
 	"简体中文", // LOCALIZATION_ID_LANGUAGE
+
+	// Language names (for the language selection menu)
+	"English (US)", // LOCALIZATION_ID_LANGUAGE_ENGLISH
+	"简体中文", // LOCALIZATION_ID_LANGUAGE_CHINESE_SIMPLIFIED
+	"日本語", // LOCALIZATION_ID_LANGUAGE_JAPANESE
+	"한국어", // LOCALIZATION_ID_LANGUAGE_KOREAN
+	"Français", // LOCALIZATION_ID_LANGUAGE_FRENCH
+	"Deutsch", // LOCALIZATION_ID_LANGUAGE_GERMAN
+	"Español", // LOCALIZATION_ID_LANGUAGE_SPANISH
+	"Português", // LOCALIZATION_ID_LANGUAGE_PORTUGUESE
+	"Italiano", // LOCALIZATION_ID_LANGUAGE_ITALIAN
+	"العربية", // LOCALIZATION_ID_LANGUAGE_ARABIC
 
 	// Application name
 	"void Image Viewer", // LOCALIZATION_ID_APP_NAME
@@ -189,7 +201,7 @@ static const utf8_t *_localization_string_array_zh_cn[LOCALIZATION_ID_COUNT] =
 	"捐赠(&D)", // LOCALIZATION_ID_DONATE,
 	"关于(&A)", // LOCALIZATION_ID_ABOUT,
 	"https://www.voidtools.com/support/voidimageviewer/", // LOCALIZATION_ID_HELP_SUPPORT_URL,
-	"https://www.voidtools.com/donate/", // LOCALIZATION_ID_HELP_DONATE,
+	"https://www.voidtools.com/donate/", // LOCALIZATION_ID_HELP_DONATE_URL,
 	"https://www.voidtools.com/", // LOCALIZATION_ID_HELP_WEBSITE_URL,
 
 	// Toolbar
@@ -295,13 +307,13 @@ static const utf8_t *_localization_string_array_zh_cn[LOCALIZATION_ID_COUNT] =
 	"移动到", // LOCALIZATION_ID_MOVE_TO_CAPTION,
 
 	// Association descriptions
-	"Bitmap Image",
-	"Animated GIF Image",
-	"Icon File",
-	"JPEG Image",
-	"JPEG Image",
-	"PNG Image",
-	"TIFF Image",
-	"TIFF Image",
-	"WebP Image",
+	"位图图像",
+	"动画 GIF 图像",
+	"图标文件",
+	"JPEG 图像",
+	"JPEG 图像",
+	"PNG 图像",
+	"TIFF 图像",
+	"TIFF 图像",
+	"WebP 图像",
 };

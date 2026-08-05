@@ -1,0 +1,318 @@
+﻿//
+// Copyright 2026 hesphoros
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+// Deutsch localization
+// Save as UTF-8 with BOM (required for MSVC to parse non-ASCII correctly).
+
+static const utf8_t *_localization_string_array_de[LOCALIZATION_ID_COUNT] = 
+{
+	// Application name
+	"Deutsch", // LOCALIZATION_ID_LANGUAGE
+
+	// Language names (for the language selection menu)
+	"English (US)", // LOCALIZATION_ID_LANGUAGE_ENGLISH
+	"简体中文", // LOCALIZATION_ID_LANGUAGE_CHINESE_SIMPLIFIED
+	"日本語", // LOCALIZATION_ID_LANGUAGE_JAPANESE
+	"한국어", // LOCALIZATION_ID_LANGUAGE_KOREAN
+	"Français", // LOCALIZATION_ID_LANGUAGE_FRENCH
+	"Deutsch", // LOCALIZATION_ID_LANGUAGE_GERMAN
+	"Español", // LOCALIZATION_ID_LANGUAGE_SPANISH
+	"Português", // LOCALIZATION_ID_LANGUAGE_PORTUGUESE
+	"Italiano", // LOCALIZATION_ID_LANGUAGE_ITALIAN
+	"العربية", // LOCALIZATION_ID_LANGUAGE_ARABIC
+	
+	// Application name
+	"void Image Viewer", // LOCALIZATION_ID_APP_NAME
+
+	// File menu
+	"&Datei", // LOCALIZATION_ID_FILE,
+	"&Datei öffnen...", // LOCALIZATION_ID_OPEN_FILE,
+	"&Ordner öffnen...", // LOCALIZATION_ID_OPEN_FOLDER,
+	"Everything-&Suche öffnen...", // LOCALIZATION_ID_OPEN_EVERYTHING_SEARCH,
+	"&Datei hinzufügen...", // LOCALIZATION_ID_ADD_FILE,
+	"Ordner hinzufügen...", // LOCALIZATION_ID_ADD_FOLDER,
+	"Everything-Suche hinzufügen...", // LOCALIZATION_ID_ADD_EVERYTHING_SEARCH,
+	"Datei&speicherort öffnen...", // LOCALIZATION_ID_OPEN_FILE_LOCATION,
+	"&Bearbeiten...", // LOCALIZATION_ID_EDIT,
+	"&Vorschau...", // LOCALIZATION_ID_PREVIEW,
+	"&Drucken...", // LOCALIZATION_ID_PRINT,
+	"Als &Desktop-Hintergrund festlegen", // LOCALIZATION_ID_SET_DESKTOP_WALLPAPER,
+	"&Schließen", // LOCALIZATION_ID_CLOSE,
+	"&Löschen", // LOCALIZATION_ID_DELETE,
+	"Löschen (Papierkorb)", // LOCALIZATION_ID_DELETE_RECYCLE,
+	"Löschen (Endgültig)", // LOCALIZATION_ID_DELETE_PERMANENTLY,
+	"&Umbenennen", // LOCALIZATION_ID_RENAME,
+	"&Eigenschaften", // LOCALIZATION_ID_PROPERTIES,
+	"&Beenden", // LOCALIZATION_ID_EXIT,
+	
+	// Edit menu
+	"&Bearbeiten", // LOCALIZATION_ID_EDIT_MENU,
+	"A&usschneiden", // LOCALIZATION_ID_CUT,
+	"&Kopieren", // LOCALIZATION_ID_COPY,
+	"Dateinamen kopieren", // LOCALIZATION_ID_COPY_FILENAME,
+	"&Bild kopieren", // LOCALIZATION_ID_COPY_IMAGE,
+	"&Einfügen", // LOCALIZATION_ID_PASTE,
+	"Im &Uhrzeigersinn drehen", // LOCALIZATION_ID_ROTATE_CLOCKWISE,
+	"Gegen den &Uhrzeigersinn drehen", // LOCALIZATION_ID_ROTATE_COUNTERCLOCKWISE,
+	"In &Ordner kopieren...", // LOCALIZATION_ID_COPY_TO,
+	"In Ordner &verschieben...", // LOCALIZATION_ID_MOVE_TO,
+	
+	// View menu
+	"&Ansicht", // LOCALIZATION_ID_VIEW,
+	"Beschriftung", // LOCALIZATION_ID_CAPTION,
+	"Rahmen", // LOCALIZATION_ID_FRAME,
+	"&Menü", // LOCALIZATION_ID_MENU,
+	"&Statusleiste", // LOCALIZATION_ID_STATUS_BAR,
+	"&Steuerelemente", // LOCALIZATION_ID_CONTROLS,
+	"&Voreinstellung", // LOCALIZATION_ID_PRESET,
+	"&Minimal", // LOCALIZATION_ID_MINIMAL,
+	"&Kompakt", // LOCALIZATION_ID_COMPACT,
+	"&Normal", // LOCALIZATION_ID_NORMAL,
+	"&Vollbild", // LOCALIZATION_ID_FULLSCREEN,
+	"&Diashow", // LOCALIZATION_ID_SLIDESHOW,
+	"&Fenstergröße", // LOCALIZATION_ID_VIEW_WINDOW_SIZE,
+	"50%", // LOCALIZATION_ID_VIEW_WINDOW_SIZE_50_PERCENT,
+	"100%", // LOCALIZATION_ID_VIEW_WINDOW_SIZE_100_PERCENT,
+	"200%", // LOCALIZATION_ID_VIEW_WINDOW_SIZE_200_PERCENT,
+	"&Automatisch anpassen", // LOCALIZATION_ID_VIEW_WINDOW_SIZE_AUTO_FIT,
+	"&Aktualisieren", // LOCALIZATION_ID_REFRESH,
+	"&Verkleinern erlauben", // LOCALIZATION_ID_ALLOW_SHRINKING,
+	"&Seitenverhältnis beibehalten", // LOCALIZATION_ID_KEEP_ASPECT_RATIO,
+	"&Fenster füllen", // LOCALIZATION_ID_FILL_WINDOW,
+	"1:1", // LOCALIZATION_ID_ONE_TO_ONE,
+	"&Beste Anpassung", // LOCALIZATION_ID_BEST_FIT,
+	"&Schwenken && Scannen", // LOCALIZATION_ID_PAN_SCAN,
+	"&Größe vergrößern", // LOCALIZATION_ID_INCREASE_SIZE,
+	"&Größe verkleinern", // LOCALIZATION_ID_DECREASE_SIZE,
+	"&Breite vergrößern", // LOCALIZATION_ID_INCREASE_WIDTH,
+	"&Breite verkleinern", // LOCALIZATION_ID_DECREASE_WIDTH,
+	"&Höhe vergrößern", // LOCALIZATION_ID_INCREASE_HEIGHT,
+	"&Höhe verkleinern", // LOCALIZATION_ID_DECREASE_HEIGHT,
+	"&Zoom", // LOCALIZATION_ID_ZOOM,
+	"Zoom &hinein", // LOCALIZATION_ID_ZOOM_IN,
+	"Zoom &hinaus", // LOCALIZATION_ID_ZOOM_OUT,
+	"&Zurücksetzen", // LOCALIZATION_ID_RESET,
+	"Nach &oben", // LOCALIZATION_ID_MOVE_UP,
+	"Nach &unten", // LOCALIZATION_ID_MOVE_DOWN,
+	"Nach &links", // LOCALIZATION_ID_MOVE_LEFT,
+	"Nach &rechts", // LOCALIZATION_ID_MOVE_RIGHT,
+	"Nach oben links", // LOCALIZATION_ID_MOVE_UP_LEFT,
+	"Nach oben rechts", // LOCALIZATION_ID_MOVE_UP_RIGHT,
+	"Nach unten links", // LOCALIZATION_ID_MOVE_DOWN_LEFT,
+	"Nach unten rechts", // LOCALIZATION_ID_MOVE_DOWN_RIGHT,
+	"&Zentrieren", // LOCALIZATION_ID_MOVE_CENTER,
+	"&Zurücksetzen", // LOCALIZATION_ID_PANSCAN_RESET,
+	"Immer im &Vordergrund", // LOCALIZATION_ID_ON_TOP,
+	"&Immer", // LOCALIZATION_ID_ALWAYS,
+	"&Während Diashow oder Animation", // LOCALIZATION_ID_WHILE_PLAYING_OR_ANIMATING,
+	"&Nie", // LOCALIZATION_ID_NEVER,
+	"&Optionen...", // LOCALIZATION_ID_OPTIONS,
+	"Ü&bergang", // LOCALIZATION_ID_TRANSITION,
+	"&Keine", // LOCALIZATION_ID_TRANSITION_NONE,
+	"&Überblenden", // LOCALIZATION_ID_TRANSITION_FADE,
+	"Dauer...", // LOCALIZATION_ID_TRANSITION_DURATION,
+	"Übergangsdauer festlegen", // LOCALIZATION_ID_SET_TRANSITION_DURATION_CAPTION,
+	"&Dauer (ms):", // LOCALIZATION_ID_TRANSITION_DURATION_STATIC,
+	"&UI bei Mauszeiger anzeigen", // LOCALIZATION_ID_HOVER_SHOW_UI,
+	
+	// Slideshow menu
+	"&Diashow", // LOCALIZATION_ID_SLIDESHOW_MENU,
+	"&Wiedergabe/Pause", // LOCALIZATION_ID_PLAY_PAUSE,
+	"&Geschwindigkeit", // LOCALIZATION_ID_RATE,
+	"&Geschwindigkeit verringern", // LOCALIZATION_ID_DECREASE_RATE,
+	"&Geschwindigkeit erhöhen", // LOCALIZATION_ID_INCREASE_RATE,
+	"250 Millisekunden", // LOCALIZATION_ID_RATE_250_MILLISECONDS,
+	"500 Millisekunden", // LOCALIZATION_ID_RATE_500_MILLISECONDS,
+	"&1 Sekunde", // LOCALIZATION_ID_RATE_1_SECOND,
+	"&2 Sekunden", // LOCALIZATION_ID_RATE_2_SECONDS,
+	"&3 Sekunden", // LOCALIZATION_ID_RATE_3_SECONDS,
+	"&4 Sekunden", // LOCALIZATION_ID_RATE_4_SECONDS,
+	"&5 Sekunden", // LOCALIZATION_ID_RATE_5_SECONDS,
+	"&6 Sekunden", // LOCALIZATION_ID_RATE_6_SECONDS,
+	"&7 Sekunden", // LOCALIZATION_ID_RATE_7_SECONDS,
+	"&8 Sekunden", // LOCALIZATION_ID_RATE_8_SECONDS,
+	"&9 Sekunden", // LOCALIZATION_ID_RATE_9_SECONDS,
+	"1&0 Sekunden", // LOCALIZATION_ID_RATE_10_SECONDS,
+	"20 Sekunden", // LOCALIZATION_ID_RATE_20_SECONDS,
+	"30 Sekunden", // LOCALIZATION_ID_RATE_30_SECONDS,
+	"40 Sekunden", // LOCALIZATION_ID_RATE_40_SECONDS,
+	"50 Sekunden", // LOCALIZATION_ID_RATE_50_SECONDS,
+	"1 Minute",	// LOCALIZATION_ID_RATE_1_MINUTE,
+	"Benutzerdefiniert...", // LOCALIZATION_ID_CUSTOM,
+	"&Animationsdauer", // LOCALIZATION_ID_RATE_ANIMATION_DURATION,
+	
+	// Animation menu
+	"&Animation", // LOCALIZATION_ID_ANIMATION,
+	"&Wiedergabe/Pause", // LOCALIZATION_ID_ANIMATION_PLAY_PAUSE,
+	"&Vorwärts springen", // LOCALIZATION_ID_ANIMATION_JUMP_FORWARD,
+	"&Rückwärts springen", // LOCALIZATION_ID_ANIMATION_JUMP_BACKWARD,
+	"Kurz &vorwärts springen", // LOCALIZATION_ID_ANIMATION_SHORT_JUMP_FORWARD,
+	"Kurz &rückwärts springen", // LOCALIZATION_ID_ANIMATION_SHORT_JUMP_BACKWARD,
+	"Weit &vorwärts springen", // LOCALIZATION_ID_ANIMATION_LONG_JUMP_FORWARD,
+	"Weit &rückwärts springen", // LOCALIZATION_ID_ANIMATION_LONG_JUMP_BACKWARD,
+	"&Einzelbild", // LOCALIZATION_ID_ANIMATION_FRAME_STEP,
+	"&Vorheriges Bild", // LOCALIZATION_ID_ANIMATION_PREVIOUS_FRAME,
+	"&Erstes Bild", // LOCALIZATION_ID_ANIMATION_FIRST_FRAME,
+	"&Letztes Bild", // LOCALIZATION_ID_ANIMATION_LAST_FRAME,
+	"&Geschwindigkeit verringern", // LOCALIZATION_ID_ANIMATION_DECREASE_RATE,
+	"&Geschwindigkeit erhöhen", // LOCALIZATION_ID_ANIMATION_INCREASE_RATE,
+	"&Geschwindigkeit zurücksetzen", // LOCALIZATION_ID_ANIMATION_RESET_RATE,
+	
+	// Navigate menu
+	"&Navigieren", // LOCALIZATION_ID_NAVIGATE,
+	"&Weiter", // LOCALIZATION_ID_NEXT,
+	"&Zurück", // LOCALIZATION_ID_PREVIOUS,
+	"&Start", // LOCALIZATION_ID_HOME,
+	"&Ende", // LOCALIZATION_ID_END,
+	"&Sortieren", // LOCALIZATION_ID_SORT,
+	"&Name", // LOCALIZATION_ID_SORT_NAME,
+	"&Vollständiger Pfad", // LOCALIZATION_ID_SORT_FULL_PATH,
+	"&Größe", // LOCALIZATION_ID_SORT_SIZE,
+	"&Geändert am", // LOCALIZATION_ID_SORT_DATE_MODIFIED,
+	"&Erstellt am", // LOCALIZATION_ID_SORT_DATE_CREATED,
+	"&Aufsteigend", // LOCALIZATION_ID_SORT_ASCENDING,
+	"&Absteigend", // LOCALIZATION_ID_SORT_DESCENDING,
+	"Mischen", // LOCALIZATION_ID_SHUFFLE,
+	"&Springen zu...", // LOCALIZATION_ID_JUMP_TO,
+	
+	// Help menu
+	"&Hilfe", // LOCALIZATION_ID_HELP,
+	"&Hilfe", // LOCALIZATION_ID_HELP_MENU,
+	"&Befehlszeilenoptionen", // LOCALIZATION_ID_COMMAND_LINE_OPTIONS,
+	"&Startseite", // LOCALIZATION_ID_HOME_PAGE,
+	"&Spenden", // LOCALIZATION_ID_DONATE,
+	"&Über", // LOCALIZATION_ID_ABOUT,
+	"https://www.voidtools.com/support/voidimageviewer/", // LOCALIZATION_ID_HELP_SUPPORT_URL,
+	"https://www.voidtools.com/donate/", // LOCALIZATION_ID_HELP_DONATE_URL,
+	"https://www.voidtools.com/", // LOCALIZATION_ID_HELP_WEBSITE_URL,
+
+	// Toolbar
+	"Vorheriges Bild", // LOCALIZATION_ID_TOOLBAR_PREVIOUS_IMAGE_BUTTON,
+	"Nächstes Bild", // LOCALIZATION_ID_TOOLBAR_NEXT_IMAGE_BUTTON,
+	"Diashow abspielen", // LOCALIZATION_ID_TOOLBAR_PLAY_SLIDESHOW_BUTTON,
+	"Diashow anhalten", // LOCALIZATION_ID_TOOLBAR_PAUSE_SLIDESHOW_BUTTON,
+	"Beste Anpassung", // LOCALIZATION_ID_TOOLBAR_BEST_FIT_BUTTON,
+	"Tatsächliche Größe", // LOCALIZATION_ID_TOOLBAR_ACTUAL_SIZE_BUTTON,
+
+	// Status bar
+	"PRELOAD", // LOCALIZATION_ID_STATUS_BAR_PRELOAD,
+	"Lädt...", // LOCALIZATION_ID_STATUS_BAR_LOADING,
+	"Datei nicht gefunden.", // LOCALIZATION_ID_STATUS_BAR_FILE_NOT_FOUND,
+	"Bild konnte nicht geladen werden.", // LOCALIZATION_ID_STATUS_BAR_FAILED_TO_LOAD_IMAGE,
+	"Diashow läuft", // LOCALIZATION_ID_STATUS_BAR_SLIDESHOW_PLAYING,
+	"Pos %0.3f %0.3f, Zoom %0.3f %0.3f, Seitenverhältnis %0.3f", // LOCALIZATION_ID_STATUS_BAR_POS_ZOOM_FORMAT,
+	"Animationsrate %0.3f", // LOCALIZATION_ID_STATUS_BAR_ANIMATION_RATE_FORMAT,
+	"Diashowrate %d %s", // LOCALIZATION_ID_STATUS_BAR_SLIDESHOW_RATE_FORMAT,
+	"Diashowrate: Animationsdauer", // LOCALIZATION_ID_STATUS_BAR_ANIMATION_DURATION,
+	"Minuten", // LOCALIZATION_ID_STATUS_BAR_MINUTES,
+	"Sekunden", // LOCALIZATION_ID_STATUS_BAR_SECONDS,
+	"Millisekunden", // LOCALIZATION_ID_STATUS_BAR_MILLISECONDS,
+
+	// Dialog strings
+	"Optionen - void Image Viewer", // LOCALIZATION_ID_OPTIONS_CAPTION,
+	"Allgemein", // LOCALIZATION_ID_OPTIONS_GENERAL_DIALOG,
+	"Ansicht", // LOCALIZATION_ID_OPTIONS_VIEW_DIALOG,
+	"Steuerelemente", // LOCALIZATION_ID_OPTIONS_CONTROLS_DIALOG,
+	"OK", // LOCALIZATION_ID_OK_BUTTON,
+	"Abbrechen", // LOCALIZATION_ID_CANCEL_BUTTON,
+	"&Einstellungen in %APPDATA%\\voidImageViewer speichern", // LOCALIZATION_ID_STORE_SETTINGS_APPDATA,
+	"Mehrere &Instanzen zulassen", // LOCALIZATION_ID_ALLOW_MULTIPLE_INSTANCES,
+	"&Startmenü-Verknüpfungen", // LOCALIZATION_ID_STARTMENU_SHORTCUTS,
+	"Zuordnungen", // LOCALIZATION_ID_ASSOCIATIONS,
+	"&Alle auswählen", // LOCALIZATION_ID_CHECK_ALL,
+	"&Keine auswählen", // LOCALIZATION_ID_CHECK_NONE,
+	"&Verkleinerungs-Blit-Modus:", // LOCALIZATION_ID_SHRINK_BLIT_MODE_STATIC,
+	"&Vergrößerungs-Blit-Modus:", // LOCALIZATION_ID_MAGNIFY_BLIT_MODE,
+	"Nächstgelegen", // LOCALIZATION_ID_BLIT_MODE_NEAREST_COMBOBOXITEM,
+	"Linear", // LOCALIZATION_ID_BLIT_MODE_LINEAR_COMBOBOXITEM,
+	"&Automatische Fenstergröße:", // LOCALIZATION_ID_OPTIONS_VIEW_AUTO_SIZE_WINDOW_STATIC,
+	"50%", // LOCALIZATION_ID_OPTIONS_VIEW_AUTO_SIZE_WINDOW_50_PERCENT_COMBOBOXITEM,
+	"100%", // LOCALIZATION_ID_OPTIONS_VIEW_AUTO_SIZE_WINDOW_100_PERCENT_COMBOBOXITEM,
+	"200%", // LOCALIZATION_ID_OPTIONS_VIEW_AUTO_SIZE_WINDOW_200_PERCENT_COMBOBOXITEM,
+	"Automatisch anpassen", // LOCALIZATION_ID_OPTIONS_VIEW_AUTO_SIZE_WINDOW_AUTO_FIT_COMBOBOXITEM,
+	"&Animationen in der Diashow mindestens einmal abspielen", // LOCALIZATION_ID_PLAY_ANIMATIONS_ONCE_STATIC,
+	"Nächstes Bild &vorladen", // LOCALIZATION_ID_PRELOAD_NEXT_IMAGE_STATIC,
+	"&Letztes Bild zwischenspeichern", // LOCALIZATION_ID_CACHE_LAST_IMAGE_STATIC,
+	"&Fenster-Hintergrundfarbe:", // LOCALIZATION_ID_WINDOWED_BACKGROUND_COLOR_STATIC,
+	"&Vollbild-Hintergrundfarbe:", // LOCALIZATION_ID_FULLSCREEN_BACKGROUND_COLOR_STATIC,
+	"&Linksklick-Aktion:", // LOCALIZATION_ID_LEFT_CLICK_ACTION_STATIC,
+	"&Rechtsklick-Aktion:", // LOCALIZATION_ID_RIGHT_CLICK_ACTION_STATIC,
+	"&Mausrad-Aktion:", // LOCALIZATION_ID_MOUSE_WHEEL_ACTION_STATIC,
+	"&Befehle:", // LOCALIZATION_ID_COMMANDS_STATIC,
+	"Einstellungen für ausgewählten Befehl", // LOCALIZATION_ID_SETTINGS_FOR_SELECTED_COMMAND,
+	"&Hinzufügen...", // LOCALIZATION_ID_ADD_KEY_BUTTON,
+	"&Bearbeiten...", // LOCALIZATION_ID_EDIT_KEY_BUTTON,
+	"&Entfernen", // LOCALIZATION_ID_REMOVE_KEY_BUTTON,
+	"Tastaturkürzel hinzufügen", // LOCALIZATION_ID_ADD_KEYBOARD_SHORTCUT_CAPTION,
+	"Tastaturkürzel bearbeiten", // LOCALIZATION_ID_EDIT_KEYBOARD_SHORTCUT_CAPTION,
+	"&Tastenkürzel:", // LOCALIZATION_ID_SHORTCUT_KEY,
+	"Tastenkürzel wird derzeit verwendet von:", // LOCALIZATION_ID_SHORTCUT_KEY_CURRENTLY_USED_BY,
+	"&Entfernen", // LOCALIZATION_ID_REMOVE,
+	"Benutzerdefinierte Rate festlegen", // LOCALIZATION_ID_SET_CUSTOM_RATE_CAPTION,
+	"&Benutzerdefinierte Rate:", // LOCALIZATION_ID_CUSTOM_RATE_STATIC,
+	"Minuten", // LOCALIZATION_ID_CUSTOM_RATE_MINUTES,
+	"Sekunden", // LOCALIZATION_ID_CUSTOM_RATE_SECONDS,
+	"Millisekunden", // LOCALIZATION_ID_CUSTOM_RATE_MILLISECONDS,
+	"Über void Image Viewer", // LOCALIZATION_ID_ABOUT_CAPTION,
+	"Umbenennen", // LOCALIZATION_ID_RENAME_CAPTION,
+	"Springen zu", // LOCALIZATION_ID_JUMP_TO_TITLE,
+	"Everything durchsuchen", // LOCALIZATION_ID_SEARCH_EVERYTHING,
+	"Copyright © %d voidtools", // LOCALIZATION_ID_ABOUT_COPYRIGHT_FORMAT,
+	"support@voidtools.com", // LOCALIZATION_ID_ABOUT_EMAIL,
+	"www.voidtools.com", // LOCALIZATION_ID_ABOUT_WEBSITE,
+	"Bild öffnen", // LOCALIZATION_ID_OPEN_IMAGE_CAPTION,
+	"Alle Bilddateien", // LOCALIZATION_ID_OPEN_ALL_IMAGE_FILES,
+	"Alle Dateien", // LOCALIZATION_ID_OPEN_ALL_FILES,
+	"Scrollen", // LOCALIZATION_ID_OPTIONS_ACTION_SCROLL_COMBOBOXITEM,
+	"Diashow abspielen/anhalten", // LOCALIZATION_ID_OPTIONS_ACTION_PLAY_PAUSE_SLIDESHOW_COMBOBOXITEM,
+	"Animation abspielen/anhalten", // LOCALIZATION_ID_OPTIONS_ACTION_PLAY_PAUSE_ANIMATION_COMBOBOXITEM,
+	"Zoom hinein", // LOCALIZATION_ID_OPTIONS_ACTION_ZOOM_IN_COMBOBOXITEM,
+	"Nächstes Bild", // LOCALIZATION_ID_OPTIONS_ACTION_NEXT_IMAGE_COMBOBOXITEM,
+	"1:1-Scrollen", // LOCALIZATION_ID_OPTIONS_ACTION_ONE_TO_ONE_SCROLL_COMBOBOXITEM,
+	"Scrollen/Fenster verschieben", // LOCALIZATION_ID_OPTIONS_ACTION_SCROLL_MOVE_WINDOW_COMBOBOXITEM,
+	"Kontextmenü", // LOCALIZATION_ID_OPTIONS_ACTION_CONTEXT_MENU_COMBOBOXITEM,
+	"Zoom hinaus", // LOCALIZATION_ID_OPTIONS_ACTION_ZOOM_OUT_COMBOBOXITEM,
+	"Vorheriges Bild", // LOCALIZATION_ID_OPTIONS_ACTION_PREVIOUS_IMAGE_COMBOBOXITEM,
+	"Zoom", // LOCALIZATION_ID_OPTIONS_ACTION_ZOOM_COMBOBOXITEM,
+	"Weiter/Zurück", // LOCALIZATION_ID_OPTIONS_ACTION_NEXT_PREV_COMBOBOXITEM,
+	"Zurück/Weiter", // LOCALIZATION_ID_OPTIONS_ACTION_PREV_NEXT_COMBOBOXITEM,
+	"&Titelleistenformat:", // LOCALIZATION_ID_OPTIONS_TITLE_BAR_FORMAT_STATIC,
+	"Vollständiger Pfad", // LOCALIZATION_ID_OPTIONS_TITLE_BAR_FORMAT_FULL_PATH_COMBOBOXITEM,
+	"Nur Dateiname", // LOCALIZATION_ID_OPTIONS_TITLE_BAR_FORMAT_FILENAME_ONLY_COMBOBOXITEM,
+	"Keine", // LOCALIZATION_ID_OPTIONS_TITLE_BAR_FORMAT_NONE_COMBOBOXITEM,
+	"Everything nicht verfügbar", // LOCALIZATION_ID_EVERYTHING_NOT_AVAILABLE_MESSAGE,
+	"Everything-Suche hinzufügen", // LOCALIZATION_ID_EVERYTHING_ADD_EVERYTHING_SEARCH_CAPTION,
+	"Everything-Suche laden", // LOCALIZATION_ID_EVERYTHING_LOAD_EVERYTHING_SEARCH_CAPTION,
+	"Zufällig", // LOCALIZATION_ID_RANDOMIZE,
+	"Kopieren nach", // LOCALIZATION_ID_COPY_TO_CAPTION,
+	"Verschieben nach", // LOCALIZATION_ID_MOVE_TO_CAPTION,
+
+	// Association descriptions
+	"Bitmap-Bild",
+	"Animiertes GIF-Bild",
+	"Symboldatei",
+	"JPEG-Bild",
+	"JPEG-Bild",
+	"PNG-Bild",
+	"TIFF-Bild",
+	"TIFF-Bild",
+	"WebP-Bild",
+};

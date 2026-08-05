@@ -29,6 +29,14 @@ enum
 {
 	LOCALIZATION_LANGUAGE_ENGLISH = 0,
 	LOCALIZATION_LANGUAGE_CHINESE_SIMPLIFIED,
+	LOCALIZATION_LANGUAGE_JAPANESE,
+	LOCALIZATION_LANGUAGE_KOREAN,
+	LOCALIZATION_LANGUAGE_FRENCH,
+	LOCALIZATION_LANGUAGE_GERMAN,
+	LOCALIZATION_LANGUAGE_SPANISH,
+	LOCALIZATION_LANGUAGE_PORTUGUESE,
+	LOCALIZATION_LANGUAGE_ITALIAN,
+	LOCALIZATION_LANGUAGE_ARABIC,
 	LOCALIZATION_LANGUAGE_COUNT,
 };
 
@@ -44,11 +52,29 @@ const utf8_t *localization_get_en_us_string(localization_id_t localization_id);
 // Initialize language system (detects system language)
 void localization_init(void);
 
+// Set and save active language
+void localization_set_language(localization_id_t lang);
+
+// Check if current language is Right-To-Left (Arabic)
+int localization_is_rtl(void);
+
 // String IDs for menu items and UI text
 enum
 {
 	// Localization
 	LOCALIZATION_ID_LANGUAGE = 0,
+
+	// Language names (for the language selection menu)
+	LOCALIZATION_ID_LANGUAGE_ENGLISH,
+	LOCALIZATION_ID_LANGUAGE_CHINESE_SIMPLIFIED,
+	LOCALIZATION_ID_LANGUAGE_JAPANESE,
+	LOCALIZATION_ID_LANGUAGE_KOREAN,
+	LOCALIZATION_ID_LANGUAGE_FRENCH,
+	LOCALIZATION_ID_LANGUAGE_GERMAN,
+	LOCALIZATION_ID_LANGUAGE_SPANISH,
+	LOCALIZATION_ID_LANGUAGE_PORTUGUESE,
+	LOCALIZATION_ID_LANGUAGE_ITALIAN,
+	LOCALIZATION_ID_LANGUAGE_ARABIC,
 
 	// Application name
 	LOCALIZATION_ID_APP_NAME,
@@ -335,4 +361,15 @@ extern BYTE localization_language;
 #ifdef __cplusplus
 }
 #endif
+
+#include "localization_en_us.h"
+#include "localization_zh_cn.h"
+#include "localization_ja.h"
+#include "localization_ko.h"
+#include "localization_fr.h"
+#include "localization_de.h"
+#include "localization_es.h"
+#include "localization_pt.h"
+#include "localization_it.h"
+#include "localization_ar.h"
 
