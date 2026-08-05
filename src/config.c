@@ -43,7 +43,7 @@ BYTE config_mag_filter = CONFIG_MAG_FILTER_COLORONCOLOR; // magnify filter
 BYTE config_nav_sort = CONFIG_NAV_SORT_DATE_MODIFIED; // current navigation sort.
 BYTE config_nav_sort_ascending = 0; // sort navigation ascending or descending.
 BYTE config_keep_aspect_ratio = 1; // stretch images with the original aspect ratio.
-BYTE config_fill_window = 0; // stretch the image to fill the window
+BYTE config_fill_window = 1; // stretch the image to fill the window
 BYTE config_fullscreen_fill_window = 1; // same as fill_window, except this setting is used when we are fullscreen
 BYTE config_auto_zoom = 0; // automatically resize the window to fit the newly loaded image
 BYTE config_auto_zoom_type = 1; // 0 = 50%, 1 = 100%, 2 = 200%
@@ -63,9 +63,9 @@ BYTE config_ctrl_mouse_wheel_action = 0; // 0 = zoom, 1 = next/prev, 2=prev/next
 BYTE config_left_click_action = 0; // 0 = scroll, 1 = play/pause slideshow, 2 = play/pause animation, 3=zoom in, 4=next, 5=1:1 scroll, 6=move-window
 BYTE config_right_click_action = 0; // 0 = context menu, 1=zoom out, 2=prev, 
 BYTE config_xbutton_action = 2; // 1=zoom, 2=next
-BYTE config_windowed_background_color_r = 255;
-BYTE config_windowed_background_color_g = 255;
-BYTE config_windowed_background_color_b = 255;
+BYTE config_windowed_background_color_r = 0;
+BYTE config_windowed_background_color_g = 0;
+BYTE config_windowed_background_color_b = 0;
 BYTE config_fullscreen_background_color_r = 0;
 BYTE config_fullscreen_background_color_g = 0;
 BYTE config_fullscreen_background_color_b = 0;

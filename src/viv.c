@@ -450,6 +450,7 @@ typedef struct _viv_name_mapping_s
 
 static void _viv_update_title(void);
 static void _viv_on_size(void);
+static void _viv_fit_window_to_image(void);
 static LRESULT CALLBACK _viv_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
 static LRESULT CALLBACK _viv_fullscreen_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
 static void _viv_command_with_is_key_repeat(int command,int is_key_repeat);
@@ -3753,7 +3754,7 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 									}
 								}
 									
-								AppendMenu(curmenu,_viv_commands[command_index].flags & (~(MF_DELETE|MF_OWNERDRAW)),_viv_commands[command_index].command_id,text_wbuf);
+								AppendMenuW(curmenu,_viv_commands[command_index].flags & (~(MF_DELETE|MF_OWNERDRAW)),_viv_commands[command_index].command_id,text_wbuf);
 								was_seperator = 0;
 							}
 						}
@@ -3790,7 +3791,7 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 								
 								submenuid = _viv_context_menu_items[i];
 								submenu = CreatePopupMenu();
-								AppendMenu(curmenu,MF_POPUP,(UINT_PTR)submenu,text_wbuf);
+								AppendMenuW(curmenu,MF_POPUP,(UINT_PTR)submenu,text_wbuf);
 								curmenu = submenu;
 								was_seperator = 0;
 							}
@@ -3801,7 +3802,7 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 						// seperator
 						if (!was_seperator)
 						{
-							AppendMenu(curmenu,MF_SEPARATOR,0,0);
+							AppendMenuW(curmenu,MF_SEPARATOR,0,0);
 
 							was_seperator = 1;
 						}
@@ -3826,7 +3827,7 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 				int top_count = GetMenuItemCount(_viv_hmenu);
 				int i;
 				before_append_count = GetMenuItemCount(hmenu);
-				AppendMenu(hmenu, MF_SEPARATOR, 0, NULL);
+				AppendMenuW(hmenu, MF_SEPARATOR, 0, NULL);
 				for (i = 0; i < top_count; i++)
 				{
 					HMENU submenu = GetSubMenu(_viv_hmenu, i);
@@ -4316,6 +4317,84 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 			}
 			break;
 		
+		case WM_SIZING:
+		{
+			if (_viv_image_wide > 0 && _viv_image_high > 0 &&
+				!_viv_is_fullscreen && !_viv_is_hover_hide &&
+				!_viv_is_window_maximized(hwnd) && config_keep_aspect_ratio)
+			{
+				RECT *prc = (RECT *)lParam;
+				RECT w_rect, c_rect;
+				int non_client_w, non_client_h;
+				int target_img_w, target_img_h;
+				double aspect = (double)_viv_image_wide / (double)_viv_image_high;
+
+				GetWindowRect(hwnd, &w_rect);
+				GetClientRect(hwnd, &c_rect);
+
+				non_client_w = (w_rect.right - w_rect.left) - (c_rect.right - c_rect.left);
+				non_client_h = (w_rect.bottom - w_rect.top) - (c_rect.bottom - c_rect.top) + _viv_get_status_high() + _viv_get_controls_high();
+
+				target_img_w = (prc->right - prc->left) - non_client_w;
+				target_img_h = (prc->bottom - prc->top) - non_client_h;
+
+				if (target_img_w < 10) target_img_w = 10;
+				if (target_img_h < 10) target_img_h = 10;
+
+				// 按拖拽边缘方向重新计算目标尺寸，保证客户区无多余填充边框
+				switch (wParam)
+				{
+					case WMSZ_LEFT:
+					case WMSZ_RIGHT:
+						target_img_h = (int)((__int64)target_img_w * _viv_image_high / _viv_image_wide);
+						prc->bottom = prc->top + target_img_h + non_client_h;
+						break;
+
+					case WMSZ_TOP:
+					case WMSZ_BOTTOM:
+						target_img_w = (int)((__int64)target_img_h * _viv_image_wide / _viv_image_high);
+						prc->right = prc->left + target_img_w + non_client_w;
+						break;
+
+					case WMSZ_TOPLEFT:
+						target_img_h = (int)((__int64)target_img_w * _viv_image_high / _viv_image_wide);
+						prc->left = prc->right - (target_img_w + non_client_w);
+						prc->top = prc->bottom - (target_img_h + non_client_h);
+						break;
+
+					case WMSZ_TOPRIGHT:
+						target_img_h = (int)((__int64)target_img_w * _viv_image_high / _viv_image_wide);
+						prc->right = prc->left + target_img_w + non_client_w;
+						prc->top = prc->bottom - (target_img_h + non_client_h);
+						break;
+
+					case WMSZ_BOTTOMLEFT:
+						target_img_h = (int)((__int64)target_img_w * _viv_image_high / _viv_image_wide);
+						prc->left = prc->right - (target_img_w + non_client_w);
+						prc->bottom = prc->top + target_img_h + non_client_h;
+						break;
+
+					case WMSZ_BOTTOMRIGHT:
+					default:
+						target_img_h = (int)((__int64)target_img_w * _viv_image_high / _viv_image_wide);
+						prc->right = prc->left + target_img_w + non_client_w;
+						prc->bottom = prc->top + target_img_h + non_client_h;
+						break;
+				}
+				return TRUE;
+			}
+			break;
+		}
+
+		case WM_EXITSIZEMOVE:
+		{
+			if (!_viv_is_fullscreen && !_viv_is_hover_hide && !_viv_is_window_maximized(hwnd) && config_fit_window_to_image)
+			{
+				_viv_fit_window_to_image();
+			}
+			break;
+		}
+
 		case WM_SIZE:
 		
 			_viv_on_size();
@@ -13708,7 +13787,7 @@ static HMENU _viv_create_menu(void)
 			{
 				if (_viv_commands[i].flags & MF_SEPARATOR)
 				{
-					AppendMenu(menus[_viv_commands[i].menu_id],_viv_commands[i].flags & (~MF_DELETE),_viv_commands[i].command_id,L"");
+					AppendMenuW(menus[_viv_commands[i].menu_id],_viv_commands[i].flags & (~MF_DELETE),_viv_commands[i].command_id,L"");
 				}
 				else
 				{
@@ -13723,7 +13802,7 @@ static HMENU _viv_create_menu(void)
 							menus[_viv_commands[i].command_id] = CreatePopupMenu();
 						}
 						
-						AppendMenu(menus[_viv_commands[i].menu_id],_viv_commands[i].flags & (~MF_DELETE),(UINT_PTR)menus[_viv_commands[i].command_id],text_wbuf);
+						AppendMenuW(menus[_viv_commands[i].menu_id],_viv_commands[i].flags & (~MF_DELETE),(UINT_PTR)menus[_viv_commands[i].command_id],text_wbuf);
 					}
 					else
 					{
@@ -13750,7 +13829,7 @@ static HMENU _viv_create_menu(void)
 							}
 						}
 						
-						AppendMenu(menus[_viv_commands[i].menu_id],_viv_commands[i].flags & (~MF_DELETE),_viv_commands[i].command_id,text_wbuf);
+						AppendMenuW(menus[_viv_commands[i].menu_id],_viv_commands[i].flags & (~MF_DELETE),_viv_commands[i].command_id,text_wbuf);
 					}
 				}
 			}

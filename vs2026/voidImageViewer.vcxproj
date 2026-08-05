@@ -701,7 +701,7 @@
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
     <ClCompile>
-      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/utf-8 /MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -710,6 +710,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <AdditionalIncludeDirectories>..\libwebp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;BZ_NO_STDIO;VERSION_X64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <utf8Source>true</utf8Source>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -1615,6 +1616,7 @@
     <ClCompile Include="..\src\config.c" />
     <ClCompile Include="..\src\debug.c" />
     <ClCompile Include="..\src\ini.c" />
+    <ClCompile Include="..\src\localization.c" />
     <ClCompile Include="..\src\mem.c" />
     <ClCompile Include="..\src\os.c" />
     <ClCompile Include="..\src\render.c" />

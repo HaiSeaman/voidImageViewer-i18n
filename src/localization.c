@@ -31,7 +31,7 @@ static const utf8_t **_localization_language_array[LOCALIZATION_LANGUAGE_COUNT] 
 	_localization_string_array_zh_cn, // LOCALIZATION_LANGUAGE_CHINESE_SIMPLIFIED
 };
 
-BYTE localization_language = LOCALIZATION_LANGUAGE_ENGLISH;
+BYTE localization_language = LOCALIZATION_LANGUAGE_CHINESE_SIMPLIFIED;
 
 const utf8_t *localization_get_string(localization_id_t localization_id)
 {

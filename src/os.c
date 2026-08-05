@@ -717,7 +717,7 @@ void os_RegisterClassEx(UINT style,WNDPROC lpfnWndProc,HICON hIcon,HCURSOR hCurs
 	wcex.hInstance = os_hinstance;
 	wcex.hIcon = hIcon;
 	wcex.hCursor = LoadCursor(NULL,IDC_ARROW);
-	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
+	wcex.hbrBackground = hbrBackground ? hbrBackground : (HBRUSH)GetStockObject(BLACK_BRUSH);
 	wcex.lpszClassName = name_wbuf;
 	wcex.hIconSm = hIconSm;
 	
