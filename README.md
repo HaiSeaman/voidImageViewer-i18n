@@ -46,23 +46,20 @@
 
 ### 图像格式与解码
 
-- **全面格式支持**：
-  - **基础常见格式**：JPEG/JPG、PNG、BMP、TIFF/TIF、ICO。
-  - **现代与拓展格式**：WebP、HEIC/HEIF、AVIF、APNG、TGA、WMF/EMF、CUR/ANI。
-- **动图解码**：准确逐帧播放动画 GIF、动画 WebP（内置轻量级 `libwebp`）、APNG 动画及 ANI 动画光标。
-- **超大图渲染**：支持分辨率超过 65536×65536 的超高像素图像流畅渲染与平移，内置安全算术库防范内存乘法溢出。
+- **当前支持的格式**：
+  - **基础常见格式**：JPEG/JPG、PNG、BMP、TIFF/TIF、ICO（GDI+ / Win32 原生）。
+  - **WebP**：静态 WebP 与多帧动画 WebP（内置轻量级 `libwebp` 解码引擎）。
+  - **动画 GIF**：逐帧播放（GDI+ 原生）。
+- **超大图渲染**：支持高分辨率图像渲染与平移，内置安全算术库防范内存乘法溢出。
+- **说明**：HEIC/HEIF、AVIF、APNG、TGA、WMF/EMF、CUR/ANI 等格式的解码器尚未实现（见 `2.4_开发计划.md`），已在文件选择器与 Everything 搜索过滤器中同步移除，避免出现"列得出、打不开"的情况。
 
 #### 图像格式支持一览表
 
 | 格式分类 | 扩展名 (Extension) | 解码引擎 / 实现路径 | 渲染特性与优势 |
 | :--- | :--- | :--- | :--- |
 | **常见标准格式** | `.jpg`, `.jpeg`, `.png`, `.bmp`, `.tif`, `.tiff`, `.ico` | GDI+ / Win32 原生 | 支持 Exif 自动旋转、 Alpha 透明通道与高清像素呈现 |
+| **动画 GIF** | `.gif` | GDI+ 帧解码 | 逐帧播放动画 GIF，支持播放控制 |
 | **WebP** | `.webp` | 内置 `libwebp` 开源解码引擎 | 支持静态 WebP 及多帧动画 WebP 高流畅度播放 |
-| **iPhone/手机照片** | `.heic`, `.heif` | Windows WIC (系统硬件加速) | 零额外体积依赖，调取系统显卡 GPU 硬件硬解 |
-| **现代网页图像** | `.avif` | 接入 `libavif` 静态解码库 | 完美呈现现代高压缩率及 HDR 高动态色彩 |
-| **高清透明动图** | `.apng` | 纯 C 解析 `acTL/fcTL` 帧数据 | 解决传统看图器静态第一帧痛点，复用主动画定时器 |
-| **游戏与 CG 贴图** | `.tga` | 原生纯 C Header 解析 | 极速秒开无损贴图，内存与 CPU 占用极低 |
-| **Windows 矢量/光标** | `.wmf`, `.emf`, `.cur`, `.ani` | Win32 原生 API / RIFF 容器拆解 | 0 字节体积负担，原生渲染 Office 矢量与动画光标 |
 
 ### 看图与缩放
 
@@ -178,8 +175,8 @@ voidImageViewer.exe [/开关] [文件名...]
 本项目采用标准 C 语言编写，依赖 Win32 API。
 
 ### 开发环境要求
-- **编译器**：Microsoft Visual Studio 2019 / 2022（需安装 C++ 桌面开发工作负载）
-- **构建工具**：MSBuild 或 Windows SDK 附带的 `nmake`
+- **编译器**：Microsoft Visual Studio 2026 或更新版本（需安装 C++ 桌面开发工作负载；工程工具集为 `v145`）
+- **构建工具**：MSBuild
 - **系统支持**：Windows 7 / 8 / 10 / 11
 
 ### 编译步骤
@@ -189,13 +186,13 @@ voidImageViewer.exe [/开关] [文件名...]
    git clone https://github.com/your-username/voidImageViewer.git
    cd voidImageViewer
    ```
-2. 使用 Visual Studio 打开 `vs2019/voidImageViewer.sln` 或 `vs2026/voidImageViewer.sln`。
+2. 使用 Visual Studio 打开 `vs2026/voidImageViewer.sln`。
 3. 选择构建目标架构（`x64` 或 `x86`）以及配置类型（`Release`）。
-4. 点击 **生成 -> 生成解决方案**，编译生成的可执行文件存放在 `release/` 目录下。
+4. 点击 **生成 -> 生成解决方案**，编译生成的可执行文件存放在 `vs2026/voidImageViewer/x64/Release/`（x64）或 `vs2026/voidImageViewer/Release/`（x86）目录下。
 
-你也可以在命令行中运行构建脚本：
+你也可以在命令行中运行构建脚本（脚本会自动通过 vswhere 定位 VS 工具链）：
 ```cmd
-build_vs2019.bat x64
+build_vs2019.bat
 ```
 
 ---

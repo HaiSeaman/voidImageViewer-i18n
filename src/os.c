@@ -887,7 +887,7 @@ void os_init(void)
 	_os_gdi32_hmodule = LoadLibraryA("gdi32.dll");
 	if (_os_gdi32_hmodule)
 	{
-		os_GetLayout = (void *)GetProcAddress(_os_user32_hmodule,"GetLayout");
+		os_GetLayout = (void *)GetProcAddress(_os_gdi32_hmodule,"GetLayout");
 	}
 
 	_os_gdiplus_hmodule = LoadLibraryA("gdiplus.dll");

@@ -72,7 +72,7 @@ XPStyle on
 !else
 	!define LICENSE_FILE "installer_license_English.txt"
 	!define INSTALL_OPTIONS_FILE "InstallOptions.ini"
-	!define INSTALL_OPTIONS2_FILE "InstallOptions2.ini"
+	!define INSTALL_OPTIONS2_FILE ${INSTALL_OPTIONS2_FILE}
 	!define LANG_CODE "en-US"
 	!define LANG_NAME "English"
 !endif
@@ -134,7 +134,9 @@ Page custom InstallOptions2
 !insertmacro GetOptions
 
 ; Version Info
-VIProductVersion "${VERSION}${BETAVERSION}"
+; VIProductVersion requires a x.y.z.w numeric version; BETAVERSION is
+; appended only to the display strings, not to the numeric version.
+VIProductVersion "${VERSION}"
 
 ; don't localize these:
 VIAddVersionKey "ProductName" "void Image Viewer"
@@ -290,7 +292,7 @@ no_gif_association:
 skip_gif_association:
 
 	; ico Associations
-	!insertmacro MUI_INSTALLOPTIONS_READ $R0 "InstallOptions2.ini" "Field 5" "State"
+	!insertmacro MUI_INSTALLOPTIONS_READ $R0 "${INSTALL_OPTIONS2_FILE}" "Field 5" "State"
 	strcmp $R0 "0" no_ico_association
 	StrCpy $user_install_options "$user_install_options /ico"
 	Goto skip_ico_association
@@ -302,7 +304,7 @@ no_ico_association:
 skip_ico_association:
 
 	; jpeg Associations
-	!insertmacro MUI_INSTALLOPTIONS_READ $R0 "InstallOptions2.ini" "Field 6" "State"
+	!insertmacro MUI_INSTALLOPTIONS_READ $R0 "${INSTALL_OPTIONS2_FILE}" "Field 6" "State"
 	strcmp $R0 "0" no_jpeg_association
 	StrCpy $user_install_options "$user_install_options /jpeg"
 	Goto skip_jpeg_association
@@ -314,7 +316,7 @@ no_jpeg_association:
 skip_jpeg_association:
 
 	; jpg Associations
-	!insertmacro MUI_INSTALLOPTIONS_READ $R0 "InstallOptions2.ini" "Field 7" "State"
+	!insertmacro MUI_INSTALLOPTIONS_READ $R0 "${INSTALL_OPTIONS2_FILE}" "Field 7" "State"
 	strcmp $R0 "0" no_jpg_association
 	StrCpy $user_install_options "$user_install_options /jpg"
 	Goto skip_jpg_association
@@ -326,7 +328,7 @@ no_jpg_association:
 skip_jpg_association:
 
 	; png Associations
-	!insertmacro MUI_INSTALLOPTIONS_READ $R0 "InstallOptions2.ini" "Field 8" "State"
+	!insertmacro MUI_INSTALLOPTIONS_READ $R0 "${INSTALL_OPTIONS2_FILE}" "Field 8" "State"
 	strcmp $R0 "0" no_png_association
 	StrCpy $user_install_options "$user_install_options /png"
 	Goto skip_png_association
@@ -338,7 +340,7 @@ no_png_association:
 skip_png_association:
 
 	; tif Associations
-	!insertmacro MUI_INSTALLOPTIONS_READ $R0 "InstallOptions2.ini" "Field 9" "State"
+	!insertmacro MUI_INSTALLOPTIONS_READ $R0 "${INSTALL_OPTIONS2_FILE}" "Field 9" "State"
 	strcmp $R0 "0" no_tif_association
 	StrCpy $user_install_options "$user_install_options /tif"
 	Goto skip_tif_association
@@ -350,7 +352,7 @@ no_tif_association:
 skip_tif_association:
 
 	; tiff Associations
-	!insertmacro MUI_INSTALLOPTIONS_READ $R0 "InstallOptions2.ini" "Field 10" "State"
+	!insertmacro MUI_INSTALLOPTIONS_READ $R0 "${INSTALL_OPTIONS2_FILE}" "Field 10" "State"
 	strcmp $R0 "0" no_tiff_association
 	StrCpy $user_install_options "$user_install_options /tiff"
 	Goto skip_tiff_association
@@ -362,7 +364,7 @@ no_tiff_association:
 skip_tiff_association:
 
 	; webp Associations
-	!insertmacro MUI_INSTALLOPTIONS_READ $R0 "InstallOptions2.ini" "Field 11" "State"
+	!insertmacro MUI_INSTALLOPTIONS_READ $R0 "${INSTALL_OPTIONS2_FILE}" "Field 11" "State"
 	strcmp $R0 "0" no_webp_association
 	StrCpy $user_install_options "$user_install_options /webp"
 	Goto skip_webp_association

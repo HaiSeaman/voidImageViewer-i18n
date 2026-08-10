@@ -1,3 +1,26 @@
+Monday, 10 August 2026: Version 1.0.0.16
+	code review and hardening pass.
+	fixed: removed claimed-but-unimplemented format support (HEIC/HEIF, AVIF, APNG, TGA, WMF/EMF, CUR/ANI) from the file dialog and Everything search filters; README updated to match actual support.
+	fixed: image load thread termination checks were commented out; restored so switching images cancels the previous load.
+	fixed: buffer overflow when copying long paths into WIN32_FIND_DATA.cFileName (use MAX_PATH-bounded copy).
+	fixed: GetLayout was loaded from user32.dll instead of gdi32.dll, breaking RTL mirroring.
+	fixed: vcxproj referenced 5 non-existent render*.h headers and compiled empty render*.c stubs; removed.
+	fixed: NSIS installer hardcoded "InstallOptions2.ini" instead of the localized file macro.
+	fixed: single-instance startup race (retry FindWindow for ~1s).
+	fixed: _viv_load_image_terminate now uses interlocked operations.
+	fixed: large files > 2GB are refused instead of truncating (GetFileSizeEx).
+	fixed: debug mem_free_debug NULL check order.
+	fixed: playlist shuffle index array leak when re-shuffling.
+	fixed: reply queue leak when PostMessage fails during shutdown.
+	fixed: Everything IPC reply parsing missing bounds checks.
+	fixed: /install-options now whitelists allowed switches.
+	fixed: SetThreadExecutionState/CoInitializeEx failure handling.
+	fixed: mipmap selection compared render_high against mip_wide instead of mip_high.
+	fixed: %f formatting used float precision; now rounds via double.
+	fixed: CreateThread failure now reports a load failure instead of hanging.
+	fixed: removed VS2005-era library paths and full-disk vcvarsall scan from build scripts.
+	fixed: misc (duplicate localization_init call, MF_DELETE misuse, RC copyright mojibake, version info, UTF-8 BOM script idempotency).
+
 Monday, 12 January 2026: Version 1.0.0.15
 	fixed an issue with scrolling large images.
 	improved position offset when using numpad keys.

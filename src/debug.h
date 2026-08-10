@@ -30,7 +30,9 @@ void DECLSPEC_NORETURN debug_fatal(const char *format,...);
 #ifdef _DEBUG
 void debug_printf(const char *format,...);
 #else
-#define debug_printf(...)
+// Evaluate the arguments (so side effects such as GetLastError() still
+// happen) but discard the result in release builds.
+#define debug_printf(...) ((void)(__VA_ARGS__))
 #endif							
 
 #ifdef __cplusplus

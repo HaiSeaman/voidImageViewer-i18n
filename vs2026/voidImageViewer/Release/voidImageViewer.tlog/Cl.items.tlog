@@ -93,11 +93,6 @@ D:\AI\Github\voidImageViewer-master\voidImageViewer-master\src\ini.c;D:\AI\Githu
 D:\AI\Github\voidImageViewer-master\voidImageViewer-master\src\localization.c;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\vs2026\voidImageViewer\Release\localization.obj
 D:\AI\Github\voidImageViewer-master\voidImageViewer-master\src\mem.c;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\vs2026\voidImageViewer\Release\mem.obj
 D:\AI\Github\voidImageViewer-master\voidImageViewer-master\src\os.c;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\vs2026\voidImageViewer\Release\os.obj
-D:\AI\Github\voidImageViewer-master\voidImageViewer-master\src\render.c;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\vs2026\voidImageViewer\Release\render.obj
-D:\AI\Github\voidImageViewer-master\voidImageViewer-master\src\render_d3d.c;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\vs2026\voidImageViewer\Release\render_d3d.obj
-D:\AI\Github\voidImageViewer-master\voidImageViewer-master\src\render_gdi.c;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\vs2026\voidImageViewer\Release\render_gdi.obj
-D:\AI\Github\voidImageViewer-master\voidImageViewer-master\src\render_opengl.c;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\vs2026\voidImageViewer\Release\render_opengl.obj
-D:\AI\Github\voidImageViewer-master\voidImageViewer-master\src\render_software.c;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\vs2026\voidImageViewer\Release\render_software.obj
 D:\AI\Github\voidImageViewer-master\voidImageViewer-master\src\safe_size.c;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\vs2026\voidImageViewer\Release\safe_size.obj
 D:\AI\Github\voidImageViewer-master\voidImageViewer-master\src\small_pool.c;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\vs2026\voidImageViewer\Release\small_pool.obj
 D:\AI\Github\voidImageViewer-master\voidImageViewer-master\src\string.c;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\vs2026\voidImageViewer\Release\string.obj

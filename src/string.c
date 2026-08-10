@@ -417,7 +417,9 @@ void string_vprintf(wchar_t *wbuf,const char *format,va_list argptr)
 						const wchar_t *s;
 						uintptr_t lz;
 
-						num = (int)(va_arg(argptr,double) * 1000.0f);
+						// use full double precision and round-half-up instead of
+						// truncating through a float multiply.
+						num = (int)(va_arg(argptr,double) * 1000.0 + 0.5);
 						
 						if (num < 0)
 						{

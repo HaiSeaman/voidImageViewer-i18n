@@ -551,7 +551,6 @@
     <Link>
       <AdditionalDependencies>ComCtl32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)voidImageViewer.exe</OutputFile>
-      <AdditionalLibraryDirectories>C:\Program Files (x86)\Microsoft Visual Studio 8\VC\PlatformSDK\Lib\AMD64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)voidImageViewer.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -583,7 +582,6 @@
     <Link>
       <AdditionalDependencies>ComCtl32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)voidImageViewer.exe</OutputFile>
-      <AdditionalLibraryDirectories>C:\Program Files (x86)\Microsoft Visual Studio 8\VC\PlatformSDK\Lib\AMD64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)voidImageViewer.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -606,7 +604,7 @@
       <OmitFramePointers>false</OmitFramePointers>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <AdditionalIncludeDirectories>..\libwebp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>BZ_NO_STDIO;VERSION_X86;BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;BZ_NO_STDIO;VERSION_X86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -1619,11 +1617,6 @@
     <ClCompile Include="..\src\localization.c" />
     <ClCompile Include="..\src\mem.c" />
     <ClCompile Include="..\src\os.c" />
-    <ClCompile Include="..\src\render.c" />
-    <ClCompile Include="..\src\render_d3d.c" />
-    <ClCompile Include="..\src\render_gdi.c" />
-    <ClCompile Include="..\src\render_opengl.c" />
-    <ClCompile Include="..\src\render_software.c" />
     <ClCompile Include="..\src\safe_size.c" />
     <ClCompile Include="..\src\small_pool.c" />
     <ClCompile Include="..\src\string.c" />
@@ -1672,11 +1665,6 @@
     <ClInclude Include="..\src\ini.h" />
     <ClInclude Include="..\src\mem.h" />
     <ClInclude Include="..\src\os.h" />
-    <ClInclude Include="..\src\render.h" />
-    <ClInclude Include="..\src\render_d3d.h" />
-    <ClInclude Include="..\src\render_gdi.h" />
-    <ClInclude Include="..\src\render_opengl.h" />
-    <ClInclude Include="..\src\render_software.h" />
     <ClInclude Include="..\src\safe_size.h" />
     <ClInclude Include="..\src\small_pool.h" />
     <ClInclude Include="..\src\string.h" />

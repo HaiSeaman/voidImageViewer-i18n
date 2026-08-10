@@ -32,10 +32,17 @@ $files = @(
 foreach ($file in $files) {
     $filePath = Join-Path $PSScriptRoot $file
     if (Test-Path $filePath) {
-        Write-Host "Converting $file to UTF-8 with BOM..."
-        $content = Get-Content $filePath -Raw -Encoding UTF8
-        [System.IO.File]::WriteAllText($filePath, $content, [System.Text.UTF8Encoding]::new($true))
-        Write-Host "  Done: $file" -ForegroundColor Green
+        $bytes = [System.IO.File]::ReadAllBytes($filePath)
+        # Only convert when the file does not already start with a UTF-8 BOM,
+        # so re-running the build does not rewrite (and dirty) unchanged files.
+        if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+            Write-Host "  Skipped (already UTF-8 BOM): $file" -ForegroundColor Gray
+        } else {
+            Write-Host "Converting $file to UTF-8 with BOM..."
+            $content = Get-Content $filePath -Raw -Encoding UTF8
+            [System.IO.File]::WriteAllText($filePath, $content, [System.Text.UTF8Encoding]::new($true))
+            Write-Host "  Done: $file" -ForegroundColor Green
+        }
     } else {
         Write-Host "  Warning: $file not found" -ForegroundColor Yellow
     }

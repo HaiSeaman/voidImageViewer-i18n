@@ -19,13 +19,6 @@ if "%VS_PATH%"=="" (
     )
 )
 
-rem Method 3: PowerShell Registry & Drive Deep Scan for vcvarsall.bat
-if "%VS_PATH%"=="" (
-    for /f "tokens=*" %%I in ('powershell -NoProfile -Command "Get-ChildItem 'C:\Program Files*','D:\*','E:\*','F:\*' -Filter 'vcvarsall.bat' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName"') do (
-        if exist "%%I" set "VS_PATH=%%I"
-    )
-)
-
 if "%VS_PATH%"=="" (
     echo [ERROR] Visual Studio C++ build environment not found.
     echo Please make sure Visual Studio C++ Workload is installed.
