@@ -207,25 +207,29 @@ static void _config_load_settings_by_location(const wchar_t *path,int is_root)
 						// clear this key.
 						viv_key_clear_all(i);
 						
+					while(*p)
+					{
+						const utf8_t *start;
+						
+						start = p;
+
 						while(*p)
 						{
-							const utf8_t *start;
-							
-							start = p;
-
-							while(*p)
+							if (*p == ',')
 							{
-								if (*p == ',')
-								{
-									p++;
-									break;
-								}
-								
 								p++;
+								break;
 							}
-						
+							
+							p++;
+						}
+
+						// skip empty fields (eg: a trailing comma).
+						if (p > start)
+						{
 							viv_key_add(i,utf8_to_int(start));
 						}
+					}
 					}
 				}
 			}
@@ -267,9 +271,17 @@ static void _config_write_int(HANDLE h,const char *ascii_key,int value)
 
 static void _config_write_string(HANDLE h,const char *ascii_key,const wchar_t *s)
 {
-	utf8_t buf[STRING_SIZE*3];
-	
-	WideCharToMultiByte(CP_UTF8,0,s,-1,(char *)buf,STRING_SIZE*3,0,0);
+	utf8_t buf[STRING_SIZE*4 + 1];
+	int length;
+
+	// STRING_SIZE wchars can encode up to STRING_SIZE*4 UTF-8 bytes
+	// (plus the NUL terminator); truncate safely if the buffer is ever
+	// too small instead of passing a non-terminated buffer on.
+	length = WideCharToMultiByte(CP_UTF8,0,s,-1,(char *)buf,(int)sizeof(buf),0,0);
+	if (length <= 0)
+	{
+		buf[sizeof(buf) - 1] = 0;
+	}
 	
 	_config_write_utf8(h,(const utf8_t *)ascii_key);
 	_config_write_utf8(h,(const utf8_t *)"=");

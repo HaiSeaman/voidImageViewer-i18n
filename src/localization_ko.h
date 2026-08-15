@@ -308,6 +308,8 @@ static const utf8_t *_localization_string_array_ko[LOCALIZATION_ID_COUNT] =
 	// Association descriptions
 	"비트맵 이미지",
 	"애니메이션 GIF 이미지",
+	"HEIC 이미지",
+	"HEIF 이미지",
 	"아이콘 파일",
 	"JPEG 이미지",
 	"JPEG 이미지",

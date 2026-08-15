@@ -1,0 +1,140 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{DD8DABDD-4B33-32AD-905F-8F6B2416C6A3}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>x64</Platform>
+    <ProjectName>mini_decode</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif\tests\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">mini_decode.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">mini_decode</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\libheif;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\libheif\api;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\include\libheif;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);LIBDE265_STATIC_BUILD;NDEBUG;HAVE_BIT;IS_BIG_ENDIAN=0;LIBHEIF_EXPORTS;HAVE_VISIBILITY;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;LIBDE265_STATIC_BUILD;NDEBUG;HAVE_BIT;IS_BIG_ENDIAN=0;LIBHEIF_EXPORTS;HAVE_VISIBILITY;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\libheif;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\libheif\api;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\include\libheif;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\libheif;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\libheif\api;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\include\libheif;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\libheif\Release\heif.lib;Release\testframework.lib;..\libheif\Release\heif.lib;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\staging-de265\lib\libde265.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <DataExecutionPrevention></DataExecutionPrevention>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
+      <ImportLibrary>D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-heif/tests/Release/mini_decode.lib</ImportLibrary>
+      <LinkErrorReporting></LinkErrorReporting>
+      <ProgramDataBaseFile>D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-heif/tests/Release/mini_decode.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\tests\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/libheif-1.23.1/tests/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+C:\Python311\Lib\site-packages\cmake\data\bin\cmake.exe -SD:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/libheif-1.23.1 -BD:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-heif --check-stamp-file D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-heif/tests/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\FindPackageHandleStandardArgs.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\FindPackageMessage.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\FindTIFF.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\SelectLibraryConfigurations.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\tests\test-config.cc.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif\tests\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\tests\mini_decode.cc" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif\ZERO_CHECK.vcxproj">
+      <Project>{DA9EB99F-630D-39A8-B3F1-10DBC602A5A8}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif\libheif\heif.vcxproj">
+      <Project>{A6F633AC-CB57-34A3-AC47-09B01B921AF0}</Project>
+      <Name>heif</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif\tests\testframework.vcxproj">
+      <Project>{B850AD6D-64BA-3270-B2F2-9DFC632A95E5}</Project>
+      <Name>testframework</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

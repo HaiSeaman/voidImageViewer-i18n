@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\CMakeFiles\9ba93ed77aeb0e0b8d552f4643f1dde4\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{2F916017-4395-3737-BCD0-E8ACCFD8A351}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

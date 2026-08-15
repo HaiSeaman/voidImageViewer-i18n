@@ -1,0 +1,201 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{4AA8B4F8-763D-3DDF-A805-3325EAD60C04}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>Win32</Platform>
+    <ProjectName>de265</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">de265.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">libde265</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\extra;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;HAVE_MALLOC_H;LIBDE265_STATIC_BUILD;LIBDE265_EXPORTS;HAVE_SSE4_1;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;HAVE_MALLOC_H;LIBDE265_STATIC_BUILD;LIBDE265_EXPORTS;HAVE_SSE4_1;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\extra;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\extra;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/libde265-1.0.15/libde265/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
+C:\Python311\Lib\site-packages\cmake\data\bin\cmake.exe -SD:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/libde265-1.0.15 -BD:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-de265-x86 --check-stamp-file D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-de265-x86/libde265/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\BasicConfigVersion-SamePatchVersion.cmake.in;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakePackageConfigHelpers.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\WriteBasicConfigVersionFile.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265.pc.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\alloc_pool.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\bitstream.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\cabac.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\configparam.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\contextmodel.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\de265.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\deblock.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\decctx.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\dpb.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\en265.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\fallback-dct.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\fallback-motion.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\fallback.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\image-io.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\image.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\intrapred.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\md5.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\motion.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\nal-parser.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\nal.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\pps.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\quality.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\refpic.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\sao.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\scan.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\sei.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\slice.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\sps.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\threads.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\transform.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\util.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\visualize.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\vps.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\vui.cc" />
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\extra\win32cond.c" />
+    <ClInclude Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\extra\win32cond.h" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\encoder.dir\$(Configuration)\encoder-core.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\encoder.dir\$(Configuration)\encoder-types.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\encoder.dir\$(Configuration)\encoder-params.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\encoder.dir\$(Configuration)\encoder-context.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\encoder.dir\$(Configuration)\encoder-syntax.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\encoder.dir\$(Configuration)\encoder-intrapred.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\encoder.dir\$(Configuration)\encoder-motion.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\encoder.dir\$(Configuration)\encpicbuf.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\encoder.dir\$(Configuration)\sop.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\algo\algo.dir\$(Configuration)\algo.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\algo\algo.dir\$(Configuration)\coding-options.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\algo\algo.dir\$(Configuration)\ctb-qscale.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\algo\algo.dir\$(Configuration)\cb-split.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\algo\algo.dir\$(Configuration)\cb-intrapartmode.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\algo\algo.dir\$(Configuration)\cb-interpartmode.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\algo\algo.dir\$(Configuration)\cb-skip.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\algo\algo.dir\$(Configuration)\cb-intra-inter.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\algo\algo.dir\$(Configuration)\cb-mergeindex.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\algo\algo.dir\$(Configuration)\tb-split.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\algo\algo.dir\$(Configuration)\tb-transform.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\algo\algo.dir\$(Configuration)\tb-intrapredmode.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\algo\algo.dir\$(Configuration)\tb-rateestim.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\algo\algo.dir\$(Configuration)\pb-mv.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\x86\x86.dir\$(Configuration)\sse.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\x86\x86_sse.dir\$(Configuration)\sse-motion.obj" />
+    <Object Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\x86\x86_sse.dir\$(Configuration)\sse-dct.obj" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\ZERO_CHECK.vcxproj">
+      <Project>{C12A5728-3519-39EA-B7DD-21E6040AFB72}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\algo\algo.vcxproj">
+      <Project>{4EBE8AC1-EA65-3F11-A7FF-3F825182C09E}</Project>
+      <Name>algo</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\encoder\encoder.vcxproj">
+      <Project>{5E18682F-0539-3A97-8F3C-5E23253204B4}</Project>
+      <Name>encoder</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\x86\x86.vcxproj">
+      <Project>{BFC25A8B-8980-3CAB-9AB8-BDE74E357D7A}</Project>
+      <Name>x86</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-x86\libde265\x86\x86_sse.vcxproj">
+      <Project>{31CBA998-2CCC-3CB2-A942-A82D3566F28D}</Project>
+      <Name>x86_sse</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

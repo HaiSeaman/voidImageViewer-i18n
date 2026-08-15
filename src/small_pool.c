@@ -55,6 +55,13 @@ void small_pool_kill(small_pool_t *buf)
 
 		chunk = next_chunk;
 	}
+
+	// leave the pool in a well-defined state so a stray alloc after
+	// kill can't link against freed chunks.
+	buf->chunk_start = NULL;
+	buf->p = buf->stack;
+	buf->avail = 0;
+	buf->cur_alloc_size = SMALL_POOL_STACK_SIZE;
 }
 
 void *small_pool_alloc(small_pool_t *buf,uintptr_t size)

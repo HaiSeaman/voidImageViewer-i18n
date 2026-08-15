@@ -1,0 +1,213 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ResolveNugetPackages>false</ResolveNugetPackages>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|x64">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B0308876-B7A8-3C44-B646-108DFC870EC2}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>x64</Platform>
+    <ProjectName>ALL_BUILD</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\extra;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\extra;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\extra;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\extra;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/libde265-1.0.15/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+C:\Python311\Lib\site-packages\cmake\data\bin\cmake.exe -SD:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/libde265-1.0.15 -BD:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-de265-fixed --check-stamp-file D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-de265-fixed/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCXXInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCheckCompilerFlagCommonPatterns.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCommonLanguageInclude.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeGenericSystem.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeInitializeConfigs.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeLanguageInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeRCInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeSystemSpecificInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeSystemSpecificInitialize.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckCCompilerFlag.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckCSourceCompiles.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckCXXSymbolExists.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckFunctionExists.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckIncludeFile.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckLibraryExists.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckSymbolExists.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\MSVC-C.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\MSVC-CXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\MSVC.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\FindPackageHandleStandardArgs.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\FindPackageMessage.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\FindThreads.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\GNUInstallDirs.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CheckCommon.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CheckCompilerFlag.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CheckFlagCommonConfig.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CheckSourceCompiles.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Linker\MSVC-C.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Linker\MSVC-CXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Linker\MSVC.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows-Initialize.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows-MSVC-C.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows-MSVC.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\WindowsPaths.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\CMakeFiles\4.4.2\CMakeCCompiler.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\CMakeFiles\4.4.2\CMakeCXXCompiler.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\CMakeFiles\4.4.2\CMakeRCCompiler.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\CMakeFiles\4.4.2\CMakeSystem.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\de265-version.h.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/libde265-1.0.15/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+C:\Python311\Lib\site-packages\cmake\data\bin\cmake.exe -SD:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/libde265-1.0.15 -BD:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-de265-fixed --check-stamp-file D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-de265-fixed/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCXXInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCheckCompilerFlagCommonPatterns.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCommonLanguageInclude.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeGenericSystem.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeInitializeConfigs.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeLanguageInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeRCInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeSystemSpecificInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeSystemSpecificInitialize.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckCCompilerFlag.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckCSourceCompiles.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckCXXSymbolExists.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckFunctionExists.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckIncludeFile.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckLibraryExists.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckSymbolExists.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\MSVC-C.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\MSVC-CXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\MSVC.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\FindPackageHandleStandardArgs.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\FindPackageMessage.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\FindThreads.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\GNUInstallDirs.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CheckCommon.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CheckCompilerFlag.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CheckFlagCommonConfig.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CheckSourceCompiles.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Linker\MSVC-C.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Linker\MSVC-CXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Linker\MSVC.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows-Initialize.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows-MSVC-C.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows-MSVC.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\WindowsPaths.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\CMakeFiles\4.4.2\CMakeCCompiler.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\CMakeFiles\4.4.2\CMakeCXXCompiler.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\CMakeFiles\4.4.2\CMakeRCCompiler.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\CMakeFiles\4.4.2\CMakeSystem.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\de265-version.h.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/libde265-1.0.15/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+C:\Python311\Lib\site-packages\cmake\data\bin\cmake.exe -SD:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/libde265-1.0.15 -BD:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-de265-fixed --check-stamp-file D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-de265-fixed/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCXXInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCheckCompilerFlagCommonPatterns.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCommonLanguageInclude.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeGenericSystem.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeInitializeConfigs.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeLanguageInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeRCInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeSystemSpecificInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeSystemSpecificInitialize.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckCCompilerFlag.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckCSourceCompiles.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckCXXSymbolExists.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckFunctionExists.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckIncludeFile.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckLibraryExists.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckSymbolExists.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\MSVC-C.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\MSVC-CXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\MSVC.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\FindPackageHandleStandardArgs.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\FindPackageMessage.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\FindThreads.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\GNUInstallDirs.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CheckCommon.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CheckCompilerFlag.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CheckFlagCommonConfig.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CheckSourceCompiles.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Linker\MSVC-C.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Linker\MSVC-CXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Linker\MSVC.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows-Initialize.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows-MSVC-C.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows-MSVC.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\WindowsPaths.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\CMakeFiles\4.4.2\CMakeCCompiler.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\CMakeFiles\4.4.2\CMakeCXXCompiler.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\CMakeFiles\4.4.2\CMakeRCCompiler.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\CMakeFiles\4.4.2\CMakeSystem.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\de265-version.h.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/libde265-1.0.15/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+C:\Python311\Lib\site-packages\cmake\data\bin\cmake.exe -SD:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/libde265-1.0.15 -BD:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-de265-fixed --check-stamp-file D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-de265-fixed/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCXXInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCheckCompilerFlagCommonPatterns.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCommonLanguageInclude.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeGenericSystem.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeInitializeConfigs.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeLanguageInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeRCInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeSystemSpecificInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeSystemSpecificInitialize.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckCCompilerFlag.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckCSourceCompiles.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckCXXSymbolExists.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckFunctionExists.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckIncludeFile.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckLibraryExists.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckSymbolExists.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\MSVC-C.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\MSVC-CXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\MSVC.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\FindPackageHandleStandardArgs.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\FindPackageMessage.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\FindThreads.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\GNUInstallDirs.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CheckCommon.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CheckCompilerFlag.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CheckFlagCommonConfig.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CheckSourceCompiles.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Linker\MSVC-C.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Linker\MSVC-CXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Linker\MSVC.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows-Initialize.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows-MSVC-C.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows-MSVC.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\WindowsPaths.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\CMakeFiles\4.4.2\CMakeCCompiler.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\CMakeFiles\4.4.2\CMakeCXXCompiler.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\CMakeFiles\4.4.2\CMakeRCCompiler.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\CMakeFiles\4.4.2\CMakeSystem.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\libde265\de265-version.h.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\ZERO_CHECK.vcxproj">
+      <Project>{2BD8D4A3-0B55-3431-92B9-01F4C6AAB8F6}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\libde265\encoder\algo\algo.vcxproj">
+      <Project>{7AD9D804-C3DB-3E4A-A527-324626F2D40B}</Project>
+      <Name>algo</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\libde265\de265.vcxproj">
+      <Project>{C2F3E729-6B81-3A0D-BE37-5F24BDB923F4}</Project>
+      <Name>de265</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\dec265\dec265.vcxproj">
+      <Project>{005EC58B-8942-3645-A22A-D165F6BD1537}</Project>
+      <Name>dec265</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\libde265\encoder\encoder.vcxproj">
+      <Project>{73531D63-9063-3590-B0A1-58A8F2CA1302}</Project>
+      <Name>encoder</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\libde265\x86\x86.vcxproj">
+      <Project>{607D9F6D-CDC2-3A2A-BCCB-481B29C12E9F}</Project>
+      <Name>x86</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\libde265\x86\x86_sse.vcxproj">
+      <Project>{282E4E88-4221-3DA6-8FBD-7E4EB554996F}</Project>
+      <Name>x86_sse</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

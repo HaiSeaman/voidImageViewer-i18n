@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Solution>
+	<Configurations>
+		<BuildType Name="Release"/>
+		<Platform Name="x64"/>
+	</Configurations>
+	<Project Path="ALL_BUILD.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="879a8b0e-bbb7-3ab2-bb7d-59480d79651f" DefaultStartup="true">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libde265/encoder/algo/algo.vcxproj"/>
+		<BuildDependency Project="libde265/de265.vcxproj"/>
+		<BuildDependency Project="dec265/dec265.vcxproj"/>
+		<BuildDependency Project="libde265/encoder/encoder.vcxproj"/>
+		<BuildDependency Project="libde265/x86/x86.vcxproj"/>
+		<BuildDependency Project="libde265/x86/x86_sse.vcxproj"/>
+	</Project>
+	<Project Path="INSTALL.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="a0773b4e-d9eb-3c4e-a1d7-ed53f832d99c">
+		<BuildDependency Project="ALL_BUILD.vcxproj"/>
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<Build Solution="Release|*" Project="false"/>
+	</Project>
+	<Project Path="ZERO_CHECK.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="a85af057-e1d9-39dc-bcf1-3ba476a0a0c3"/>
+	<Project Path="libde265/encoder/algo/algo.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="007145e7-be68-3636-9a59-85458a5ae255">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+	</Project>
+	<Project Path="libde265/de265.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="c1956c6d-8ba6-3bec-a67a-e9883242bf70">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libde265/encoder/algo/algo.vcxproj"/>
+		<BuildDependency Project="libde265/encoder/encoder.vcxproj"/>
+		<BuildDependency Project="libde265/x86/x86.vcxproj"/>
+		<BuildDependency Project="libde265/x86/x86_sse.vcxproj"/>
+	</Project>
+	<Project Path="dec265/dec265.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="def9ad41-a818-368a-bb22-ccfce2812832">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libde265/de265.vcxproj"/>
+	</Project>
+	<Project Path="libde265/encoder/encoder.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="44819d04-ef50-324a-aaf2-066052805b9c">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+	</Project>
+	<Project Path="libde265/x86/x86.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="6e19bb34-9f25-3c59-8b03-8d408944f357">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+	</Project>
+	<Project Path="libde265/x86/x86_sse.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="a26590a7-7d63-3099-83dd-25516e26a615">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+	</Project>
+</Solution>

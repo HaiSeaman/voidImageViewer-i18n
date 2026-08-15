@@ -1,0 +1,1 @@
+D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\libde265\x86\x86.dir\Release\x86.lib

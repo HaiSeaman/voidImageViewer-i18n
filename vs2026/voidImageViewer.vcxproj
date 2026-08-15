@@ -464,7 +464,7 @@
     <ClCompile>
       <AdditionalOptions>/utf-8 /MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\libwebp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\libwebp;..\third_party\staging-heif\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BZ_NO_STDIO;VERSION_DEBUG;VERSION_X86;BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -479,10 +479,9 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/safeseh:no %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>ComCtl32.lib;shlwapi.lib;UnicoWS.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ComCtl32.lib;shlwapi.lib;windowscodecs.lib;ole32.lib;..\third_party\staging-heif-x86\lib\heif.lib;..\third_party\staging-de265-x86\libde265.lib;UnicoWS.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)voidImageViewer.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <GenerateMapFile>true</GenerateMapFile>
       <SubSystem>Console</SubSystem>
       <StackReserveSize>0</StackReserveSize>
       <OptimizeReferences>true</OptimizeReferences>
@@ -498,7 +497,7 @@
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\libwebp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\libwebp;..\third_party\staging-heif\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VERSION_ARM;BZ_NO_STDIO;VERSION_DEBUG;BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -515,10 +514,9 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/safeseh:no %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>ComCtl32.lib;shlwapi.lib;UnicoWS.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ComCtl32.lib;shlwapi.lib;windowscodecs.lib;ole32.lib;..\third_party\staging-heif-x86\lib\heif.lib;..\third_party\staging-de265-x86\libde265.lib;UnicoWS.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)voidImageViewer.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <GenerateMapFile>true</GenerateMapFile>
       <SubSystem>Console</SubSystem>
       <StackReserveSize>0</StackReserveSize>
       <OptimizeReferences>true</OptimizeReferences>
@@ -535,9 +533,9 @@
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
     <ClCompile>
-      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/utf-8 /MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\libwebp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\libwebp;..\third_party\staging-heif\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;BZ_NO_STDIO;VERSION_DEBUG;VERSION_X64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -549,7 +547,7 @@
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>ComCtl32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ComCtl32.lib;shlwapi.lib;windowscodecs.lib;ole32.lib;..\third_party\staging-heif\lib\heif.lib;..\third_party\staging-de265\lib\libde265.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)voidImageViewer.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)voidImageViewer.pdb</ProgramDatabaseFile>
@@ -565,7 +563,7 @@
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\libwebp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\libwebp;..\third_party\staging-heif\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;BZ_NO_STDIO;VERSION_DEBUG;VERSION_ARM64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -580,7 +578,7 @@
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>ComCtl32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ComCtl32.lib;shlwapi.lib;windowscodecs.lib;ole32.lib;..\third_party\staging-heif\lib\heif.lib;..\third_party\staging-de265\lib\libde265.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)voidImageViewer.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)voidImageViewer.pdb</ProgramDatabaseFile>
@@ -603,7 +601,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\libwebp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\libwebp;..\third_party\staging-heif\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;BZ_NO_STDIO;VERSION_X86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -622,7 +620,7 @@
     </ProjectReference>
     <Link>
       <AdditionalOptions>/safeseh:no %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>ComCtl32.lib;shlwapi.lib;UnicoWS.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ComCtl32.lib;shlwapi.lib;windowscodecs.lib;ole32.lib;..\third_party\staging-heif-x86\lib\heif.lib;..\third_party\staging-de265-x86\libde265.lib;UnicoWS.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -650,7 +648,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\libwebp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\libwebp;..\third_party\staging-heif\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VERSION_ARM;BZ_NO_STDIO;BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
@@ -673,7 +671,7 @@
     </ProjectReference>
     <Link>
       <AdditionalOptions>/safeseh:no %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>ComCtl32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ComCtl32.lib;shlwapi.lib;windowscodecs.lib;ole32.lib;..\third_party\staging-heif\lib\heif.lib;..\third_party\staging-de265\lib\libde265.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -706,7 +704,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\libwebp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\libwebp;..\third_party\staging-heif\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;BZ_NO_STDIO;VERSION_X64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <utf8Source>true</utf8Source>
       <StringPooling>true</StringPooling>
@@ -721,7 +719,7 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
     <Link>
-      <AdditionalDependencies>ComCtl32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ComCtl32.lib;shlwapi.lib;windowscodecs.lib;ole32.lib;..\third_party\staging-heif\lib\heif.lib;..\third_party\staging-de265\lib\libde265.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -747,7 +745,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\libwebp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\libwebp;..\third_party\staging-heif\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VERSION_ARM64;WIN32;NDEBUG;_WINDOWS;BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -762,7 +760,7 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
     <Link>
-      <AdditionalDependencies>ComCtl32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ComCtl32.lib;shlwapi.lib;windowscodecs.lib;ole32.lib;..\third_party\staging-heif\lib\heif.lib;..\third_party\staging-de265\lib\libde265.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -1624,7 +1622,9 @@
     <ClCompile Include="..\src\viv.c" />
     <ClCompile Include="..\src\wchar.c" />
     <ClCompile Include="..\src\webp.c" />
-  </ItemGroup>
+    <ClCompile Include="..\src\wic.c" />
+    <ClCompile Include="..\src\heif.c" />
+      </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\libwebp\src\dec\alphai_dec.h" />
     <ClInclude Include="..\libwebp\src\dec\common_dec.h" />

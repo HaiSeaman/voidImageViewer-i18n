@@ -28,6 +28,8 @@
 #define IDC_TAB1                        1003
 #define IDC_BMP                         1006
 #define IDC_GIF                         1007
+#define IDC_HEIC                        1068
+#define IDC_HEIF                        1069
 #define IDC_ICO                         1008
 #define IDC_JPEG                        1009
 #define IDC_JPG                         1010

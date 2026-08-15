@@ -1,0 +1,66 @@
+# voidImageViewer .gitignore
+# 只保留源码与构建脚本；环境依赖、构建产物一律不上传
+
+# ===== 本地工具 / 环境配置 =====
+.reasonix/
+.workbuddy/
+reasonix.toml
+
+# ===== Visual Studio 本地缓存 =====
+.vs/
+*.user
+*.suo
+*.ncb
+*.sdf
+*.VC.db
+*.VC.opendb
+*.opensdf
+*.aps
+
+# ===== MSVC 编译/链接产物 =====
+*.obj
+*.exe
+*.lib
+*.exp
+*.ilk
+*.pdb
+*.idb
+*.iobj
+*.ipdb
+*.map
+*.tlog
+*.log
+*.lastbuildstate
+*.recipe
+
+# vs2026 输出目录（exe 与中间 obj）
+vs2026/Release/
+vs2026/x64/
+vs2026/voidImageViewer/
+
+# ===== NSIS 安装包输出 / 发布目录 =====
+nsis/*Setup*.exe
+release/
+
+# ===== third_party：构建树、工具链、压缩包、预编译库 =====
+# libheif-1.23.1 / libde265-1.0.15 源码保留（可用 rebuild_de265_x64_opt.bat 等脚本重建）
+third_party/build-*/
+third_party/cmake-*/
+third_party/cmake.zip
+third_party/*.tar.gz
+third_party/staging-*/
+
+# 如希望克隆后不重建第三方库即可直接编译，
+# 删除上面 third_party/staging-*/ 一行，改用下面三行（提交约 89MB 预编译静态库）：
+# third_party/staging-*/lib/
+# third_party/staging-*/bin/
+# third_party/staging-de265-x86/libde265.lib
+# third_party/staging-de265-x86/libde265/
+
+# ===== 测试工具产物（源码 heif_dec_test.cpp 保留） =====
+test_images/dec_*.raw
+
+# ===== 系统杂项 =====
+Thumbs.db
+desktop.ini
+.DS_Store

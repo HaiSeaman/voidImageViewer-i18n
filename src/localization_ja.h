@@ -308,6 +308,8 @@ static const utf8_t *_localization_string_array_ja[LOCALIZATION_ID_COUNT] =
 	// Association descriptions
 	"ビットマップ画像",
 	"アニメーションGIF画像",
+	"HEIC画像",
+	"HEIF画像",
 	"アイコンファイル",
 	"JPEG画像",
 	"JPEG画像",

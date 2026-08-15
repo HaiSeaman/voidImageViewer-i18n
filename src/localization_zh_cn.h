@@ -309,6 +309,8 @@ static const utf8_t *_localization_string_array_zh_cn[LOCALIZATION_ID_COUNT] =
 	// Association descriptions
 	"位图图像",
 	"动画 GIF 图像",
+	"HEIC 图像",
+	"HEIF 图像",
 	"图标文件",
 	"JPEG 图像",
 	"JPEG 图像",

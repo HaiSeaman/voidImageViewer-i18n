@@ -1249,6 +1249,8 @@ const char *_viv_association_extensions[] =
 {
 	"bmp",
 	"gif",
+	"heic",
+	"heif",
 	"ico",
 	"jpeg",
 	"jpg",
@@ -1263,6 +1265,8 @@ const localization_id_t _viv_association_description_localization_id_array[] =
 {
 	(localization_id_t)LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_BMP,
 	(localization_id_t)LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_GIF,
+	(localization_id_t)LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_HEIC,
+	(localization_id_t)LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_HEIF,
 	(localization_id_t)LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_ICO,
 	(localization_id_t)LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_JPEG,
 	(localization_id_t)LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_JPG,
@@ -1274,6 +1278,8 @@ const localization_id_t _viv_association_description_localization_id_array[] =
 
 const char *_viv_association_icon_locations[] = 
 {
+	NULL,
+	NULL,
 	NULL,
 	NULL,
 	"%1",
@@ -1289,6 +1295,8 @@ const WORD _viv_association_dlg_item_id[] =
 {
 	IDC_BMP,
 	IDC_GIF,
+	IDC_HEIC,
+	IDC_HEIF,
 	IDC_ICO,
 	IDC_JPEG,
 	IDC_JPG,
@@ -2579,7 +2587,7 @@ debug_printf("SWP %d %d %d %d\n",rect.left,rect.top,rect.right - rect.left,rect.
 
 				string_copy(tobuf,_viv_last_open_file ? _viv_last_open_file : L"");
 				
-				string_printf(filter_wbuf,"%s (*.bmp;*.gif;*.ico;*.jpeg;*.jpg;*.png;*.tif;*.tiff;*.webp)%c*.bmp;*.gif;*.ico;*.jpeg;*.jpg;*.png;*.tif;*.tiff;*.webp%c%s (*.*)%c*.*%c",localization_get_string(LOCALIZATION_ID_OPEN_ALL_IMAGE_FILES),0,0,localization_get_string(LOCALIZATION_ID_OPEN_ALL_FILES),0,0);
+				string_printf(filter_wbuf,"%s (*.bmp;*.gif;*.heic;*.heif;*.ico;*.jpeg;*.jpg;*.png;*.tif;*.tiff;*.webp)%c*.bmp;*.gif;*.heic;*.heif;*.ico;*.jpeg;*.jpg;*.png;*.tif;*.tiff;*.webp%c%s (*.*)%c*.*%c",localization_get_string(LOCALIZATION_ID_OPEN_ALL_IMAGE_FILES),0,0,localization_get_string(LOCALIZATION_ID_OPEN_ALL_FILES),0,0);
 
 				string_copy_utf8_string(title_wbuf,localization_get_string(LOCALIZATION_ID_OPEN_IMAGE_CAPTION));
 				
@@ -2794,6 +2802,59 @@ static void _viv_exit(void)
 	InterlockedExchange((volatile LONG *)&_viv_load_image_terminate,1);
 	config_save_settings(config_appdata);
 	PostQuitMessage(0);
+}
+
+static void _viv_handle_drop(HWND hwnd,HDROP hdrop)
+{
+	wchar_t filename[STRING_SIZE];
+	DWORD count;
+	int is_shift;
+	
+	if (_viv_random)
+	{
+		mem_free(_viv_random);
+		
+		_viv_random = 0;
+	}
+	
+	is_shift = (GetKeyState(VK_SHIFT) < 0);
+	if (is_shift)
+	{
+		// add current?
+		_viv_playlist_add_current_if_empty();
+	}
+	else
+	{
+		_viv_playlist_clearall();
+	}
+	
+	count = DragQueryFile(hdrop,0xFFFFFFFF,0,0);
+	
+	if ((count >= 2) || (is_shift))
+	{
+		DWORD i;
+		
+		for(i=0;i<count;i++)
+		{
+			DragQueryFile(hdrop,i,filename,STRING_SIZE);
+		
+			_viv_playlist_add_filename(filename);
+		}
+	
+		if (!is_shift)
+		{
+			_viv_home(0,0);
+		}
+	}
+	else
+	if (count == 1)
+	{
+		DragQueryFile(hdrop,0,filename,STRING_SIZE);
+	
+		_viv_open_from_filename(filename);
+	}
+	
+	SetForegroundWindow(hwnd);
 }
 
 static LRESULT CALLBACK _viv_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
@@ -3416,55 +3477,12 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 
 		case WM_DROPFILES:
 		{
-			wchar_t filename[STRING_SIZE];
-			DWORD count;
-			int is_shift;
-			
-			if (_viv_random)
-			{
-				mem_free(_viv_random);
-				
-				_viv_random = 0;
-			}
-			
-			is_shift = (GetKeyState(VK_SHIFT) < 0);
-			if (is_shift)
-			{
-				// add current?
-				_viv_playlist_add_current_if_empty();
-			}
-			else
-			{
-				_viv_playlist_clearall();
-			}
-			
-			count = DragQueryFile((HDROP)wParam,0xFFFFFFFF,0,0);
-			
-			if ((count >= 2) || (is_shift))
-			{
-				DWORD i;
-				
-				for(i=0;i<count;i++)
-				{
-					DragQueryFile((HDROP)wParam,i,filename,STRING_SIZE);
-				
-					_viv_playlist_add_filename(filename);
-				}
-			
-				if (!is_shift)
-				{
-					_viv_home(0,0);
-				}
-			}
-			else
-			if (count == 1)
-			{
-				DragQueryFile((HDROP)wParam,0,filename,STRING_SIZE);
-			
-				_viv_open_from_filename(filename);
-			}
-			
-			SetForegroundWindow(hwnd);
+			_viv_handle_drop(hwnd,(HDROP)wParam);
+
+			// the system allocated the HDROP for this drag; release it.
+			// (the WM_PASTE path calls _viv_handle_drop directly on
+			// clipboard memory and must never go through here.)
+			DragFinish((HDROP)wParam);
 			
 			break;
 		}
@@ -4208,22 +4226,32 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 				// Everything reply
 				case _VIV_COPYDATA_RANDOM_EVERYTHING_SEARCH:
 				{
+					EVERYTHING_IPC_LIST2 *list;
 					EVERYTHING_IPC_ITEM2 *items;
-					
-					debug_printf("%d / %d results\n",((EVERYTHING_IPC_LIST2 *)cds->lpData)->numitems,((EVERYTHING_IPC_LIST2 *)cds->lpData)->totitems);
-					
-					items = (EVERYTHING_IPC_ITEM2 *)(((EVERYTHING_IPC_LIST2 *)cds->lpData) + 1);
-					
-					if (((EVERYTHING_IPC_LIST2 *)cds->lpData)->numitems)
-					{
-						// guard against malformed replies that claim more items
-						// than fit inside the COPYDATA buffer.
-						if (((EVERYTHING_IPC_LIST2 *)cds->lpData)->numitems >
-							((cds->cbData - sizeof(EVERYTHING_IPC_LIST2)) / sizeof(EVERYTHING_IPC_ITEM2)))
-						{
-							break;
-						}
+					DWORD max_items;
 
+					// a malformed reply (or a message from any local process
+					// that knows the window class name) must not be trusted.
+					if ((!cds->lpData) || (cds->cbData < sizeof(EVERYTHING_IPC_LIST2)))
+					{
+						break;
+					}
+
+					list = (EVERYTHING_IPC_LIST2 *)cds->lpData;
+					items = (EVERYTHING_IPC_ITEM2 *)(list + 1);
+
+					// guard against malformed replies that claim more items
+					// than fit inside the COPYDATA buffer.
+					max_items = (cds->cbData - sizeof(EVERYTHING_IPC_LIST2)) / sizeof(EVERYTHING_IPC_ITEM2);
+					if (list->numitems > max_items)
+					{
+						break;
+					}
+
+					debug_printf("%d / %d results\n",list->numitems,list->totitems);
+					
+					if (list->numitems)
+					{
 						if (items[0].flags & EVERYTHING_IPC_FOLDER)
 						{
 							// add this folder ?
@@ -4311,10 +4339,10 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 						}
 					}
 					else
-					if (((EVERYTHING_IPC_LIST2 *)cds->lpData)->totitems)
+					if (list->totitems)
 					{
 						// our random index was too high, try again.
-						_viv_random_tot_results = ((EVERYTHING_IPC_LIST2 *)cds->lpData)->totitems;
+						_viv_random_tot_results = list->totitems;
 
 						PostMessage(hwnd,_VIV_WM_RETRY_RANDOM_EVERYTHING_SEARCH,0,0);
 					}
@@ -4324,40 +4352,50 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 
 				// Everything reply
 				case _VIV_COPYDATA_OPEN_EVERYTHING_SEARCH:
-				case _VIV_COPYDATA_ADD_EVERYTHING_SEARCH:
-				{
-					DWORD i;
-					EVERYTHING_IPC_ITEM2 *items;
-					
-					if (_viv_random)
+					case _VIV_COPYDATA_ADD_EVERYTHING_SEARCH:
 					{
-						mem_free(_viv_random);
+						DWORD i;
+						EVERYTHING_IPC_LIST2 *list;
+						EVERYTHING_IPC_ITEM2 *items;
+						DWORD max_items;
+
+						// a malformed reply (or a message from any local process
+						// that knows the window class name) must not be trusted.
+						if ((!cds->lpData) || (cds->cbData < sizeof(EVERYTHING_IPC_LIST2)))
+						{
+							break;
+						}
+
+						list = (EVERYTHING_IPC_LIST2 *)cds->lpData;
+						items = (EVERYTHING_IPC_ITEM2 *)(list + 1);
+
+						// Validate that the whole list fits inside the COPYDATA buffer
+						// before reading items past the header.
+						max_items = (cds->cbData - sizeof(EVERYTHING_IPC_LIST2)) / sizeof(EVERYTHING_IPC_ITEM2);
+						if (list->numitems > max_items)
+						{
+							break;
+						}
+
+						if (_viv_random)
+						{
+							mem_free(_viv_random);
+							
+							_viv_random = 0;
+						}
 						
-						_viv_random = 0;
-					}
-					
-					if (cds->dwData == _VIV_COPYDATA_OPEN_EVERYTHING_SEARCH)
-					{
-						_viv_playlist_clearall();
-					}
-					else
-					{
-						_viv_playlist_add_current_if_empty();
-					}
-					
-					debug_printf("%d / %d results\n",((EVERYTHING_IPC_LIST2 *)cds->lpData)->numitems,((EVERYTHING_IPC_LIST2 *)cds->lpData)->totitems);
-					
-					items = (EVERYTHING_IPC_ITEM2 *)(((EVERYTHING_IPC_LIST2 *)cds->lpData) + 1);
-					
-					// Validate that the whole list fits inside the COPYDATA buffer
-					// before reading items past the header.
-					if (((EVERYTHING_IPC_LIST2 *)cds->lpData)->numitems >
-						((cds->cbData - sizeof(EVERYTHING_IPC_LIST2)) / sizeof(EVERYTHING_IPC_ITEM2)))
-					{
-						break;
-					}
-					
-					for(i=0;i<((EVERYTHING_IPC_LIST2 *)cds->lpData)->numitems;i++)
+						if (cds->dwData == _VIV_COPYDATA_OPEN_EVERYTHING_SEARCH)
+						{
+							_viv_playlist_clearall();
+						}
+						else
+						{
+							_viv_playlist_add_current_if_empty();
+						}
+						
+						debug_printf("%d / %d results\n",list->numitems,list->totitems);
+						
+						for(i=0;i<list->numitems;i++)
 					{
 						if (items[i].flags & EVERYTHING_IPC_FOLDER)
 						{
@@ -4666,7 +4704,10 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 					hdrop = (HDROP)GlobalLock(hglobal);
 					if (hdrop)
 					{
-						SendMessage(hwnd,WM_DROPFILES,(WPARAM)hdrop,0);
+						// don't send WM_DROPFILES here: the clipboard HDROP
+						// is not owned by the shell drag-drop system and
+						// would be freed by DragFinish.
+						_viv_handle_drop(hwnd,hdrop);
 
 						GlobalUnlock(hglobal);
 					}
@@ -5132,7 +5173,7 @@ static int _viv_process_install_command_line_options(wchar_t *cl)
 	p = string_skip_ws(cl);
 	
 	// skip exe filename
-	p = string_get_word(p,buf);
+	p = string_get_word(p,buf,STRING_SIZE);
 	p = string_skip_ws(p);
 
 	cl_start = p;
@@ -5155,7 +5196,7 @@ static int _viv_process_install_command_line_options(wchar_t *cl)
 			was_quote = TRUE;
 		}
 		
-		p = string_get_word(p,buf);
+		p = string_get_word(p,buf,STRING_SIZE);
 		p = string_skip_ws(p);
 		
 		bufstart = buf;
@@ -5168,7 +5209,7 @@ static int _viv_process_install_command_line_options(wchar_t *cl)
 			
 			if (string_icompare_lowercase_ascii(bufstart,"install") == 0)
 			{
-				p = string_get_word(p,install_path);
+				p = string_get_word(p,install_path,STRING_SIZE);
 				p = string_skip_ws(p);				
 
 				uninstall_path[0] = 0;
@@ -5178,7 +5219,7 @@ static int _viv_process_install_command_line_options(wchar_t *cl)
 			else
 			if (string_icompare_lowercase_ascii(bufstart,"install-options") == 0)
 			{
-				p = string_get_word(p,install_options);
+				p = string_get_word(p,install_options,STRING_SIZE);
 				p = string_skip_ws(p);				
 
 				is_admin_install = 1;
@@ -5186,7 +5227,7 @@ static int _viv_process_install_command_line_options(wchar_t *cl)
 			else
 			if (string_icompare_lowercase_ascii(bufstart,"uninstall") == 0)
 			{
-				p = string_get_word(p,uninstall_path);
+				p = string_get_word(p,uninstall_path,STRING_SIZE);
 				p = string_skip_ws(p);			
 				
 				// no uninstall path?
@@ -5360,7 +5401,7 @@ static int _viv_process_install_command_line_options(wchar_t *cl)
 				{
 					"/appdata","/noappdata",
 					"/startmenu","/nostartmenu",
-					"/bmp","/nobmp","/gif","/nogif","/ico","/noico",
+					"/bmp","/nobmp","/gif","/nogif","/heic","/noheic","/heif","/noheif","/ico","/noico",
 					"/jpeg","/nojpeg","/jpg","/nojpg","/png","/nopng",
 					"/tif","/notif","/tiff","/notiff","/webp","/nowebp",
 				};
@@ -5383,7 +5424,7 @@ static int _viv_process_install_command_line_options(wchar_t *cl)
 						break;
 					}
 
-					s = string_get_word(s,word);
+					s = string_get_word(s,word,STRING_SIZE);
 
 					ok = 0;
 					for(i=0;i<allowed_count;i++)
@@ -5502,7 +5543,7 @@ static void _viv_process_command_line(wchar_t *cl)
 	p = string_skip_ws(p);
 	
 	// skip exe filename
-	p = string_get_word(p,buf);
+	p = string_get_word(p,buf,STRING_SIZE);
 	p = string_skip_ws(p);
 
 	// skip first parameter.
@@ -5523,7 +5564,7 @@ static void _viv_process_command_line(wchar_t *cl)
 			was_quote = TRUE;
 		}
 
-		p = string_get_word(p,buf);
+		p = string_get_word(p,buf,STRING_SIZE);
 		p = string_skip_ws(p);
 		
 		bufstart = buf;
@@ -5569,7 +5610,7 @@ static void _viv_process_command_line(wchar_t *cl)
 			else
 			if (string_icompare_lowercase_ascii(bufstart,"everything") == 0)
 			{
-				p = string_get_word(p,buf);
+				p = string_get_word(p,buf,STRING_SIZE);
 				p = string_skip_ws(p);
 				
 				_viv_send_everything_search(0,0,0,buf);
@@ -5577,7 +5618,7 @@ static void _viv_process_command_line(wchar_t *cl)
 			else
 			if (string_icompare_lowercase_ascii(bufstart,"random") == 0)
 			{
-				p = string_get_word(p,buf);
+				p = string_get_word(p,buf,STRING_SIZE);
 				p = string_skip_ws(p);
 				
 				_viv_send_everything_search(0,0,1,buf);
@@ -5595,7 +5636,7 @@ static void _viv_process_command_line(wchar_t *cl)
 			else
 			if (string_icompare_lowercase_ascii(bufstart,"x") == 0)
 			{
-				p = string_get_word(p,buf);
+				p = string_get_word(p,buf,STRING_SIZE);
 				p = string_skip_ws(p);
 				
 				window_x = string_to_int(buf);
@@ -5604,7 +5645,7 @@ static void _viv_process_command_line(wchar_t *cl)
 			else
 			if (string_icompare_lowercase_ascii(bufstart,"y") == 0)
 			{
-				p = string_get_word(p,buf);
+				p = string_get_word(p,buf,STRING_SIZE);
 				p = string_skip_ws(p);
 				
 				window_y = string_to_int(buf);
@@ -5613,7 +5654,7 @@ static void _viv_process_command_line(wchar_t *cl)
 			else
 			if (string_icompare_lowercase_ascii(bufstart,"width") == 0)
 			{
-				p = string_get_word(p,buf);
+				p = string_get_word(p,buf,STRING_SIZE);
 				p = string_skip_ws(p);
 				
 				window_wide = string_to_int(buf);
@@ -5622,7 +5663,7 @@ static void _viv_process_command_line(wchar_t *cl)
 			else
 			if (string_icompare_lowercase_ascii(bufstart,"height") == 0)
 			{
-				p = string_get_word(p,buf);
+				p = string_get_word(p,buf,STRING_SIZE);
 				p = string_skip_ws(p);
 				
 				window_high = string_to_int(buf);
@@ -5631,7 +5672,7 @@ static void _viv_process_command_line(wchar_t *cl)
 			else
 			if (string_icompare_lowercase_ascii(bufstart,"rate") == 0)
 			{
-				p = string_get_word(p,buf);
+				p = string_get_word(p,buf,STRING_SIZE);
 				p = string_skip_ws(p);
 
 				config_slideshow_rate = string_to_int(buf);
@@ -9095,6 +9136,8 @@ static INT_PTR CALLBACK _viv_options_general_proc(HWND hwnd,UINT msg,WPARAM wPar
 					
 					CheckDlgButton(hwnd,IDC_BMP,check);
 					CheckDlgButton(hwnd,IDC_GIF,check);
+					CheckDlgButton(hwnd,IDC_HEIC,check);
+					CheckDlgButton(hwnd,IDC_HEIF,check);
 					CheckDlgButton(hwnd,IDC_ICO,check);
 					CheckDlgButton(hwnd,IDC_JPEG,check);
 					CheckDlgButton(hwnd,IDC_JPG,check);
@@ -11775,19 +11818,30 @@ static void _viv_frame_skip(int size)
 		{
 			while(size > 0)
 			{
-				if ((_viv_frame_loaded_count == _viv_frame_count) || (_viv_frame_position + 1 < _viv_frame_loaded_count))
-				{
-					_viv_frame_position++;
-					if (_viv_frame_position == _viv_frame_count)
-					{
-						_viv_frame_position = 0;
-					}
+				int delay;
 
-					_viv_animation_timer_tick_start = os_get_tick_count();
-					_viv_timer_tick = 0;
+				// can't skip past the frames loaded so far.
+				if ((_viv_frame_loaded_count != _viv_frame_count) && (_viv_frame_position + 1 >= _viv_frame_loaded_count))
+				{
+					break;
 				}
 
-				size -= _viv_frames[_viv_frame_position].delay;
+				_viv_frame_position++;
+				if (_viv_frame_position == _viv_frame_count)
+				{
+					_viv_frame_position = 0;
+				}
+
+				_viv_animation_timer_tick_start = os_get_tick_count();
+				_viv_timer_tick = 0;
+
+				delay = _viv_frames[_viv_frame_position].delay;
+				if (delay < 1)
+				{
+					delay = 1;
+				}
+
+				size -= delay;
 			}
 		}
 		else
@@ -11795,6 +11849,8 @@ static void _viv_frame_skip(int size)
 		{
 			while(size < 0)
 			{
+				int delay;
+
 				_viv_frame_position--;
 				if (_viv_frame_position < 0)
 				{
@@ -11803,8 +11859,14 @@ static void _viv_frame_skip(int size)
 				
 				_viv_animation_timer_tick_start = os_get_tick_count();
 				_viv_timer_tick = 0;
-				
-				size += _viv_frames[_viv_frame_position].delay;
+
+				delay = _viv_frames[_viv_frame_position].delay;
+				if (delay < 1)
+				{
+					delay = 1;
+				}
+
+				size += delay;
 			}
 		}
 			
@@ -11998,6 +12060,18 @@ static int _viv_webp_frame_proc(_viv_webp_t *viv_webp,BYTE *pixels,int delay)
 				{
 					DeleteObject(hbitmap);
 					hbitmap = new_hbitmap;
+
+					// orientations 5-8 swap the image dimensions; keep the
+					// reported size in sync with the orientated bitmap (the
+					// GDI+ path does the same).
+					if ((viv_webp->orientation >= 5) && (viv_webp->orientation <= 8))
+					{
+						DWORD temp;
+
+						temp = viv_webp->wide;
+						viv_webp->wide = viv_webp->high;
+						viv_webp->high = temp;
+					}
 				}
 			}
 			
@@ -12125,9 +12199,11 @@ static DWORD WINAPI _viv_load_image_thread_proc(void *param)
 					DWORD numread;
 					DWORD totreadsize;
 					char *d;
+					int terminated;
 					
 					d = buf;
 					totreadsize = size;
+					terminated = 0;
 					
 					while(totreadsize)
 					{
@@ -12135,7 +12211,7 @@ static DWORD WINAPI _viv_load_image_thread_proc(void *param)
 
 						if (_VIV_LOAD_TERMINATE_GET())
 						{
-							totreadsize = 0;
+							terminated = 1;
 							break;
 						}
 
@@ -12164,7 +12240,9 @@ static DWORD WINAPI _viv_load_image_thread_proc(void *param)
 
 					GlobalUnlock(global_handle);
 					
-					if (totreadsize == 0)
+					// don't build a stream from a half-read buffer when the
+					// load was terminated mid-read.
+					if ((totreadsize == 0) && (!terminated))
 					{
 						HRESULT hresult;
 						
@@ -12324,15 +12402,16 @@ static DWORD WINAPI _viv_load_image_thread_proc(void *param)
 									UINT size;
 
 									// PropertyTagFrameDelay 0x5100
-									os_GdipGetPropertyItemSize(image,0x5100,&size);
-
-									debug_printf("frame delay size %d\n",size);
-
-									frame_delay = (os_PropertyItem_t *)mem_alloc(size);
-									frame_delay_size = size;
-									
-									// PropertyTagFrameDelay 0x5100
-									os_GdipGetPropertyItem(image,0x5100,size,frame_delay);
+									// some multi-frame formats (multi-page tiff, multi-frame ico) don't have this property.
+									size = 0;
+									if ((os_GdipGetPropertyItemSize(image,0x5100,&size) == 0) && (size > 0))
+									{
+										frame_delay = (os_PropertyItem_t *)mem_alloc(size);
+										frame_delay_size = size;
+										
+										// PropertyTagFrameDelay 0x5100
+										os_GdipGetPropertyItem(image,0x5100,size,frame_delay);
+									}
 								}
 
 								// draw frames.
@@ -12548,6 +12627,85 @@ static DWORD WINAPI _viv_load_image_thread_proc(void *param)
 					if (viv_webp.frame_index > 0)
 					{
 						ret = 1;
+					}
+					else
+					{
+						// retry with the Windows Imaging Component for
+						// formats GDI+/libwebp don't know (HEIC/HEIF, ...).
+						// Release any DCs a failed webp info callback left behind.
+						if (viv_webp.mem_hdc)
+						{
+							DeleteDC(viv_webp.mem_hdc);
+							viv_webp.mem_hdc = NULL;
+						}
+
+						if (viv_webp.screen_hdc)
+						{
+							ReleaseDC(NULL,viv_webp.screen_hdc);
+							viv_webp.screen_hdc = NULL;
+						}
+
+						viv_webp.frame_index = 0;
+
+						if (wic_load(stream,&viv_webp,_viv_webp_info_proc,_viv_webp_frame_proc))
+						{
+							ret = 1;
+						}
+						else
+						{
+							debug_printf("WIC failed to load image %S\n",_viv_load_image_filename);
+
+							// we loaded at least one frame, so treat it as complete.
+							if (viv_webp.frame_index > 0)
+							{
+								ret = 1;
+							}
+							else
+							{
+								// last resort: the built-in libheif decoder.
+								// The system HEIF extension (needed by WIC)
+								// is often not installed, so this is the
+								// path that makes HEIC/HEIF work everywhere.
+								int heif_orientation;
+
+								if (viv_webp.mem_hdc)
+								{
+									DeleteDC(viv_webp.mem_hdc);
+									viv_webp.mem_hdc = NULL;
+								}
+
+								if (viv_webp.screen_hdc)
+								{
+									ReleaseDC(NULL,viv_webp.screen_hdc);
+									viv_webp.screen_hdc = NULL;
+								}
+
+								viv_webp.frame_index = 0;
+
+								// Windows property store can't read EXIF from
+								// HEIC; parse the orientation from the file.
+								heif_orientation = heif_get_orientation(stream);
+								if ((heif_orientation >= 1) && (heif_orientation <= 8))
+								{
+									viv_webp.orientation = heif_orientation;
+								}
+
+								if (heif_load(stream,&viv_webp,_viv_webp_info_proc,_viv_webp_frame_proc))
+								{
+									ret = 1;
+								}
+								else
+								{
+									debug_printf("libheif failed to load image %S\n",_viv_load_image_filename);
+
+									// we loaded at least one frame, so treat it as complete.
+									if (viv_webp.frame_index > 0)
+									{
+										ret = 1;
+									}
+								}
+							}
+						}
 					}
 				}
 
@@ -13675,9 +13833,9 @@ static void _viv_command_line_options(void)
 //		"/everything <search> Open files from an Everything search.\n"
 //		"/random <search>\tOpen random files from an Everything search.\n"
 		"/shuffle\t\tShuffle playlist.\n"
-		"\t\t/<bmp|gif|ico|jpeg|jpg|png|tif|tiff|webp>\n"
+		"\t\t/<bmp|gif|heic|heif|ico|jpeg|jpg|png|tif|tiff|webp>\n"
 		"\t\tInstall association.\n"
-		"\t\t/no<bmp|gif|ico|jpeg|jpg|png|tif|tiff|webp>\n"
+		"\t\t/no<bmp|gif|heic|heif|ico|jpeg|jpg|png|tif|tiff|webp>\n"
 		"\t\tUninstall association.\n"
 		"/appdata\t\tSave settings in appdata.\n"
 		"/noappdata\tSave settings in exe path.\n"
@@ -15230,7 +15388,7 @@ static int _viv_send_everything_search(HWND hwnd,int add,int randomize,const wch
 			DWORD size;
 			wchar_t new_search[STRING_SIZE];
 			
-			string_copy_utf8_string(new_search,"ext:bmp;gif;ico;jpeg;jpg;png;tif;tiff;webp <");
+			string_copy_utf8_string(new_search,"ext:bmp;gif;heic;heif;ico;jpeg;jpg;png;tif;tiff;webp <*");
 			string_cat(new_search,search);
 			string_cat_utf8(new_search,">");
 
@@ -15240,7 +15398,7 @@ static int _viv_send_everything_search(HWND hwnd,int add,int randomize,const wch
 					
 			if (SendMessage(everything_hwnd,EVERYTHING_WM_IPC,EVERYTHING_IPC_IS_FILE_INFO_INDEXED,EVERYTHING_IPC_FILE_INFO_FILE_SIZE))
 			{
-				_viv_everything_request_flags |= EVERYTHING_IPC_QUERY2_REQUEST_SIZE | EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED; 
+				_viv_everything_request_flags |= EVERYTHING_IPC_QUERY2_REQUEST_SIZE;
 			}
 			
 			if (SendMessage(everything_hwnd,EVERYTHING_WM_IPC,EVERYTHING_IPC_IS_FILE_INFO_INDEXED,EVERYTHING_IPC_FILE_INFO_DATE_MODIFIED))
@@ -15704,7 +15862,7 @@ static void _viv_send_random_everything_search(void)
 		DWORD size;
 		wchar_t new_search[STRING_SIZE];
 		
-		string_copy_utf8_string(new_search,"ext:bmp;gif;ico;jpeg;jpg;png;tif;tiff;webp <");
+		string_copy_utf8_string(new_search,"ext:bmp;gif;heic;heif;ico;jpeg;jpg;png;tif;tiff;webp <*");
 		string_cat(new_search,_viv_random);
 		string_cat_utf8(new_search,">");
 
@@ -15714,7 +15872,7 @@ static void _viv_send_random_everything_search(void)
 				
 		if (SendMessage(everything_hwnd,EVERYTHING_WM_IPC,EVERYTHING_IPC_IS_FILE_INFO_INDEXED,EVERYTHING_IPC_FILE_INFO_FILE_SIZE))
 		{
-			_viv_everything_request_flags |= EVERYTHING_IPC_QUERY2_REQUEST_SIZE | EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED; 
+			_viv_everything_request_flags |= EVERYTHING_IPC_QUERY2_REQUEST_SIZE;
 		}
 		
 		if (SendMessage(everything_hwnd,EVERYTHING_WM_IPC,EVERYTHING_IPC_IS_FILE_INFO_INDEXED,EVERYTHING_IPC_FILE_INFO_DATE_MODIFIED))
@@ -16035,7 +16193,9 @@ static HBITMAP _viv_get_mipmap(HBITMAP hbitmap,int image_wide,int image_high,int
 			
 			// create mipmap..
 			*pmip = mem_alloc(sizeof(_viv_mipmap_t));
-			
+			(*pmip)->mipmap = NULL;
+			(*pmip)->hbitmap = NULL;
+
 			screen_hdc = GetDC(0);
 			if (screen_hdc)
 			{
@@ -16045,9 +16205,10 @@ static HBITMAP _viv_get_mipmap(HBITMAP hbitmap,int image_wide,int image_high,int
 					mem2_hdc = CreateCompatibleDC(screen_hdc);
 					if (mem2_hdc)
 					{
-						(*pmip)->mipmap = NULL;
 						(*pmip)->hbitmap = CreateCompatibleBitmap(screen_hdc,mip_wide,mip_high);
-						
+
+						if ((*pmip)->hbitmap)
+						{
 						last_hbitmap = SelectObject(mem_hdc,(*pmip)->hbitmap);
 						last2_hbitmap = SelectObject(mem2_hdc,best_hbitmap);
 						
@@ -16069,6 +16230,7 @@ static HBITMAP _viv_get_mipmap(HBITMAP hbitmap,int image_wide,int image_high,int
 						
 						SelectObject(mem_hdc,last_hbitmap);
 						SelectObject(mem2_hdc,last2_hbitmap);
+						}
 
 						DeleteDC(mem2_hdc);
 					}

@@ -1,0 +1,12 @@
+{
+	"InstallScripts" : 
+	[
+		"D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-de265-x86/cmake_install.cmake",
+		"D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-de265-x86/libde265/cmake_install.cmake",
+		"D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-de265-x86/libde265/encoder/cmake_install.cmake",
+		"D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-de265-x86/libde265/encoder/algo/cmake_install.cmake",
+		"D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-de265-x86/libde265/x86/cmake_install.cmake",
+		"D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-de265-x86/dec265/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

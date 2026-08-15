@@ -108,7 +108,17 @@ void string_copy_with_bufsize(wchar_t *d,SIZE_T bufsize,const wchar_t *s)
 
 void string_copy_utf8_string(wchar_t *buf,const utf8_t *s)
 {
-	MultiByteToWideChar(CP_UTF8,0,s,-1,buf,STRING_SIZE);
+	int length;
+
+	length = MultiByteToWideChar(CP_UTF8,0,s,-1,buf,STRING_SIZE);
+
+	// MultiByteToWideChar truncates without a terminator when the buffer
+	// is too small (or fails on invalid sequences); force a terminator so
+	// buf is always a valid NUL-terminated string.
+	if (length <= 0)
+	{
+		buf[STRING_SIZE - 1] = 0;
+	}
 }
 
 void string_cat(wchar_t *buf,const wchar_t *s)
@@ -803,7 +813,7 @@ wchar_t *string_skip_ws(const wchar_t *p)
 	return (wchar_t *)p;
 }
 
-wchar_t *string_get_word(wchar_t *p,wchar_t *buf)
+wchar_t *string_get_word(wchar_t *p,wchar_t *buf,int bufsize)
 {
 	wchar_t *d;
 	int is_quote;
@@ -816,7 +826,11 @@ wchar_t *string_get_word(wchar_t *p,wchar_t *buf)
 		if ((*p == '"') && (p[1] == '"'))
 		{
 			p += 2;
-			*d++ = '"';
+			if (bufsize > 1)
+			{
+				*d++ = '"';
+				bufsize--;
+			}
 		}
 		else
 		if (*p == '"')
@@ -831,7 +845,13 @@ wchar_t *string_get_word(wchar_t *p,wchar_t *buf)
 		}
 		else
 		{
-			*d++ = *p;
+			// once the buffer is full, keep skipping the rest of the
+			// word so the caller continues at the next word.
+			if (bufsize > 1)
+			{
+				*d++ = *p;
+				bufsize--;
+			}
 			p++;
 		}
 	}

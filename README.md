@@ -50,8 +50,9 @@
   - **基础常见格式**：JPEG/JPG、PNG、BMP、TIFF/TIF、ICO（GDI+ / Win32 原生）。
   - **WebP**：静态 WebP 与多帧动画 WebP（内置轻量级 `libwebp` 解码引擎）。
   - **动画 GIF**：逐帧播放（GDI+ 原生）。
+  - **HEIC/HEIF**：内置 `libheif` + `libde265` 开源解码引擎（MIT 许可），开箱即用，**无需**安装系统的"HEIF 图像扩展"组件；支持 iPhone 等设备拍摄的 HEVC 照片与 EXIF 方向自动旋转。
 - **超大图渲染**：支持高分辨率图像渲染与平移，内置安全算术库防范内存乘法溢出。
-- **说明**：HEIC/HEIF、AVIF、APNG、TGA、WMF/EMF、CUR/ANI 等格式的解码器尚未实现（见 `2.4_开发计划.md`），已在文件选择器与 Everything 搜索过滤器中同步移除，避免出现"列得出、打不开"的情况。
+- **说明**：AVIF、APNG、TGA、WMF/EMF、CUR/ANI 等格式的解码器尚未实现（见 `2.4_开发计划.md`），已在文件选择器与 Everything 搜索过滤器中同步移除，避免出现"列得出、打不开"的情况。
 
 #### 图像格式支持一览表
 
@@ -60,6 +61,7 @@
 | **常见标准格式** | `.jpg`, `.jpeg`, `.png`, `.bmp`, `.tif`, `.tiff`, `.ico` | GDI+ / Win32 原生 | 支持 Exif 自动旋转、 Alpha 透明通道与高清像素呈现 |
 | **动画 GIF** | `.gif` | GDI+ 帧解码 | 逐帧播放动画 GIF，支持播放控制 |
 | **WebP** | `.webp` | 内置 `libwebp` 开源解码引擎 | 支持静态 WebP 及多帧动画 WebP 高流畅度播放 |
+| **HEIC/HEIF** | `.heic`, `.heif` | 内置 `libheif` + `libde265` 解码引擎（WIC 可用时优先走系统组件） | 无需系统 HEIF 扩展即可打开 iPhone 等设备拍摄的 HEVC 照片 |
 
 ### 看图与缩放
 

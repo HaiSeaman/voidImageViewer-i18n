@@ -308,6 +308,8 @@ static const utf8_t *_localization_string_array_it[LOCALIZATION_ID_COUNT] =
 	// Association descriptions
 	"Immagine bitmap",
 	"Immagine GIF animata",
+	"Immagine HEIC",
+	"Immagine HEIF",
 	"File icona",
 	"Immagine JPEG",
 	"Immagine JPEG",

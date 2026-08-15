@@ -1,4 +1,4 @@
-;
+﻿;
 ; Copyright 2025 voidtools / David Carpenter
 ; 
 ; Multi-language and multi-VS version support added by hesphoros (2026)
@@ -72,7 +72,7 @@ XPStyle on
 !else
 	!define LICENSE_FILE "installer_license_English.txt"
 	!define INSTALL_OPTIONS_FILE "InstallOptions.ini"
-	!define INSTALL_OPTIONS2_FILE ${INSTALL_OPTIONS2_FILE}
+	!define INSTALL_OPTIONS2_FILE "InstallOptions2.ini"
 	!define LANG_CODE "en-US"
 	!define LANG_NAME "English"
 !endif
@@ -374,6 +374,30 @@ no_webp_association:
 	StrCpy $user_install_options "$user_install_options /nowebp"
 
 skip_webp_association:
+
+	; heic Associations
+	!insertmacro MUI_INSTALLOPTIONS_READ $R0 "${INSTALL_OPTIONS2_FILE}" "Field 12" "State"
+	strcmp $R0 "0" no_heic_association
+	StrCpy $user_install_options "$user_install_options /heic"
+	Goto skip_heic_association
+	
+no_heic_association:
+
+	StrCpy $user_install_options "$user_install_options /noheic"
+
+skip_heic_association:
+
+	; heif Associations
+	!insertmacro MUI_INSTALLOPTIONS_READ $R0 "${INSTALL_OPTIONS2_FILE}" "Field 13" "State"
+	strcmp $R0 "0" no_heif_association
+	StrCpy $user_install_options "$user_install_options /heif"
+	Goto skip_heif_association
+	
+no_heif_association:
+
+	StrCpy $user_install_options "$user_install_options /noheif"
+
+skip_heif_association:
 
 	; ----------------------------------
 	; begin voidImageViewer installation

@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\dec265\dec265.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\extra\getopt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\extra\getopt_long.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libde265-1.0.15\dec265\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{1980C475-8FEF-3CF4-9F58-5B2FAC711F21}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

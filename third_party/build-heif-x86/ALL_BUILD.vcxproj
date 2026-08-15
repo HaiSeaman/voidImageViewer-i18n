@@ -1,0 +1,146 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ResolveNugetPackages>false</ResolveNugetPackages>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{20F8F7D4-1520-304B-AF12-C284F0C789D2}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>Win32</Platform>
+    <ProjectName>ALL_BUILD</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/libheif-1.23.1/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
+C:\Python311\Lib\site-packages\cmake\data\bin\cmake.exe -SD:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/libheif-1.23.1 -BD:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-heif-x86 --check-stamp-file D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/build-heif-x86/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCCompiler.cmake.in;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCCompilerABI.c;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCXXCompiler.cmake.in;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCXXCompilerABI.cpp;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCXXInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCheckCompilerFlagCommonPatterns.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCommonLanguageInclude.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeCompilerIdDetection.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeDetermineCCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeDetermineCXXCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeDetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeDetermineCompilerABI.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeDetermineCompilerId.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeDetermineCompilerSupport.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeDetermineRCCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeDetermineSystem.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeFindBinUtils.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeGenericSystem.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeInitializeConfigs.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeLanguageInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeParseImplicitIncludeInfo.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeParseImplicitLinkInfo.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeParseLibraryArchitecture.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeRCCompiler.cmake.in;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeRCInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeSystem.cmake.in;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeSystemSpecificInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeSystemSpecificInitialize.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeTestCCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeTestCXXCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeTestCompilerCommon.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CMakeTestRCCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CPack.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CPackComponent.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CTest.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CTestTargets.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CTestUseLaunchers.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckCXXCompilerFlag.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckCXXSourceCompiles.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckCXXSymbolExists.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckIncludeFile.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckIncludeFileCXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckSymbolExists.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CheckTypeSize.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\ADSP-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\ARMCC-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\ARMClang-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\AppleClang-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\Borland-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\Bruce-C-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\Clang-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\Clang-DetermineCompilerInternal.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\Compaq-C-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\Cray-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\CrayClang-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\Diab-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\Embarcadero-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\Fujitsu-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\FujitsuClang-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\GHS-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\GNU-C-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\HP-C-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\HP-CXX-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\IAR-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\IBMCPP-C-DetermineVersionInternal.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\IBMClang-C-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\IBMClang-CXX-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\Intel-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\IntelLLVM-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\LCC-C-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\LCC-CXX-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\MSVC-C.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\MSVC-CXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\MSVC-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\MSVC.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\NVHPC-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\NVIDIA-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\OrangeC-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\PGI-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\PathScale-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\PellesC-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\Renesas-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\SCO-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\SDCC-C-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\SunPro-C-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\TI-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\TIClang-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\Tasking-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\TinyCC-C-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\VisualAge-C-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\Watcom-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\XL-C-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\XL-CXX-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\XLClang-C-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\XLClang-CXX-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\zOS-C-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\CompilerId\VS-10.vcxproj.in;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\DartConfiguration.tcl.in;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\FindDoxygen.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\FindPackageHandleStandardArgs.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\FindPackageMessage.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\FindPkgConfig.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\GNUInstallDirs.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CMakeDetermineLinkerId.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CMakeInspectCLinker.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CMakeInspectCXXLinker.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CheckCommon.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CheckCompilerFlag.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CheckFlagCommonConfig.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\CheckSourceCompiles.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Internal\FeatureTesting.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Linker\MSVC-C.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Linker\MSVC-CXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Linker\MSVC.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows-Determine-CXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows-Initialize.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows-MSVC-C.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows-MSVC.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\Windows.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\Platform\WindowsPaths.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Modules\TestBigEndian.cmake;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Templates\CPackConfig.cmake.in;C:\Python311\Lib\site-packages\cmake\data\share\cmake-4.4\Templates\CTestScript.cmake.in;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\CMakeFiles\4.4.2\CMakeCCompiler.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\CMakeFiles\4.4.2\CMakeCXXCompiler.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\CMakeFiles\4.4.2\CMakeRCCompiler.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\CMakeFiles\4.4.2\CMakeSystem.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\cmake\modules\FindAOM.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\cmake\modules\FindLIBDE265.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\cmake\modules\FindOpenH264.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\cmake\modules\FindX264.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\cmake\modules\Findlibsharpyuv.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\cmake\modules\LibFindMacros.cmake;D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\libheif-1.23.1\libheif.pc.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\ZERO_CHECK.vcxproj">
+      <Project>{A3FF2766-E662-307D-992A-327B54A87A7D}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\tests\component_descriptions.vcxproj">
+      <Project>{F87E869D-E972-3CB9-9B4E-26E337551C6F}</Project>
+      <Name>component_descriptions</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\tests\cxx_wrapper.vcxproj">
+      <Project>{B2C9886E-CEF9-3CB5-BAC8-5F798CD990D4}</Project>
+      <Name>cxx_wrapper</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\tests\encode.vcxproj">
+      <Project>{99456793-9DBF-3428-BCD3-502C0D442D43}</Project>
+      <Name>encode</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\tests\encode_grid.vcxproj">
+      <Project>{70404276-EDCA-3309-A412-EFAD1D2CA595}</Project>
+      <Name>encode_grid</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\tests\entity_groups.vcxproj">
+      <Project>{7CDAD5BC-4A64-3121-875E-0254F43CF536}</Project>
+      <Name>entity_groups</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\tests\extended_type.vcxproj">
+      <Project>{44D986B0-4E1D-3A04-9C92-25240F398D8F}</Project>
+      <Name>extended_type</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\tests\grid_tile_missing.vcxproj">
+      <Project>{9C68C728-CD8F-3AE8-8B76-FD5A4B36095C}</Project>
+      <Name>grid_tile_missing</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\libheif\heif.vcxproj">
+      <Project>{9BA6A1FA-3A5E-32BC-8A9D-A1FC9D69095D}</Project>
+      <Name>heif</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\heifio\heifio.vcxproj">
+      <Project>{4A624AE6-09C0-35D0-921B-6CF9E0334949}</Project>
+      <Name>heifio</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\tests\mini_decode.vcxproj">
+      <Project>{2B32C66A-9DFF-325B-862B-DD059CA4E91A}</Project>
+      <Name>mini_decode</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\tests\omaf.vcxproj">
+      <Project>{DF2107FC-C989-336B-A703-C4420DD8E1CA}</Project>
+      <Name>omaf</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\tests\region.vcxproj">
+      <Project>{8A6D46B5-4BBA-3E3A-B1F3-0BB5157C7F66}</Project>
+      <Name>region</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\tests\sequence_no_track.vcxproj">
+      <Project>{F7B96346-C7C0-3DFD-BD95-276FF916A007}</Project>
+      <Name>sequence_no_track</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\tests\tai.vcxproj">
+      <Project>{B70374E4-456E-36F1-BE71-3C47DAE2956A}</Project>
+      <Name>tai</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\tests\testframework.vcxproj">
+      <Project>{E252B24A-6C0F-3A19-B6D7-90D2C731E6F8}</Project>
+      <Name>testframework</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-heif-x86\tests\text.vcxproj">
+      <Project>{2B146D75-062B-30F7-8CB1-0F203BD945E5}</Project>
+      <Name>text</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

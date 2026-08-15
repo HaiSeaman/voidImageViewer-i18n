@@ -1,0 +1,14 @@
+# CMake generation dependency list for this directory.
+C:/Python311/Lib/site-packages/cmake/data/share/cmake-4.4/Modules/BasicConfigVersion-SamePatchVersion.cmake.in
+C:/Python311/Lib/site-packages/cmake/data/share/cmake-4.4/Modules/CMakePackageConfigHelpers.cmake
+C:/Python311/Lib/site-packages/cmake/data/share/cmake-4.4/Modules/CheckCSourceCompiles.cmake
+C:/Python311/Lib/site-packages/cmake/data/share/cmake-4.4/Modules/CheckIncludeFile.cmake
+C:/Python311/Lib/site-packages/cmake/data/share/cmake-4.4/Modules/CheckLibraryExists.cmake
+C:/Python311/Lib/site-packages/cmake/data/share/cmake-4.4/Modules/FindPackageHandleStandardArgs.cmake
+C:/Python311/Lib/site-packages/cmake/data/share/cmake-4.4/Modules/FindPackageMessage.cmake
+C:/Python311/Lib/site-packages/cmake/data/share/cmake-4.4/Modules/FindThreads.cmake
+C:/Python311/Lib/site-packages/cmake/data/share/cmake-4.4/Modules/Internal/CheckCommon.cmake
+C:/Python311/Lib/site-packages/cmake/data/share/cmake-4.4/Modules/Internal/CheckSourceCompiles.cmake
+C:/Python311/Lib/site-packages/cmake/data/share/cmake-4.4/Modules/WriteBasicConfigVersionFile.cmake
+D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/libheif-1.23.1/libheif/CMakeLists.txt
+D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/libheif-1.23.1/libheif/api/libheif/heif_version.h.in

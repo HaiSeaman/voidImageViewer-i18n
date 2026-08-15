@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Solution>
+	<Configurations>
+		<BuildType Name="Release"/>
+		<Platform Name="x64"/>
+	</Configurations>
+	<Project Path="ALL_BUILD.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="0b592223-6d4d-3272-8f3a-e78c34d7d7c3" DefaultStartup="true">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="tests/component_descriptions.vcxproj"/>
+		<BuildDependency Project="tests/cxx_wrapper.vcxproj"/>
+		<BuildDependency Project="tests/encode.vcxproj"/>
+		<BuildDependency Project="tests/encode_grid.vcxproj"/>
+		<BuildDependency Project="tests/entity_groups.vcxproj"/>
+		<BuildDependency Project="tests/extended_type.vcxproj"/>
+		<BuildDependency Project="tests/grid_tile_missing.vcxproj"/>
+		<BuildDependency Project="libheif/heif.vcxproj"/>
+		<BuildDependency Project="heifio/heifio.vcxproj"/>
+		<BuildDependency Project="tests/mini_decode.vcxproj"/>
+		<BuildDependency Project="tests/omaf.vcxproj"/>
+		<BuildDependency Project="tests/region.vcxproj"/>
+		<BuildDependency Project="tests/sequence_no_track.vcxproj"/>
+		<BuildDependency Project="tests/tai.vcxproj"/>
+		<BuildDependency Project="tests/testframework.vcxproj"/>
+		<BuildDependency Project="tests/text.vcxproj"/>
+	</Project>
+	<Project Path="Continuous.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="25273f08-2084-3a26-a2f4-49491dbfe4b6">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<Build Solution="Release|*" Project="false"/>
+	</Project>
+	<Project Path="Experimental.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="5cf32f63-a496-3a6a-ae22-148f10f73385">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<Build Solution="Release|*" Project="false"/>
+	</Project>
+	<Project Path="INSTALL.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="3d06a0b3-8ce6-3c03-bdf1-264add89cba8">
+		<BuildDependency Project="ALL_BUILD.vcxproj"/>
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<Build Solution="Release|*" Project="false"/>
+	</Project>
+	<Project Path="Nightly.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="679f05cd-4db1-34fc-83f0-4a7182ac85c8">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<Build Solution="Release|*" Project="false"/>
+	</Project>
+	<Project Path="NightlyMemoryCheck.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="7fa2bd22-3cf2-39f7-a805-ec504e5cf9e9">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<Build Solution="Release|*" Project="false"/>
+	</Project>
+	<Project Path="PACKAGE.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="e7c37c1f-459d-31cf-8a12-5da165720a89">
+		<BuildDependency Project="ALL_BUILD.vcxproj"/>
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<Build Solution="Release|*" Project="false"/>
+	</Project>
+	<Project Path="RUN_TESTS.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="42170c01-c292-3433-b81c-24b67f2a0f5c">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<Build Solution="Release|*" Project="false"/>
+	</Project>
+	<Project Path="ZERO_CHECK.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="da9eb99f-630d-39a8-b3f1-10dbc602a5a8"/>
+	<Project Path="tests/component_descriptions.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="f693a59d-9b7e-3d67-9f64-054c705e91fa">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libheif/heif.vcxproj"/>
+		<BuildDependency Project="tests/testframework.vcxproj"/>
+	</Project>
+	<Project Path="tests/cxx_wrapper.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="bf9d3967-ef5f-3c8c-8238-b2c5fa3deef1">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libheif/heif.vcxproj"/>
+		<BuildDependency Project="tests/testframework.vcxproj"/>
+	</Project>
+	<Project Path="tests/encode.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="6ec09ade-e9b6-38fd-91ed-acaa8c468593">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libheif/heif.vcxproj"/>
+		<BuildDependency Project="tests/testframework.vcxproj"/>
+	</Project>
+	<Project Path="tests/encode_grid.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="1aaa7533-8b66-3631-9117-2ea17c9bb1ef">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libheif/heif.vcxproj"/>
+		<BuildDependency Project="tests/testframework.vcxproj"/>
+	</Project>
+	<Project Path="tests/entity_groups.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="a9b626ab-b548-3c22-86b8-9fa6ae8b011d">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libheif/heif.vcxproj"/>
+		<BuildDependency Project="tests/testframework.vcxproj"/>
+	</Project>
+	<Project Path="tests/extended_type.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="c167daeb-a4ad-327b-8ccf-76a5b4e91976">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libheif/heif.vcxproj"/>
+		<BuildDependency Project="tests/testframework.vcxproj"/>
+	</Project>
+	<Project Path="tests/grid_tile_missing.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="26a47342-8ff2-30b2-96bd-1355be42035f">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libheif/heif.vcxproj"/>
+		<BuildDependency Project="tests/testframework.vcxproj"/>
+	</Project>
+	<Project Path="libheif/heif.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="a6f633ac-cb57-34a3-ac47-09b01b921af0">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+	</Project>
+	<Project Path="heifio/heifio.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="bb0cb6aa-811e-3cdf-809b-d57ad5227c6b">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libheif/heif.vcxproj"/>
+	</Project>
+	<Project Path="tests/mini_decode.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="dd8dabdd-4b33-32ad-905f-8f6b2416c6a3">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libheif/heif.vcxproj"/>
+		<BuildDependency Project="tests/testframework.vcxproj"/>
+	</Project>
+	<Project Path="tests/omaf.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="e72acf77-3d4a-3390-b31c-158c0b762516">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libheif/heif.vcxproj"/>
+		<BuildDependency Project="tests/testframework.vcxproj"/>
+	</Project>
+	<Project Path="tests/region.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="6293337a-3d73-307a-9401-9bef189e1e1c">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libheif/heif.vcxproj"/>
+		<BuildDependency Project="tests/testframework.vcxproj"/>
+	</Project>
+	<Project Path="tests/sequence_no_track.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="8af7bae6-7ae0-3462-b74d-8389e0312f93">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libheif/heif.vcxproj"/>
+		<BuildDependency Project="tests/testframework.vcxproj"/>
+	</Project>
+	<Project Path="tests/tai.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="7e0971ec-2556-311b-aa83-c1b717dd60b6">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libheif/heif.vcxproj"/>
+		<BuildDependency Project="tests/testframework.vcxproj"/>
+	</Project>
+	<Project Path="tests/testframework.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="b850ad6d-64ba-3270-b2f2-9dfc632a95e5">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libheif/heif.vcxproj"/>
+	</Project>
+	<Project Path="tests/text.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="058ef9c3-af81-3154-ae48-360b6c622224">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libheif/heif.vcxproj"/>
+		<BuildDependency Project="tests/testframework.vcxproj"/>
+	</Project>
+</Solution>

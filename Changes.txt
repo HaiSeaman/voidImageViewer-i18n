@@ -1,3 +1,25 @@
+Saturday, 16 August 2026: Version 2.6
+	fixed: x64 builds crashed while decoding HEIC/HEIF (image displayed as garbage): the MSVC x64 optimizer at /O2 miscompiles libde265's scan-order table initialization (fill_scan_pos never finds the target cell and walks the sub-block index negative, faulting in init_scan_orders). The x64 libde265 static library is now built with /O1; x86 and x64 decode to byte-identical pixels (verified by SHA256 over full decoded frames). The x86 library is unaffected.
+	fixed: the WIC loader ignored a CopyPixels failure in the direct 32bppBGRA path and delivered an uninitialized pixel buffer to the frame pipeline (garbled image on WIC decoder errors).
+	added: HEIC/HEIF decoding is now built in via libheif + libde265 (static, MIT/LGPL). Previously HEIC/HEIF relied on the Windows Imaging Component, which needs the store "HEIF Image Extensions" package that most systems don't have - HEIC files showed a "failed to load image" error. The built-in decoder works everywhere, no system components required, and EXIF orientation is parsed from the file (the Windows property store can't read HEIC EXIF).
+	added: HEIC/HEIF re-added to the open-file dialog, Everything search filters, file associations, command line switches and the NSIS installer options.
+	fixed: crash (segfault) while parsing EXIF orientation from HEIC files whose TIFF offset is non-zero (out-of-bounds read in the TIFF IFD walk).
+	fixed: image loading test harness mis-detected the "failed to load image" message box as a successful render (it counted the grey dialog background as non-black pixels).
+	fixed: frame skipping could hang the UI forever on animations with zero-delay frames (animated webp) or while the animation was still loading.
+	fixed: _viv_get_mipmap used uninitialized struct fields (crash) when GDI handles were exhausted.
+	fixed: multi-frame images without a frame-delay property (multi-page TIFF, multi-frame ICO) could crash on load (uninitialized size / NULL dereference).
+	fixed: Everything IPC replies lacked COPYDATA buffer validation - a malformed message from any local process could crash the viewer or cause out-of-bounds reads.
+	fixed: command line parsing could overflow the stack with very long arguments (string_get_word is now length-bounded).
+	fixed: os_mirror_region read uninitialized memory on empty regions (RTL mirrored painting).
+	fixed: webp images with EXIF orientation 5-8 were displayed with a wrong aspect ratio.
+	fixed: real drag & drop leaked the shell HDROP (missing DragFinish; clipboard paste no longer fakes a drop message).
+	fixed: Everything search requested the date-modified field when only file size was indexed.
+	fixed: string_copy_utf8_string / _config_write_string could leave buffers unterminated when truncated.
+	fixed: small_pool_kill left dangling chunk pointers; os_kill left dangling module handles and custom colors pointer.
+	fixed: Debug|x64 configuration failed to compile (missing /utf-8).
+	fixed: NSIS English installer failed to build (self-referencing INSTALL_OPTIONS2_FILE macro).
+	fixed: misc (key list trailing comma added a spurious key, debug format %s/%S mismatch in os_get_orientation, load thread created a stream from a half-read buffer when terminated).
+
 Monday, 10 August 2026: Version 1.0.0.16
 	code review and hardening pass.
 	fixed: removed claimed-but-unimplemented format support (HEIC/HEIF, AVIF, APNG, TGA, WMF/EMF, CUR/ANI) from the file dialog and Everything search filters; README updated to match actual support.

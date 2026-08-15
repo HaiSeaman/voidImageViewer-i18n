@@ -923,36 +923,43 @@ void os_kill(void)
 	if (_os_user32_hmodule)
 	{
 		FreeLibrary(_os_user32_hmodule);
+		_os_user32_hmodule = 0;
 	}
 		
 	if (_os_shell32_hmodule)
 	{
 		FreeLibrary(_os_shell32_hmodule);
+		_os_shell32_hmodule = 0;
 	}
 		
 	if (_os_gdi32_hmodule)
 	{
 		FreeLibrary(_os_gdi32_hmodule);
+		_os_gdi32_hmodule = 0;
 	}
 	
 	if (_os_ucrtbase_hmodule)
 	{
 		FreeLibrary(_os_ucrtbase_hmodule);
+		_os_ucrtbase_hmodule = 0;
 	}
 	
 	if (_os_UxTheme_hmodule)
 	{
 		FreeLibrary(_os_UxTheme_hmodule);
+		_os_UxTheme_hmodule = 0;
 	}
 	
 	if (_os_gdiplus_hmodule)
 	{
 		FreeLibrary(_os_gdiplus_hmodule);
+		_os_gdiplus_hmodule = 0;
 	}
 	
 	if (_os_custom_colors)
 	{
 		mem_free(_os_custom_colors);
+		_os_custom_colors = 0;
 	}
 }
 
@@ -1429,6 +1436,14 @@ HRGN os_mirror_region(HRGN hrgn,int wide)
 
 	region_size = GetRegionData(hrgn,0,0);
 
+	// an empty region has no data; mirroring it yields an empty region.
+	if (region_size == 0)
+	{
+		new_hrgn = CreateRectRgn(0,0,0,0);
+		small_pool_kill(&small_pool);
+		return new_hrgn;
+	}
+
 	region_data = small_pool_alloc(&small_pool,region_size);
 
 	GetRegionData(hrgn,region_size,region_data);
@@ -1597,7 +1612,7 @@ int os_get_orientation(const wchar_t *filename)
 				}
 				else
 				{
-					debug_printf((const utf8_t *)"%s: SHGetPropertyStoreFromIDList %08x\n",filename,hr)	;
+					debug_printf("%S: SHGetPropertyStoreFromIDList %08x\n",filename,hr)	;
 				}
 
 				// free pidl allocated by ParseDisplayName
