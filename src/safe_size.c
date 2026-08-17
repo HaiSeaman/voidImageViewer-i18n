@@ -46,55 +46,6 @@ SIZE_T safe_size_add(SIZE_T a,SIZE_T b)
 	return c;
 }
 
-// safely add one to a value.
-// returns a + 1
-// returns SIZE_MAX if an overflow occurs.
-SIZE_T safe_size_add_one(SIZE_T a)
-{
-	return safe_size_add(a,1);
-}
-
-// safely multiply a by sizeof(void *)
-// returns a * sizeof(void *)
-// returns SIZE_MAX if an overflow occurs.
-SIZE_T safe_size_mul_sizeof_pointer(SIZE_T a)
-{
-	SIZE_T c;
-	
-	c = safe_size_add(a,a); // x2
-	c = safe_size_add(c,c); // x4
-	
-#if SIZE_MAX == VIV_UINT64_MAX
-
-	c = safe_size_add(c,c); // x8
-
-#elif SIZE_MAX == VIV_DWORD_MAX
-
-#else
-
-	#error unknown SIZE_MAX
-
-#endif
-
-	return c;
-}
-
-// safely multiply a by sizeof(wchar_t)
-// returns a + sizeof(wchar_t)
-// returns SIZE_MAX if an overflow occurs.
-SIZE_T safe_size_mul_sizeof_wchar(SIZE_T a)
-{
-	return safe_size_add(a,a); // x2
-}
-
-// safely multiply a by 2
-// returns a * 2
-// returns SIZE_MAX if an overflow occurs.
-SIZE_T safe_size_mul_2(SIZE_T a)
-{
-	return safe_size_add(a,a); // x2
-}
-
 // safely multiply a by b
 // returns a * b
 // returns SIZE_MAX if an overflow occurs.

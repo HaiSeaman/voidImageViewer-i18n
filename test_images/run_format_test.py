@@ -9,8 +9,8 @@ from ctypes import wintypes
 
 from PIL import ImageGrab
 
-EXE = r"D:\AI\Github\voidImageViewer-master\voidImageViewer-master\vs2026\x64\Release\voidImageViewer.exe"
 TESTDIR = os.path.dirname(os.path.abspath(__file__))
+EXE = os.path.normpath(os.path.join(TESTDIR, "..", "vs2026", "x64", "Release", "voidImageViewer.exe"))
 
 FILES = [
     "test.bmp", "test.png", "test.jpg", "test.jpeg", "test.gif",

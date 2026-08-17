@@ -1,1 +1,0 @@
-D:\AI\Github\voidImageViewer-master\voidImageViewer-master\third_party\build-de265-fixed\libde265\encoder\encoder.dir\Release\encoder.lib

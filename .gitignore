@@ -34,8 +34,10 @@ reasonix.toml
 *.recipe
 
 # vs2026 输出目录（exe 与中间 obj）
+vs2026/Debug/
 vs2026/Release/
 vs2026/x64/
+vs2026/ARM64/
 vs2026/voidImageViewer/
 
 # ===== NSIS 安装包输出 / 发布目录 =====
@@ -59,6 +61,8 @@ third_party/staging-*/
 
 # ===== 测试工具产物（源码 heif_dec_test.cpp 保留） =====
 test_images/dec_*.raw
+__pycache__/
+*.pyc
 
 # ===== 系统杂项 =====
 Thumbs.db

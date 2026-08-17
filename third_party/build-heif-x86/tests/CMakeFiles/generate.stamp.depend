@@ -1,7 +1,0 @@
-# CMake generation dependency list for this directory.
-C:/Python311/Lib/site-packages/cmake/data/share/cmake-4.4/Modules/FindPackageHandleStandardArgs.cmake
-C:/Python311/Lib/site-packages/cmake/data/share/cmake-4.4/Modules/FindPackageMessage.cmake
-C:/Python311/Lib/site-packages/cmake/data/share/cmake-4.4/Modules/FindTIFF.cmake
-C:/Python311/Lib/site-packages/cmake/data/share/cmake-4.4/Modules/SelectLibraryConfigurations.cmake
-D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/libheif-1.23.1/tests/CMakeLists.txt
-D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/libheif-1.23.1/tests/test-config.cc.in

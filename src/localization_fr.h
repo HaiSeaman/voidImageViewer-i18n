@@ -129,9 +129,6 @@ static const utf8_t *_localization_string_array_fr[LOCALIZATION_ID_COUNT] =
 	"&Aucune", // LOCALIZATION_ID_TRANSITION_NONE,
 	"&Fondu", // LOCALIZATION_ID_TRANSITION_FADE,
 	"Durée...", // LOCALIZATION_ID_TRANSITION_DURATION,
-	"Définir la durée de transition", // LOCALIZATION_ID_SET_TRANSITION_DURATION_CAPTION,
-	"&Durée (ms) :", // LOCALIZATION_ID_TRANSITION_DURATION_STATIC,
-	"&Afficher l'interface au survol de la souris", // LOCALIZATION_ID_HOVER_SHOW_UI,
 	
 	// Slideshow menu
 	"&Diaporama", // LOCALIZATION_ID_SLIDESHOW_MENU,
@@ -265,7 +262,6 @@ static const utf8_t *_localization_string_array_fr[LOCALIZATION_ID_COUNT] =
 	"Modifier le raccourci clavier", // LOCALIZATION_ID_EDIT_KEYBOARD_SHORTCUT_CAPTION,
 	"&Touche du raccourci :", // LOCALIZATION_ID_SHORTCUT_KEY,
 	"Touche de raccourci actuellement utilisée par :", // LOCALIZATION_ID_SHORTCUT_KEY_CURRENTLY_USED_BY,
-	"&Supprimer", // LOCALIZATION_ID_REMOVE,
 	"Définir une vitesse personnalisée", // LOCALIZATION_ID_SET_CUSTOM_RATE_CAPTION,
 	"&Vitesse personnalisée :", // LOCALIZATION_ID_CUSTOM_RATE_STATIC,
 	"minutes", // LOCALIZATION_ID_CUSTOM_RATE_MINUTES,
@@ -274,7 +270,6 @@ static const utf8_t *_localization_string_array_fr[LOCALIZATION_ID_COUNT] =
 	"À propos de void Image Viewer", // LOCALIZATION_ID_ABOUT_CAPTION,
 	"Renommer", // LOCALIZATION_ID_RENAME_CAPTION,
 	"Aller à", // LOCALIZATION_ID_JUMP_TO_TITLE,
-	"Rechercher dans Everything", // LOCALIZATION_ID_SEARCH_EVERYTHING,
 	"Copyright © %d voidtools", // LOCALIZATION_ID_ABOUT_COPYRIGHT_FORMAT,
 	"support@voidtools.com", // LOCALIZATION_ID_ABOUT_EMAIL,
 	"www.voidtools.com", // LOCALIZATION_ID_ABOUT_WEBSITE,

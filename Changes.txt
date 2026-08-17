@@ -1,3 +1,13 @@
+Tuesday, 18 August 2026: Version 3.0
+	major repository cleanup and hardening pass.
+	removed: 6000+ redundant files from the repository (build output, tar-extraction garbage, the bundled CMake toolchain, Visual Studio caches, stale installers and test executables).
+	removed: unused libwebp modules (encoder, command-line tools, SWIG bindings, WebP-to-JS/WASM, tests and docs) - only the decoder needed by the viewer is kept; compile units drop from 88 to 64.
+	removed: vcxproj dead configurations (vcxproj shrinks from 1669 to 490 lines) - 16 build configurations that could never compile (missing rescpver.exe, regex/pcre headers, minicrt.lib/HTMLHelp.lib) plus all ARM configurations and the Win98-era UnicoWS.lib link dependency.
+	removed: ~500 lines of dead code (unused functions, commented-out blocks, fossil macros, orphaned localizations) across the src tree.
+	fixed: leftover references to removed code in comments (dead tooltip subsystem calls, unused _viv_is_alt variable).
+	added: version is now branded 3.0 (installer filenames use 3.0; Windows file properties use 3.0.0.0).
+	regression: all 16 supported image formats (incl. HEIC/HEIF, animated WebP/GIF) pass the load-and-render test suite on both x86 and x64.
+
 Saturday, 16 August 2026: Version 2.6
 	fixed: x64 builds crashed while decoding HEIC/HEIF (image displayed as garbage): the MSVC x64 optimizer at /O2 miscompiles libde265's scan-order table initialization (fill_scan_pos never finds the target cell and walks the sub-block index negative, faulting in init_scan_orders). The x64 libde265 static library is now built with /O1; x86 and x64 decode to byte-identical pixels (verified by SHA256 over full decoded frames). The x86 library is unaffected.
 	fixed: the WIC loader ignored a CopyPixels failure in the direct 32bppBGRA path and delivered an uninitialized pixel buffer to the frame pipeline (garbled image on WIC decoder errors).

@@ -1,9 +1,0 @@
-D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/staging-de265/lib/libde265.lib
-D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/staging-de265/include/libde265/de265.h
-D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/staging-de265/include/libde265/en265.h
-D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/staging-de265/include/libde265/de265-version.h
-D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/staging-de265/lib/cmake/libde265/libde265Config.cmake
-D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/staging-de265/lib/cmake/libde265/libde265Config-release.cmake
-D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/staging-de265/lib/cmake/libde265/libde265ConfigVersion.cmake
-D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/staging-de265/lib/pkgconfig/libde265.pc
-D:/AI/Github/voidImageViewer-master/voidImageViewer-master/third_party/staging-de265/bin/dec265.exe

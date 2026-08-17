@@ -129,9 +129,6 @@ static const utf8_t *_localization_string_array_ja[LOCALIZATION_ID_COUNT] =
 	"なし(&N)", // LOCALIZATION_ID_TRANSITION_NONE,
 	"フェード(&F)", // LOCALIZATION_ID_TRANSITION_FADE,
 	"時間...", // LOCALIZATION_ID_TRANSITION_DURATION,
-	"トランジション時間を設定", // LOCALIZATION_ID_SET_TRANSITION_DURATION_CAPTION,
-	"時間(ms):(&D)", // LOCALIZATION_ID_TRANSITION_DURATION_STATIC,
-	"マウスホバーでUIを表示(&S)", // LOCALIZATION_ID_HOVER_SHOW_UI,
 	
 	// Slideshow menu
 	"スライドショー(&S)", // LOCALIZATION_ID_SLIDESHOW_MENU,
@@ -265,7 +262,6 @@ static const utf8_t *_localization_string_array_ja[LOCALIZATION_ID_COUNT] =
 	"キーボードショートカットを編集", // LOCALIZATION_ID_EDIT_KEYBOARD_SHORTCUT_CAPTION,
 	"ショートカットキー:(&K)", // LOCALIZATION_ID_SHORTCUT_KEY,
 	"ショートカットキーが使用中:", // LOCALIZATION_ID_SHORTCUT_KEY_CURRENTLY_USED_BY,
-	"削除(&V)", // LOCALIZATION_ID_REMOVE,
 	"カスタム速度を設定", // LOCALIZATION_ID_SET_CUSTOM_RATE_CAPTION,
 	"カスタム速度:(&C)", // LOCALIZATION_ID_CUSTOM_RATE_STATIC,
 	"分", // LOCALIZATION_ID_CUSTOM_RATE_MINUTES,
@@ -274,7 +270,6 @@ static const utf8_t *_localization_string_array_ja[LOCALIZATION_ID_COUNT] =
 	"void Image Viewer について", // LOCALIZATION_ID_ABOUT_CAPTION,
 	"名前を変更", // LOCALIZATION_ID_RENAME_CAPTION,
 	"ジャンプ", // LOCALIZATION_ID_JUMP_TO_TITLE,
-	"Everything を検索", // LOCALIZATION_ID_SEARCH_EVERYTHING,
 	"Copyright © %d voidtools", // LOCALIZATION_ID_ABOUT_COPYRIGHT_FORMAT,
 	"support@voidtools.com", // LOCALIZATION_ID_ABOUT_EMAIL,
 	"www.voidtools.com", // LOCALIZATION_ID_ABOUT_WEBSITE,

@@ -73,7 +73,6 @@ int os_shell_execute(HWND hwnd,const wchar_t *filename,int wait,const char *verb
 int os_browse_for_folder(HWND parent,wchar_t *filename);
 VIV_UINT64 os_get_tick_count(void);
 VIV_UINT64 os_get_tick_freq(void);
-void os_get_monitor_rect_from_window(HWND hwnd,RECT *monitor_rect,int fullscreen);
 WNDPROC os_set_window_proc(HWND hwnd,WNDPROC proc);
 int os_statusbar_index_from_x(HWND statusbar_hwnd,int x);
 int os_is_windows_7_or_later(void);
@@ -85,7 +84,6 @@ void os_fill_clipped_rect(HDC hdc,int x,int y,int wide,int high,int clip_x,int c
 void os_fill_rect(HDC hdc,int x,int y,int wide,int high,HBRUSH hbrush);
 void os_set_rect(RECT *rect,int x,int y,int wide,int high);
 int os_get_orientation(const wchar_t *filename);
-void os_adjust_window_rect(HWND hwnd,RECT *window_rect,int window_x,int window_y,int client_wide,int client_high);
 DWORD os_get_window_style(HWND hwnd);
 DWORD os_get_window_ex_style(HWND hwnd);
 int os_get_static_wide(HWND hwnd,int id);

@@ -24,17 +24,14 @@
 #include "viv.h"
 #include <src/webp/decode.h>
 #include <src/webp/demux.h>
-#include <assert.h>
 
 int webp_load(IStream *stream,void *user_data,int (*info_callback)(void *user_data,DWORD frame_count,DWORD wide,DWORD high,int has_alpha),int (*frame_callback)(void *user_data,BYTE *pixels,int delay))
 {
 	int ret;
 	HGLOBAL hglobal;
-	
+
 	ret = 0;
-	
-//	_wassert(L"test",TEXT(__FILE__),__LINE__);
-	
+
 	if (SUCCEEDED(GetHGlobalFromStream(stream,&hglobal)))
 	{
 		void *data_ptr;
@@ -90,32 +87,7 @@ int webp_load(IStream *stream,void *user_data,int (*info_callback)(void *user_da
 											// `frame` is a RGBA image of size: canvas_width * canvas_height * 4
 											// `timestamp` is in milliseconds
 											// Process the frame (copy/store/display)
-											
-											// convert RGBA to BGRA
-											/*
-											{
-												BYTE *p;
-												DWORD run;
-												
-												run = anim_info.canvas_width * anim_info.canvas_height;
-												p = frame;
-												
-												while(run)
-												{
-													int r;
-													int b;
-													
-													b = p[0];
-													r = p[2];
-													
-													p[0] = r;
-													p[2] = b;
-													
-													p += 4;
-													run--;
-												}
-											}*/
-											
+
 											delay = 0;
 											
 											if ((DWORD)timestamp > last_timestamp)

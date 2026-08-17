@@ -2,6 +2,7 @@
 
 > 一款专为 Windows 打造的轻量级、极速看图软件，支持 10 种语言无缝切换、默认 1:1 像素级放缩与动画 GIF / WebP 流畅播放。
 > 本项目基于 [voidtools/voidImageViewer](https://github.com/voidtools/voidImageViewer) 进行沉浸式体验增强与多语言扩展。
+> **当前版本：v3.0**
 
 [下载最新版](#下载) ｜ [新增特性](#相查原版的主要改动) ｜ [功能特性](#功能特性) ｜ [使用说明](#使用说明) ｜ [从源码构建](#从源码构建) ｜ [已知问题](#已知问题与限制)
 
@@ -52,7 +53,7 @@
   - **动画 GIF**：逐帧播放（GDI+ 原生）。
   - **HEIC/HEIF**：内置 `libheif` + `libde265` 开源解码引擎（MIT 许可），开箱即用，**无需**安装系统的"HEIF 图像扩展"组件；支持 iPhone 等设备拍摄的 HEVC 照片与 EXIF 方向自动旋转。
 - **超大图渲染**：支持高分辨率图像渲染与平移，内置安全算术库防范内存乘法溢出。
-- **说明**：AVIF、APNG、TGA、WMF/EMF、CUR/ANI 等格式的解码器尚未实现（见 `2.4_开发计划.md`），已在文件选择器与 Everything 搜索过滤器中同步移除，避免出现"列得出、打不开"的情况。
+- **说明**：AVIF、APNG、TGA、WMF/EMF、CUR/ANI 等格式的解码器尚未实现，已在文件选择器与 Everything 搜索过滤器中同步移除，避免出现"列得出、打不开"的情况。
 
 #### 图像格式支持一览表
 
@@ -104,7 +105,16 @@
   - Voidtools 官网论坛：[https://www.voidtools.com/forum/viewtopic.php?t=5623](https://www.voidtools.com/forum/viewtopic.php?t=5623)
   - Voidtools GitHub 仓库：[https://github.com/voidtools/voidImageViewer](https://github.com/voidtools/voidImageViewer)
 
-提供 32 位 (`x86`) 与 64 位 (`x64`) 免安装绿色便携版压缩包，解压即用；同时提供标准 NSIS 安装包。
+**v3.0 发布文件**：提供 32 位 (`x86`) 与 64 位 (`x64`) 免安装绿色便携版压缩包，解压即用；同时提供标准 NSIS 安装包（中/英双语）。
+
+| 类型 | 文件 |
+| --- | --- |
+| 便携版 x64 | `voidImageViewer-3.0.x64.zip` |
+| 便携版 x86 | `voidImageViewer-3.0.x86.zip` |
+| 安装包 x64 中文 | `voidImageViewer-3.0.x64.zh-CN-Setup.exe` |
+| 安装包 x64 英文 | `voidImageViewer-3.0.x64.en-US-Setup.exe` |
+| 安装包 x86 中文 | `voidImageViewer-3.0.x86.zh-CN-Setup.exe` |
+| 安装包 x86 英文 | `voidImageViewer-3.0.x86.en-US-Setup.exe` |
 
 ---
 

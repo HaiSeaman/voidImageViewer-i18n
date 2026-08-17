@@ -247,16 +247,6 @@
 #define _VIV_WM_REPLY							(WM_USER+1)
 #define _VIV_WM_RETRY_RANDOM_EVERYTHING_SEARCH	(WM_USER+2)
 
-#define _VIV_ASSOCIATION_BMP				0x00000001
-#define _VIV_ASSOCIATION_GIF				0x00000002
-#define _VIV_ASSOCIATION_ICO				0x00000004
-#define _VIV_ASSOCIATION_JPEG				0x00000008
-#define _VIV_ASSOCIATION_JPG				0x00000010
-#define _VIV_ASSOCIATION_PNG				0x00000020
-#define _VIV_ASSOCIATION_TIF				0x00000040
-#define _VIV_ASSOCIATION_TIFF				0x00000080
-#define _VIV_ASSOCIATION_WEBP				0x00000100
-
 #define _VIV_ZOOM_MAX 16
 
 #define BCM_SETSHIELD	0x0000160C
@@ -338,21 +328,6 @@ enum
 
 #define _VIV_HIDE_CURSOR_DELAY		2000
 
-// a file descriptor or find data
-// to describe the image.
-/*
-typedef struct _viv_fd_s
-{
-	unsigned __int64 id; // unique playlist id.
-	unsigned __int64 date_modified; 
-	unsigned __int64 size;
-	unsigned __int64 date_created;
-	
-	// filename follows.
-	// utf8_t filename[...];
-	
-}_viv_fd_t;
-*/
 // a reply from the image load thread
 
 typedef struct _viv_reply_s
@@ -492,7 +467,6 @@ static void _viv_copy(int cut);
 static void _viv_copy_filename(void);
 static void _viv_set_clipboard_image(void);
 static void _viv_copy_image(void);
-static int _viv_is_key_state(int control,int shift,int alt);
 static CLIPFORMAT _viv_get_CF_PREFERREDDROPEFFECT(void);
 static void _viv_pause(void);
 static int _viv_fd_compare(const WIN32_FIND_DATA *a,const WIN32_FIND_DATA *b);
@@ -637,7 +611,6 @@ static HBITMAP _viv_orientate_hbitmap(HBITMAP hbitmap,int counterclockwise);
 static void _viv_send_random_everything_search(void);
 static void _viv_do_mousewheel_action(int action,int delta,int x,int y);
 static void _viv_mipmap_free(_viv_mipmap_t *mipmap);
-static void _viv_queue_clear(void);
 static void _viv_clear(void);
 static void _viv_process_pending_clear(void);
 static void _viv_clear_loading_preload(void);
@@ -663,7 +636,6 @@ static int _viv_main(int nCmdShow);
 static void _viv_get_exe_filename(wchar_t filename[STRING_SIZE]);
 static void _viv_do_left_click_action(int action);
 static void _viv_start_move_window(void);
-static int _viv_ceil(double x);
 static void _viv_center_listbox_item(HWND listbox_hwnd,int item_index);
 static void _viv_stretch_blt(HDC dst_hdc,int dst_x,int dst_y,int dst_wide,int dst_high,HDC src_hdc,int src_wide,int src_high,int clip_x,int clip_y,int clip_wide,int clip_high);
 static BOOL _viv_StretchBltStitch(HDC hdcDest,int xDest,int yDest,int wDest,int hDest,HDC hdcSrc,int xSrc,int ySrc,int wSrc,int hSrc,DWORD rop,int clip_x,int clip_y,int clip_wide,int clip_high);
@@ -671,10 +643,6 @@ static BOOL _viv_get_src_pixel_pos(int client_x,int client_y,POINT *out_src_pt);
 static void _viv_get_src_pixel_rgb(int src_x,int src_y,COLORREF *out_colorref);
 static int _viv_clamp_zoom_pos(int zoom_pos);
 static void _viv_open_preload(void);
-//static void _viv_get_tooltip(void);
-//static void _viv_tooltip_hide(void);
-//static void _viv_tooltip_update(void);
-//static void _viv_tooltip_update_track_position(void);
 static int _viv_safe_copy_data(const void *base,SIZE_T src_size,const void *src,void *dst,SIZE_T dst_size);
 
 static HMODULE _viv_stobject_hmodule = 0;
@@ -688,7 +656,6 @@ static HWND _viv_hwnd = 0;
 static HWND _viv_status_hwnd = 0;
 static HWND _viv_toolbar_hwnd = 0;
 static HWND _viv_rebar_hwnd = 0;
-//static HWND _viv_tooltip_hwnd = 0;
 static HIMAGELIST _viv_toolbar_image_list = 0;
 static HANDLE _viv_mutex = 0;
 static float _viv_animation_rates[] = {0.125000f,0.142857f,0.166667f,0.200000f,0.250000f,0.333333f,0.500000f,0.571429f,0.666667f,0.800000f,1.000000f,1.250000f,1.500000f,1.750000f,2.000000f,3.000000f,4.000000f,5.000000f,6.000000f,7.000000f,8.000000f}; // fixed animation rates
@@ -706,7 +673,6 @@ static int _viv_view_y = 0; // the current image offset in pixels
 static double _viv_view_ix = 0.0; // the current image offset in percent, used when resizing the window
 static double _viv_view_iy = 0.0; // the current image offset in percent, used when resizing the window
 static int _viv_zoom_pos = 0; // the current zoom level
-//static float _viv_zoom_presets[_VIV_ZOOM_MAX] = {0.004815f,0.019215f,0.043060f,0.076120f,0.118079f,0.168530f,0.226989f,0.292893f,0.365607f,0.444430f,0.528603f,0.617316f,0.709715f,0.804909f,0.901983f,1.000000f}; // (1 - cos(((float)(x+1) * 1.570796f) / _VIV_ZOOM_MAX)) // this is missing cos((1 * 1.570796f) / _VIV_ZOOM_MAX), which is too small
 static float _viv_zoom_presets[_VIV_ZOOM_MAX] = {0.0000,0.0100,0.0225,0.0379,0.0569,0.0806,0.1098,0.1461,0.1909,0.2465,0.3154,0.4007,0.5063,0.6372,0.7993,1.0000}; // 0.01 - 0.2 curve
 
 static ULONG_PTR os_GdiplusToken; // gdiplus handle
@@ -872,8 +838,6 @@ static BYTE _viv_src_pixel_b = 0;
 static BYTE _viv_is_prevent_sleep = 0;
 static DWORD last_process_command_line_tick;
 static BYTE got_last_process_command_line_tick = 0;
-
-//static BYTE _viv_is_alt = 0;
 
 // MF_OWNERDRAW = don't show in menu.
 static _viv_command_t _viv_commands[] = 
@@ -4059,7 +4023,6 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 			}
 
 			_viv_show_cursor();
-//			_viv_tooltip_hide();
 			_viv_update_src_pixel(0,1);
 
 			// Note: hover-hide is now driven by the VIV_ID_HOVER_TIMER polling
@@ -4788,19 +4751,6 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 					rw = 0;
 					rh = 0;
 
-					// controls.
-					/*
-					if (_viv_get_controls_high())
-					{
-						rect.left = 0;
-						rect.top = high;
-						rect.right = wide;
-						rect.bottom = rect.top + _viv_get_controls_high();
-						
-						FillRect(ps.hdc,&rect,(HBRUSH)(COLOR_WINDOW+1));
-						ExcludeClipRect(ps.hdc,rect.left,rect.top,rect.right,rect.bottom);
-					}
-				*/
 					if (_viv_frame_count)
 					{
 						HDC mem_hdc;
@@ -4809,19 +4759,8 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 
 						rw = (int)(rw * _viv_dst_zoom_values[_viv_dst_zoom_x_pos]);
 						rh = (int)(rh * _viv_dst_zoom_values[_viv_dst_zoom_y_pos]);
-						
-			#if 0
-						if (_viv_zoom_pos == 1)
-						{
-							if ((rw < _viv_image_wide) || (rw < _viv_image_wide))
-							{
-								rw = _viv_image_wide;
-								rh = _viv_image_high;
-							}
-						}
-			#endif
-						
-						rx = (((_viv_dst_pos_x - 250) * (wide*2)) / 1000) - (rw / 2) - _viv_view_x;
+
+					rx = (((_viv_dst_pos_x - 250) * (wide*2)) / 1000) - (rw / 2) - _viv_view_x;
 						ry = (((_viv_dst_pos_y - 250) * (high*2)) / 1000) - (rh / 2) - _viv_view_y;
 						
 			//			rh += (-dst_left_offset + dst_right_offset) * wide / 1000;
@@ -6277,7 +6216,6 @@ static void _viv_kill(void)
 	{
 		_viv_status_show(0);
 		_viv_controls_show(0);
-	//	_viv_tooltip_hide();
 
 		DestroyWindow(_viv_hwnd);
 	}
@@ -7138,14 +7076,6 @@ static int _viv_is_msg(MSG *msg)
 				{
 					int key_index;
 
-/*
-					if (msg->wParam == VK_MENU)
-					{
-						_viv_is_alt = 1;
-						_viv_update_show_cursor();
-						_viv_update_src_pixel(0,1);
-					}
-*/					
 					// cancel action
 					if ((key_flags == 0) && (msg->wParam == VK_ESCAPE))
 					{
@@ -7195,19 +7125,6 @@ static int _viv_is_msg(MSG *msg)
 			}
 			
 			break;
-
-/*			
-		case WM_KEYUP:
-		case WM_SYSKEYUP:
-		
-			if (msg->wParam == VK_MENU)
-			{
-				_viv_is_alt = 0;
-				_viv_update_show_cursor();
-				_viv_update_src_pixel(0,1);
-			}
-			break;
-			*/
 	}
 
 	return 0;
@@ -7795,17 +7712,7 @@ static void _viv_get_render_size(int *prw,int *prh)
 		max_zoom_wide = rw * 16;
 		max_zoom_high = rh * 16;
 	}
-/*
-	if (max_zoom_wide < _viv_image_wide)
-	{
-		max_zoom_wide = _viv_image_wide;
-	}
-	
-	if (max_zoom_high < _viv_image_high)
-	{
-		max_zoom_high = _viv_image_high;
-	}
-	*/
+
 	if (_viv_zoom_pos)
 	{
 		rw = rw + (int)((max_zoom_wide - rw) * _viv_zoom_presets[_viv_zoom_pos]);
@@ -8698,38 +8605,6 @@ static void _viv_copy_image(void)
 	}
 }
 
-static int _viv_is_key_state(int control,int shift,int alt)
-{
-	if (GetKeyState(VK_CONTROL) < 0)
-	{
-		if (!control) return 0;
-	}
-	else
-	{
-		if (control) return 0;
-	}
-	
-	if (GetKeyState(VK_SHIFT) < 0)
-	{
-		if (!shift) return 0;
-	}
-	else
-	{
-		if (shift) return 0;
-	}
-	
-	if (GetKeyState(VK_MENU) < 0)
-	{
-		if (!alt) return 0;
-	}
-	else
-	{
-		if (alt) return 0;
-	}
-	
-	return 1;
-}
-
 static CLIPFORMAT _viv_get_CF_PREFERREDDROPEFFECT(void)
 {
 	if (!_viv_CF_PREFERREDDROPEFFECT)
@@ -8742,13 +8617,6 @@ static CLIPFORMAT _viv_get_CF_PREFERREDDROPEFFECT(void)
 
 static void _viv_pause(void)
 {
-/*
-	if (_viv_file_not_found)
-	{
-		MessageBeep(MB_OK);
-		return;
-	}
-*/	
 	if (_viv_is_slideshow)
 	{
 		KillTimer(_viv_hwnd,VIV_ID_SLIDESHOW_TIMER);
@@ -10329,7 +10197,6 @@ static void _viv_mousemove(void)
 
 static void _viv_update_src_pixel(int force,int update_statusbar)
 {
-//	if ((config_pixel_info) || ((_viv_is_alt) && (_viv_is_tracking_mouse)))
 	if (config_pixel_info)
 	{
 		POINT src_pixel_pt;
@@ -10374,16 +10241,6 @@ static void _viv_update_src_pixel(int force,int update_statusbar)
 			{
 				_viv_status_update();
 			}
-			
-/*
-			if ((src_pixel_pt.x != -1) && (src_pixel_pt.y != -1))
-			{
-				_viv_tooltip_update();
-			}
-			else
-			{
-				_viv_tooltip_hide();
-			}*/
 		}
 	}
 	else
@@ -10391,17 +10248,6 @@ static void _viv_update_src_pixel(int force,int update_statusbar)
 		_viv_src_pixel_x = -1;
 		_viv_src_pixel_y = -1;
 	}
-
-/*	
-	if ((_viv_is_alt) && (_viv_is_tracking_mouse))
-	{
-		_viv_tooltip_update_track_position();
-	}
-	else
-	{
-		_viv_tooltip_hide();
-	}
-	*/
 }
 
 static void _viv_animation_pause(void)
@@ -12278,20 +12124,6 @@ static DWORD WINAPI _viv_load_image_thread_proc(void *param)
 		}
 	}
 
-
-/*
-	// webp uses hglobals
-	{
-		IStream *my_stream;
-		
-		if (SUCCEEDED(SHCreateStreamOnFileEx(_viv_load_image_filename,STGM_READ,FILE_ATTRIBUTE_NORMAL,FALSE,NULL,&my_stream)))
-		{
-			// stream owns my_stream now.
-			stream = my_stream;
-		}
-	}
-*/
-
 	if (stream)
 	{
 		int orientation;
@@ -13560,47 +13392,6 @@ static int _viv_toolbar_get_wide(void)
 		{
 			return max_x - min_x;
 		}
-
-/*		
-{
-	TBMETRICS tbmetrics;
-	DWORD button_size;
-	
-	os_zero_memory(&tbmetrics,sizeof(TBMETRICS));
-	
-	tbmetrics.cbSize = sizeof(TBMETRICS);
-	tbmetrics.dwMask = TBMF_PAD | TBMF_BARPAD | TBMF_BUTTONSPACING;
-	
-	SendMessage(_viv_toolbar_hwnd,TB_GETMETRICS,0,(LPARAM)&tbmetrics);
-
-	debug_printf("TB_GETMETRICS cbSize %u %u %p\n",tbmetrics.cbSize,sizeof(TB_GETMETRICS),&tbmetrics);
-	debug_printf("TB_GETMETRICS dwMask %u\n",tbmetrics.dwMask);
-	debug_printf("TB_GETMETRICS cxPad %d\n",tbmetrics.cxPad);
-	debug_printf("TB_GETMETRICS cyPad %d\n",tbmetrics.cyPad);
-	debug_printf("TB_GETMETRICS cxBarPad %d\n",tbmetrics.cxBarPad);
-	debug_printf("TB_GETMETRICS cyBarPad %d\n",tbmetrics.cyBarPad);
-	debug_printf("TB_GETMETRICS cxButtonSpacing %d\n",tbmetrics.cxButtonSpacing);
-	debug_printf("TB_GETMETRICS cyButtonSpacing %d\n",tbmetrics.cyButtonSpacing);
-	
-	button_size = SendMessage(_viv_toolbar_hwnd,TB_GETBUTTONSIZE,0,0);
-	debug_printf("TB_GETBUTTONSIZE wide %u\n",LOWORD(button_size));
-	debug_printf("TB_GETBUTTONSIZE high %u\n",HIWORD(button_size));
-	
-	if (SendMessage(_viv_toolbar_hwnd,TB_GETMAXSIZE,0,(LPARAM)&size))
-	{
-		debug_printf("TB_GETMAXSIZE wide %u\n",size.cx);
-		debug_printf("TB_GETMAXSIZE high %u\n",size.cy);
-	}	
-}*/
-
-/*
-		SIZE size;
-		
-		// doesn't work at all on win9x / older than common controls v6 
-		if (SendMessage(_viv_toolbar_hwnd,TB_GETMAXSIZE,0,(LPARAM)&size))
-		{
-			return size.cx;
-		}*/
 	}
 	
 	return 0;
@@ -15948,16 +15739,6 @@ static void _viv_do_mousewheel_action(int action,int delta,int x,int y)
 	
 		_viv_get_render_size(&rw,&rh);
 		
-/*
-		if (_viv_zoom_pos == 1)
-		{
-			if ((rw < _viv_image_wide) || (rw < _viv_image_wide))
-			{
-				rw = _viv_image_wide;
-				rh = _viv_image_high;
-			}
-		}
-		*/
 		rx = (wide / 2) - (rw / 2) - _viv_view_x;
 		ry = (high / 2) - (rh / 2) - _viv_view_y;
 		
@@ -15965,27 +15746,7 @@ static void _viv_do_mousewheel_action(int action,int delta,int x,int y)
 		old_cursor_py = (cursor_y - ry);
 		old_rw = rw;
 		old_rh = rh;
-/*
-		if (old_cursor_px < 0)
-		{
-			old_cursor_px = 0;
-		}
 
-		if (old_cursor_px > 20 * rw)
-		{
-			old_cursor_px = 20 * rw;
-		}
-		
-		if (old_cursor_py < 0)
-		{
-			old_cursor_py = 0;
-		}
-
-		if (old_cursor_py > 20 * rh)
-		{
-			old_cursor_py = 20 * rh;
-		}
-		*/
 		if (_viv_1to1)
 		{
 			_viv_1to1 = 0;
@@ -16461,32 +16222,6 @@ static void _viv_start_first_frame(void)
 	// show cursor.
 	_viv_update_show_cursor();
 
-//debug_printf("---\n",_viv_load_image_next_fd);
-//debug_printf("_viv_load_image_next_fd %p\n",_viv_load_image_next_fd);
-//debug_printf("---\n",_viv_load_image_next_fd);
-/*
-	if (_viv_load_image_next_fd)
-	{
-		// load priority paint..
-		// we will paint on the 'next next' image we load..
-		_viv_low_priority_paint = 1;
-		return;
-	}
-	
-	_viv_low_priority_paint = 0;
-	InvalidateRect(_viv_hwnd,NULL,FALSE);
-
-	// building mipmaps as needed hangs the UI.
-	// this makes rendering lag while holding down right.
-	// avoid painting when user is holding down right..
-	//
-	// because we build the mipmap for the first image in the load thread this is now instant..
-	// ok it's still awful, let the next load refresh..
-//	if (_viv_load_image_next_fd)
-	{
-//		UpdateWindow(_viv_hwnd);
-	}*/
-	
 	if (!_viv_is_fullscreen)
 	{
 		if (config_auto_zoom)
@@ -16749,7 +16484,6 @@ static int _viv_should_show_cursor(void)
 					{
 						if ((_viv_is_fullscreen) || (config_windowed_hide_cursor))
 						{
-							// if (!((_viv_is_alt) && (_viv_is_tracking_mouse)))
 							{
 								return 0;
 							}
@@ -16935,13 +16669,6 @@ static void _viv_start_move_window(void)
 	GetCursorPos(&cursor_pt);
 		
 	SendMessage(_viv_hwnd,WM_NCLBUTTONDOWN,(WPARAM)HTCAPTION,MAKELPARAM(cursor_pt.x,cursor_pt.y));
-}
-
-static int _viv_ceil(double x) 
-{
-    int xi = (int)x;
-    
-    return (x > (double)xi) ? xi + 1 : xi;
 }
 
 static void _viv_center_listbox_item(HWND listbox_hwnd,int item_index)
@@ -17353,90 +17080,6 @@ static void _viv_open_preload(void)
 		_viv_preload_next();
 	}	
 }
-
-/*
-static void _viv_get_tooltip(void)
-{
-	if (_viv_tooltip_hwnd)
-	{
-		return;
-	}
-	
-	_viv_tooltip_hwnd = CreateWindowExA(
-		WS_EX_TOPMOST|WS_EX_NOACTIVATE,
-		(const utf8_t *)TOOLTIPS_CLASSA,
-		(const utf8_t *)"",
-		WS_POPUP | TTS_ALWAYSTIP | TTS_NOPREFIX | TTS_NOANIMATE | WS_GROUP,
-		0,0,0,0,
-		0,0,os_hinstance,0);
-		
-	SendMessage(_viv_tooltip_hwnd,TTM_SETDELAYTIME,TTDT_INITIAL,MAKELONG(0,0));
-}
-
-static void _viv_tooltip_hide(void)
-{
-	if (_viv_tooltip_hwnd)
-	{
-		DestroyWindow(_viv_tooltip_hwnd);
-		
-		_viv_tooltip_hwnd = 0;
-	}
-}
-
-static void _viv_tooltip_update(void)
-{	
-	wchar_t pixel_info_buf[STRING_SIZE];
-
-	_viv_get_tooltip();
-	
-	string_printf(pixel_info_buf,"%d,%d: %d,%d,%d",_viv_src_pixel_x,_viv_src_pixel_y,_viv_src_pixel_r,_viv_src_pixel_g,_viv_src_pixel_b);
-
-	if (_viv_tooltip_hwnd)
-	{
-		TOOLINFO ti;
-		DWORD message_id;
-		
-		os_zero_memory(&ti,sizeof(TOOLINFO));
-		ti.cbSize = sizeof(TOOLINFO);
-		ti.uFlags = TTF_SUBCLASS | TTF_TRANSPARENT | TTF_IDISHWND;
-		ti.hwnd = _viv_hwnd;
-		ti.uId = (UINT_PTR)_viv_hwnd;
-		
-		if (SendMessage(_viv_tooltip_hwnd,TTM_GETTOOLINFO,0,(LPARAM)&ti))
-		{
-			message_id = TTM_UPDATETIPTEXTW;
-		}
-		else
-		{
-			message_id = TTM_ADDTOOLW;
-		}
-
-		os_zero_memory(&ti,sizeof(TOOLINFO));
-		ti.cbSize = sizeof(TOOLINFO);
-		ti.uFlags = TTF_SUBCLASS | TTF_TRANSPARENT | TTF_IDISHWND;
-		ti.hwnd = _viv_hwnd;
-		ti.uId = (UINT_PTR)_viv_hwnd;
-		ti.lpszText = pixel_info_buf;
-
-		SendMessage(_viv_tooltip_hwnd,message_id,0,(LPARAM)&ti);
-		SendMessage(_viv_tooltip_hwnd,TTM_TRACKACTIVATE,TRUE,(LPARAM)&ti);
-		
-		_viv_tooltip_update_track_position();
-	}
-}
-
-static void _viv_tooltip_update_track_position(void)
-{
-	if (_viv_tooltip_hwnd)
-	{
-		POINT cursor_point;
-
-		GetCursorPos(&cursor_point);
-		
-		SendMessage(_viv_tooltip_hwnd,TTM_TRACKPOSITION,0,(LPARAM)MAKELONG(cursor_point.x,cursor_point.y));
-	}
-}
-*/
 
 static int _viv_safe_copy_data(const void *base,SIZE_T src_size,const void *src,void *dst,SIZE_T dst_size)
 {

@@ -134,9 +134,9 @@ Page custom InstallOptions2
 !insertmacro GetOptions
 
 ; Version Info
-; VIProductVersion requires a x.y.z.w numeric version; BETAVERSION is
-; appended only to the display strings, not to the numeric version.
-VIProductVersion "${VERSION}"
+; VIProductVersion requires a x.y.z.w numeric version; VERSION is the
+; display string (e.g. "3.0"), VERSION_NUMERIC is the 4-part numeric form.
+VIProductVersion "${VERSION_NUMERIC}"
 
 ; don't localize these:
 VIAddVersionKey "ProductName" "void Image Viewer"

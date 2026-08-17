@@ -129,9 +129,6 @@ static const utf8_t *_localization_string_array_ar[LOCALIZATION_ID_COUNT] =
 	"لا شيء", // LOCALIZATION_ID_TRANSITION_NONE,
 	"تلاشي", // LOCALIZATION_ID_TRANSITION_FADE,
 	"المدة...", // LOCALIZATION_ID_TRANSITION_DURATION,
-	"تعيين مدة الانتقال", // LOCALIZATION_ID_SET_TRANSITION_DURATION_CAPTION,
-	"المدة (مللي ثانية):", // LOCALIZATION_ID_TRANSITION_DURATION_STATIC,
-	"إظهار الواجهة عند مرور الماوس", // LOCALIZATION_ID_HOVER_SHOW_UI,
 	
 	// Slideshow menu
 	"عرض الشرائح", // LOCALIZATION_ID_SLIDESHOW_MENU,
@@ -265,7 +262,6 @@ static const utf8_t *_localization_string_array_ar[LOCALIZATION_ID_COUNT] =
 	"تعديل اختصار لوحة المفاتيح", // LOCALIZATION_ID_EDIT_KEYBOARD_SHORTCUT_CAPTION,
 	"مفتاح الاختصار:", // LOCALIZATION_ID_SHORTCUT_KEY,
 	"مفتاح الاختصار مستخدم حاليًا بواسطة:", // LOCALIZATION_ID_SHORTCUT_KEY_CURRENTLY_USED_BY,
-	"إزالة", // LOCALIZATION_ID_REMOVE,
 	"تعيين سرعة مخصصة", // LOCALIZATION_ID_SET_CUSTOM_RATE_CAPTION,
 	"السرعة المخصصة:", // LOCALIZATION_ID_CUSTOM_RATE_STATIC,
 	"دقائق", // LOCALIZATION_ID_CUSTOM_RATE_MINUTES,
@@ -274,7 +270,6 @@ static const utf8_t *_localization_string_array_ar[LOCALIZATION_ID_COUNT] =
 	"حول void Image Viewer", // LOCALIZATION_ID_ABOUT_CAPTION,
 	"إعادة تسمية", // LOCALIZATION_ID_RENAME_CAPTION,
 	"الانتقال إلى", // LOCALIZATION_ID_JUMP_TO_TITLE,
-	"البحث في Everything", // LOCALIZATION_ID_SEARCH_EVERYTHING,
 	"Copyright © %d voidtools", // LOCALIZATION_ID_ABOUT_COPYRIGHT_FORMAT,
 	"support@voidtools.com", // LOCALIZATION_ID_ABOUT_EMAIL,
 	"www.voidtools.com", // LOCALIZATION_ID_ABOUT_WEBSITE,

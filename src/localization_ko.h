@@ -129,9 +129,6 @@ static const utf8_t *_localization_string_array_ko[LOCALIZATION_ID_COUNT] =
 	"없음(&N)", // LOCALIZATION_ID_TRANSITION_NONE,
 	"페이드(&F)", // LOCALIZATION_ID_TRANSITION_FADE,
 	"시간...", // LOCALIZATION_ID_TRANSITION_DURATION,
-	"전환 시간 설정", // LOCALIZATION_ID_SET_TRANSITION_DURATION_CAPTION,
-	"시간(ms):(&D)", // LOCALIZATION_ID_TRANSITION_DURATION_STATIC,
-	"마우스 호버 시 UI 표시(&S)", // LOCALIZATION_ID_HOVER_SHOW_UI,
 	
 	// Slideshow menu
 	"슬라이드쇼(&S)", // LOCALIZATION_ID_SLIDESHOW_MENU,
@@ -265,7 +262,6 @@ static const utf8_t *_localization_string_array_ko[LOCALIZATION_ID_COUNT] =
 	"키보드 바로 가기 편집", // LOCALIZATION_ID_EDIT_KEYBOARD_SHORTCUT_CAPTION,
 	"바로 가기 키:(&K)", // LOCALIZATION_ID_SHORTCUT_KEY,
 	"바로 가기 키가 사용 중:", // LOCALIZATION_ID_SHORTCUT_KEY_CURRENTLY_USED_BY,
-	"제거(&V)", // LOCALIZATION_ID_REMOVE,
 	"사용자 지정 속도 설정", // LOCALIZATION_ID_SET_CUSTOM_RATE_CAPTION,
 	"사용자 지정 속도:(&C)", // LOCALIZATION_ID_CUSTOM_RATE_STATIC,
 	"분", // LOCALIZATION_ID_CUSTOM_RATE_MINUTES,
@@ -274,7 +270,6 @@ static const utf8_t *_localization_string_array_ko[LOCALIZATION_ID_COUNT] =
 	"void Image Viewer 정보", // LOCALIZATION_ID_ABOUT_CAPTION,
 	"이름 바꾸기", // LOCALIZATION_ID_RENAME_CAPTION,
 	"이동", // LOCALIZATION_ID_JUMP_TO_TITLE,
-	"Everything 검색", // LOCALIZATION_ID_SEARCH_EVERYTHING,
 	"Copyright © %d voidtools", // LOCALIZATION_ID_ABOUT_COPYRIGHT_FORMAT,
 	"support@voidtools.com", // LOCALIZATION_ID_ABOUT_EMAIL,
 	"www.voidtools.com", // LOCALIZATION_ID_ABOUT_WEBSITE,

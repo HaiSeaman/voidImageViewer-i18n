@@ -129,9 +129,6 @@ static const utf8_t *_localization_string_array_zh_cn[LOCALIZATION_ID_COUNT] =
 	"无(&N)", // LOCALIZATION_ID_TRANSITION_NONE,
 	"淡入淡出(&F)", // LOCALIZATION_ID_TRANSITION_FADE,
 	"时长(&D)...", // LOCALIZATION_ID_TRANSITION_DURATION,
-	"设置转场时长", // LOCALIZATION_ID_SET_TRANSITION_DURATION_CAPTION,
-	"时长(&D) (毫秒):", // LOCALIZATION_ID_TRANSITION_DURATION_STATIC,
-	"鼠标悬停时显示界面(&S)", // LOCALIZATION_ID_HOVER_SHOW_UI,
 	
 	// Slideshow menu
 	"幻灯片(&S)", // LOCALIZATION_ID_SLIDESHOW_MENU,
@@ -266,7 +263,6 @@ static const utf8_t *_localization_string_array_zh_cn[LOCALIZATION_ID_COUNT] =
 	"编辑键盘快捷键", // LOCALIZATION_ID_EDIT_KEYBOARD_SHORTCUT_CAPTION,
 	"快捷键(&K):", // LOCALIZATION_ID_SHORTCUT_KEY,
 	"当前使用此快捷键的命令:", // LOCALIZATION_ID_SHORTCUT_KEY_CURRENTLY_USED_BY,
-	"删除(&V)", // LOCALIZATION_ID_REMOVE,
 	"设置自定义速率", // LOCALIZATION_ID_SET_CUSTOM_RATE_CAPTION,
 	"自定义速率(&C):", // LOCALIZATION_ID_CUSTOM_RATE_STATIC,
 	"分钟", // LOCALIZATION_ID_CUSTOM_RATE_MINUTES,
@@ -275,7 +271,6 @@ static const utf8_t *_localization_string_array_zh_cn[LOCALIZATION_ID_COUNT] =
 	"关于 void Image Viewer", // LOCALIZATION_ID_ABOUT_CAPTION,
 	"重命名", // LOCALIZATION_ID_RENAME_CAPTION,
 	"跳转到", // LOCALIZATION_ID_JUMP_TO_TITLE,
-	"搜索 Everything", // LOCALIZATION_ID_SEARCH_EVERYTHING,
 	"版权所有 © %d voidtools", // LOCALIZATION_ID_ABOUT_COPYRIGHT_FORMAT,
 	"support@voidtools.com", // LOCALIZATION_ID_ABOUT_EMAIL,
 	"www.voidtools.com", // LOCALIZATION_ID_ABOUT_WEBSITE,
