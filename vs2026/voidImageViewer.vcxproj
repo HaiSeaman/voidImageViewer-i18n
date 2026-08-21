@@ -460,6 +460,7 @@
     <ClInclude Include="..\src\debug.h" />
     <ClInclude Include="..\src\everything_ipc.h" />
     <ClInclude Include="..\src\ini.h" />
+    <ClInclude Include="..\src\left_drag.h" />
     <ClInclude Include="..\src\mem.h" />
     <ClInclude Include="..\src\os.h" />
     <ClInclude Include="..\src\safe_size.h" />

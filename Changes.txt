@@ -1,3 +1,9 @@
+Saturday, 22 August 2026: Version 3.1
+	fixed: dragging the image in borderless mode always moved the whole window - even when zoomed past the viewport or maximized (dragging a maximized window restored it and dragged it away). Left-drag now pans the image whenever it renders larger than the viewport, in any window state.
+	added: smart left-drag rule shared by all scroll-type click actions (0=scroll, 5=1:1 scroll, 6=move-window): pan when the image overflows the viewport; move the window only while it fully fits a normal borderless window; do nothing on a maximized window so it can no longer be accidentally dragged out of maximize.
+	changed: decision logic extracted into src/left_drag.h as a pure function; no new settings and no localization changes.
+	added: unit tests for the drag-decision truth table (tests/test_left_drag.c, exhaustive 16 cases) and a SendInput-based end-to-end drag harness (tests/e2e_drag_test.ps1 + make_test_image.ps1) that simulates real drags and asserts window rect/maximized state; verified red against the pre-fix binary and green after.
+
 Tuesday, 18 August 2026: Version 3.0
 	major repository cleanup and hardening pass.
 	removed: 6000+ redundant files from the repository (build output, tar-extraction garbage, the bundled CMake toolchain, Visual Studio caches, stale installers and test executables).

@@ -278,6 +278,7 @@
 #define _VIV_STRETCH_BLT_STITCH_SIZE		512
 
 #include "viv.h"
+#include "left_drag.h"
 
 enum
 {
@@ -16546,6 +16547,25 @@ static void _viv_get_exe_filename(wchar_t filename[STRING_SIZE])
 	}
 }
 
+// does the image, rendered at rw x rh, not fit the viewport?
+static int _viv_drag_has_pan_room(int rw,int rh)
+{
+	RECT rect;
+	int wide;
+	int high;
+
+	if (!((rw) && (rh)))
+	{
+		return 0;
+	}
+
+	GetClientRect(_viv_hwnd,&rect);
+	wide = rect.right - rect.left;
+	high = rect.bottom - rect.top - _viv_get_status_high() - _viv_get_controls_high();
+
+	return (rw > wide) || (rh > high);
+}
+
 // 0 = scroll, 1 = play/pause slideshow, 2 = play/pause animation, 3=zoom in, 4=next, 5=1:1 scroll, 6=move-window
 static void _viv_do_left_click_action(int action)
 {
@@ -16558,27 +16578,35 @@ static void _viv_do_left_click_action(int action)
 	switch(action)
 	{
 		case 0: // scroll
-		
+
 			if (_viv_doing == _VIV_DOING_NOTHING)
 			{
-				
-				
-				if (!_viv_is_fullscreen)
+				int rw;
+				int rh;
+
+				_viv_get_render_size(&rw,&rh);
+
+				switch(left_drag_decide(_viv_drag_has_pan_room(rw,rh),_viv_is_fullscreen,config_show_caption,_viv_is_window_maximized(_viv_hwnd)))
 				{
-					if (!config_show_caption)
-					{
+					case LEFT_DRAG_SCROLL:
+
+						_viv_doing = _VIV_DOING_SCROLL;
+						_viv_doing_x = cursor_pt.x;
+						_viv_doing_y = cursor_pt.y;
+						SetCapture(_viv_hwnd);
+						break;
+
+					case LEFT_DRAG_MOVE_WINDOW:
+
 						_viv_start_move_window();
-					
-						return;
-					}				
+						break;
+
+					case LEFT_DRAG_NOTHING:
+
+						break;
 				}
-	
-				_viv_doing = _VIV_DOING_SCROLL;
-				_viv_doing_x = cursor_pt.x;
-				_viv_doing_y = cursor_pt.y;
-				SetCapture(_viv_hwnd);
 			}
-			
+
 			break;
 
 		case 1: // play/pause slideshow
@@ -16598,63 +16626,60 @@ static void _viv_do_left_click_action(int action)
 			break;
 			
 		case 5: // 1:1 scroll
-		
+
 			if (_viv_doing == _VIV_DOING_NOTHING)
 			{
-				if (!_viv_is_fullscreen)
+				// while 1:1 scrolling the image renders at its natural size.
+				switch(left_drag_decide(_viv_drag_has_pan_room(_viv_image_wide,_viv_image_high),_viv_is_fullscreen,config_show_caption,_viv_is_window_maximized(_viv_hwnd)))
 				{
-					if (!config_show_caption)
-					{
+					case LEFT_DRAG_SCROLL:
+
+						_viv_doing = _VIV_DOING_1TO1SCROLL;
+
+						// really need to see where the cursor is..
+//							ShowCursor(FALSE);
+
+						SetCapture(_viv_hwnd);
+
+						_viv_update_1to1_scroll(cursor_pt.x,cursor_pt.y);
+						break;
+
+					case LEFT_DRAG_MOVE_WINDOW:
+
 						_viv_start_move_window();
-					
-						return;
-					}				
+						break;
+
+					case LEFT_DRAG_NOTHING:
+
+						break;
 				}
-								
-				_viv_doing = _VIV_DOING_1TO1SCROLL;
-
-				// really need to see where the cursor is..
-//						ShowCursor(FALSE);
-
-				SetCapture(_viv_hwnd);
-										
-				_viv_update_1to1_scroll(cursor_pt.x,cursor_pt.y);
 			}
-			
+
 			break;
 
 		case 6: // move-window
-		
+
 			{
-				RECT rect;
-				int wide;
-				int high;
 				int rw;
 				int rh;
-				
-				GetClientRect(_viv_hwnd,&rect);
-				wide = rect.right - rect.left;
-				high = rect.bottom - rect.top - _viv_get_status_high() - _viv_get_controls_high();
 
 				_viv_get_render_size(&rw,&rh);
 
-//debug_printf("MOVEWINDOW %d %d\n",rw,wide);
-				
-				if ((rw > wide) || (rh > high))
+				if (_viv_drag_has_pan_room(rw,rh))
 				{
 					// scroll
 					_viv_do_left_click_action(0);
-	
+
 					return;
 				}
 			}
-		
+
 			if (_viv_doing == _VIV_DOING_NOTHING)
 			{
-				if (!_viv_is_fullscreen)
+				if ((!_viv_is_fullscreen) && (!_viv_is_window_maximized(_viv_hwnd)))
 				{
 					_viv_start_move_window();
-					
+
 					return;
 				}
 			}

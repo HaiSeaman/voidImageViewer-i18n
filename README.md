@@ -2,7 +2,7 @@
 
 > 一款专为 Windows 打造的轻量级、极速看图软件，支持 10 种语言无缝切换、默认 1:1 像素级放缩与动画 GIF / WebP 流畅播放。
 > 本项目基于 [voidtools/voidImageViewer](https://github.com/voidtools/voidImageViewer) 进行沉浸式体验增强与多语言扩展。
-> **当前版本：v3.0**
+> **当前版本：v3.1**
 
 [下载最新版](#下载) ｜ [新增特性](#相查原版的主要改动) ｜ [功能特性](#功能特性) ｜ [使用说明](#使用说明) ｜ [从源码构建](#从源码构建) ｜ [已知问题](#已知问题与限制)
 
@@ -68,6 +68,7 @@
 
 - **1:1 实际大小 (默认)** / **最佳适应** / **填充窗口** / **允许缩小** / **保持纵横比** 多种放缩模式。
 - **平移与扫描 (Pan & Scan)**：八方向微调、居中显示、画布与窗口按比例调整。
+- **智能拖动平移 (v3.1)**：图片放大超出窗口后，按住左键拖动即可平移查看局部；图片完整显示时普通窗口仍可拖动移动窗口，最大化窗口则不会被误拖还原。全屏与显示标题栏模式行为不变。
 - **高性能 Mipmap**：对缩小显示的图像预生成多级缩放图，解决像素交错抗锯齿并提升渲染效能。
 - **平滑缩放**：支持鼠标滚轮微调与热键平滑放大/缩小。
 
@@ -105,16 +106,16 @@
   - Voidtools 官网论坛：[https://www.voidtools.com/forum/viewtopic.php?t=5623](https://www.voidtools.com/forum/viewtopic.php?t=5623)
   - Voidtools GitHub 仓库：[https://github.com/voidtools/voidImageViewer](https://github.com/voidtools/voidImageViewer)
 
-**v3.0 发布文件**：提供 32 位 (`x86`) 与 64 位 (`x64`) 免安装绿色便携版压缩包，解压即用；同时提供标准 NSIS 安装包（中/英双语）。
+**v3.1 发布文件**：提供 32 位 (`x86`) 与 64 位 (`x64`) 免安装绿色便携版压缩包，解压即用；同时提供标准 NSIS 安装包（中/英双语）。
 
 | 类型 | 文件 |
 | --- | --- |
-| 便携版 x64 | `voidImageViewer-3.0.x64.zip` |
-| 便携版 x86 | `voidImageViewer-3.0.x86.zip` |
-| 安装包 x64 中文 | `voidImageViewer-3.0.x64.zh-CN-Setup.exe` |
-| 安装包 x64 英文 | `voidImageViewer-3.0.x64.en-US-Setup.exe` |
-| 安装包 x86 中文 | `voidImageViewer-3.0.x86.zh-CN-Setup.exe` |
-| 安装包 x86 英文 | `voidImageViewer-3.0.x86.en-US-Setup.exe` |
+| 便携版 x64 | `voidImageViewer-3.1.x64.zip` |
+| 便携版 x86 | `voidImageViewer-3.1.x86.zip` |
+| 安装包 x64 中文 | `voidImageViewer-3.1.x64.zh-CN-Setup.exe` |
+| 安装包 x64 英文 | `voidImageViewer-3.1.x64.en-US-Setup.exe` |
+| 安装包 x86 中文 | `voidImageViewer-3.1.x86.zh-CN-Setup.exe` |
+| 安装包 x86 英文 | `voidImageViewer-3.1.x86.en-US-Setup.exe` |
 
 ---
 
