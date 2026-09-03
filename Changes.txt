@@ -1,3 +1,20 @@
+Saturday, 22 August 2026: Version 3.2
+	bugfix: deleting an image while shuffle mode was active corrupted the shuffle index array (os_move_memory was passed an element count where a byte count - missing the sizeof(_viv_playlist_t *) factor - was required), leaving a stale pointer to the freed node; the next navigation dereferenced it (use-after-free / random crash, wrong image shown). The move now multiplies by sizeof; a regression test (tests/test_playlist_delete.c) reproduces the faulty element-count behaviour and verifies the fixed byte-count behaviour.
+	bugfix: the status-bar pixel RGB was read from an uninitialized COLORREF when the cursor was outside the image (undefined behaviour, random pixel values); it is now initialized to 0 before the optional read.
+	bugfix: _viv_frame_prev could wrap to frame index -1 while an animation was still loading (loaded_count == 0), indexing _viv_frames[-1]; the wrap is now clamped to frame 0.
+	bugfix: uninstalling a file association used RegDeleteKey, which fails on keys that still have subkeys (eg: shell\open\command), leaving the association installed; switched to SHDeleteKeyW which removes the whole tree.
+	changed: Everything IPC reply parsing (the RANDOM and OPEN/ADD WM_COPYDATA handlers) was duplicated ~160 lines; extracted a shared _viv_everything_parse_item() that keeps every trust-boundary check (cbData, data_offset, remaining, MAX_PATH, SIZE/CREATED/MODIFIED fields).
+	changed: Everything IPC query sending (browse vs random) was duplicated ~100 lines; extracted _viv_send_everything_query() parameterised by reply message / offset / max results. The random path's debug print no longer dereferences the query pointer in release builds.
+	changed: the slideshow rate radio-checks and the rate->command-id lookup now use the existing _viv_slideshow_rate_presets[] table instead of hand-written case lists, so adding a preset touches one table instead of four places.
+	removed: dead files src/crt.c and src/crt.h (never compiled, contents mostly commented out, no include sites).
+	removed: 84 tracked build artifacts from git (79 .obj files, vc145.pdb, .tlog, .lastbuildstate, FileListAbsolute.txt, test_images/heif_dec_test.obj) - they are reproducible build output and already covered by .gitignore.
+	removed: stale workspace artifacts (test_left_drag.obj, four v3.0 installer executables shipped under nsis/).
+	fixed: version resource FILEVERSION/PRODUCTVERSION numeric fields still read 1,0,0,16 while the string values said 3.1.0.0, so tools reading the fixed file info showed an ancient version; both are now 3.2.0.0.
+	fixed: nsis/version.nsh still branded 3.0; now 3.2.
+	fixed: README referenced a non-existent build_vs2019.bat and a wrong output directory; now documents build_release_both.bat and the real output paths.
+	fixed: RELEASE-NOTES-3.1.md claimed 12 UI languages where the project ships 10; corrected.
+	regression: x64 and Win32 Release builds compile clean (/W3, no warnings); tests/test_left_drag.exe 16/16 and tests/test_playlist_delete.exe 3/3 pass.
+
 Saturday, 22 August 2026: Version 3.1
 	fixed: dragging the image in borderless mode always moved the whole window - even when zoomed past the viewport or maximized (dragging a maximized window restored it and dragged it away). Left-drag now pans the image whenever it renders larger than the viewport, in any window state.
 	added: smart left-drag rule shared by all scroll-type click actions (0=scroll, 5=1:1 scroll, 6=move-window): pan when the image overflows the viewport; move the window only while it fully fits a normal borderless window; do nothing on a maximized window so it can no longer be accidentally dragged out of maximize.

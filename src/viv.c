@@ -645,6 +645,8 @@ static void _viv_get_src_pixel_rgb(int src_x,int src_y,COLORREF *out_colorref);
 static int _viv_clamp_zoom_pos(int zoom_pos);
 static void _viv_open_preload(void);
 static int _viv_safe_copy_data(const void *base,SIZE_T src_size,const void *src,void *dst,SIZE_T dst_size);
+static int _viv_everything_parse_item(const COPYDATASTRUCT *cds,const EVERYTHING_IPC_ITEM2 *item,WIN32_FIND_DATA *fd);
+static int _viv_send_everything_query(const wchar_t *search,DWORD reply_message,DWORD offset,DWORD max_results);
 
 static HMODULE _viv_stobject_hmodule = 0;
 static _viv_playlist_t *_viv_playlist_start = 0;
@@ -4223,82 +4225,13 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 						}
 						else
 						{
-							DWORD filename_len;
-							char *p;
-							SIZE_T remaining;
+							WIN32_FIND_DATA fd;
 
-							// EVERYTHING_IPC_QUERY2_REQUEST_FULL_PATH_AND_NAME
-							if (items[0].data_offset > cds->cbData)
+							// parse the single random result (trust-boundary
+							// checks live in _viv_everything_parse_item).
+							if (_viv_everything_parse_item(cds,&items[0],&fd))
 							{
-								break;
-							}
-
-							p = ((char *)cds->lpData) + items[0].data_offset;
-							remaining = cds->cbData - items[0].data_offset;
-
-							if (remaining < sizeof(DWORD))
-							{
-								break;
-							}
-
-							filename_len = *(DWORD *)p;
-							if (filename_len < MAX_PATH)
-							{
-								WIN32_FIND_DATA fd;
-
-								p += sizeof(DWORD);
-								remaining -= sizeof(DWORD);
-
-								if (remaining < ((SIZE_T)filename_len + 1) * sizeof(wchar_t))
-								{
-									break;
-								}
-
-								os_zero_memory(&fd,sizeof(WIN32_FIND_DATA));
-								
-								os_copy_memory(fd.cFileName,(wchar_t *)p,filename_len * sizeof(wchar_t));
-								fd.cFileName[filename_len] = 0;
-								
-								if (_viv_is_valid_filename(&fd))
-								{
-									p += (filename_len + 1) * sizeof(wchar_t);
-									remaining -= (filename_len + 1) * sizeof(wchar_t);
-									
-									// EVERYTHING_IPC_QUERY2_REQUEST_SIZE	
-									if (_viv_everything_request_flags & EVERYTHING_IPC_QUERY2_REQUEST_SIZE)
-									{
-										if (remaining < 2 * sizeof(DWORD)) break;
-										fd.nFileSizeLow = *(DWORD *)p;
-										p += sizeof(DWORD);
-										fd.nFileSizeHigh = *(DWORD *)p;
-										p += sizeof(DWORD);
-										remaining -= 2 * sizeof(DWORD);
-									}
-
-									// EVERYTHING_IPC_QUERY2_REQUEST_DATE_CREATED
-									if (_viv_everything_request_flags & EVERYTHING_IPC_QUERY2_REQUEST_DATE_CREATED)
-									{
-										if (remaining < 2 * sizeof(DWORD)) break;
-										fd.ftCreationTime.dwLowDateTime = *(DWORD *)p;
-										p += sizeof(DWORD);
-										fd.ftCreationTime.dwHighDateTime = *(DWORD *)p;
-										p += sizeof(DWORD);
-										remaining -= 2 * sizeof(DWORD);
-									}
-									
-									// EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED
-									if (_viv_everything_request_flags & EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED)
-									{
-										if (remaining < 2 * sizeof(DWORD)) break;
-										fd.ftLastWriteTime.dwLowDateTime = *(DWORD *)p;
-										p += sizeof(DWORD);
-										fd.ftLastWriteTime.dwHighDateTime = *(DWORD *)p;
-										p += sizeof(DWORD);
-										remaining -= 2 * sizeof(DWORD);
-									}
-									
-									_viv_open(&fd,0);
-								}
+								_viv_open(&fd,0);
 							}
 						}
 					}
@@ -4361,6 +4294,8 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 						
 						for(i=0;i<list->numitems;i++)
 					{
+						WIN32_FIND_DATA fd;
+
 						if (items[i].flags & EVERYTHING_IPC_FOLDER)
 						{
 							// add this folder ?
@@ -4368,83 +4303,11 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 						}
 						else
 						{
-							DWORD filename_len;
-							char *p;
-							SIZE_T remaining;
-
-							// EVERYTHING_IPC_QUERY2_REQUEST_FULL_PATH_AND_NAME
-							if (items[i].data_offset > cds->cbData)
+							// parse this result (trust-boundary checks live in
+							// _viv_everything_parse_item).
+							if (_viv_everything_parse_item(cds,&items[i],&fd))
 							{
-								break;
-							}
-
-							p = ((char *)cds->lpData) + items[i].data_offset;
-							remaining = cds->cbData - items[i].data_offset;
-
-							if (remaining < sizeof(DWORD))
-							{
-								break;
-							}
-
-							filename_len = *(DWORD *)p;
-							if (filename_len < MAX_PATH)
-							{
-								WIN32_FIND_DATA fd;
-
-								p += sizeof(DWORD);
-								remaining -= sizeof(DWORD);
-
-								// the filename must be within the buffer.
-								if (remaining < ((SIZE_T)filename_len + 1) * sizeof(wchar_t))
-								{
-									break;
-								}
-
-								os_zero_memory(&fd,sizeof(WIN32_FIND_DATA));
-								
-								os_copy_memory(fd.cFileName,(wchar_t *)p,filename_len * sizeof(wchar_t));
-								fd.cFileName[filename_len] = 0;
-								
-								if (_viv_is_valid_filename(&fd))
-								{
-									p += (filename_len + 1) * sizeof(wchar_t);
-									remaining -= (filename_len + 1) * sizeof(wchar_t);
-									
-									// EVERYTHING_IPC_QUERY2_REQUEST_SIZE	
-									if (_viv_everything_request_flags & EVERYTHING_IPC_QUERY2_REQUEST_SIZE)
-									{
-										if (remaining < 2 * sizeof(DWORD)) break;
-										fd.nFileSizeLow = *(DWORD *)p;
-										p += sizeof(DWORD);
-										fd.nFileSizeHigh = *(DWORD *)p;
-										p += sizeof(DWORD);
-										remaining -= 2 * sizeof(DWORD);
-									}
-
-									// EVERYTHING_IPC_QUERY2_REQUEST_DATE_CREATED
-									if (_viv_everything_request_flags & EVERYTHING_IPC_QUERY2_REQUEST_DATE_CREATED)
-									{
-										if (remaining < 2 * sizeof(DWORD)) break;
-										fd.ftCreationTime.dwLowDateTime = *(DWORD *)p;
-										p += sizeof(DWORD);
-										fd.ftCreationTime.dwHighDateTime = *(DWORD *)p;
-										p += sizeof(DWORD);
-										remaining -= 2 * sizeof(DWORD);
-									}
-									
-									// EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED
-									if (_viv_everything_request_flags & EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED)
-									{
-										if (remaining < 2 * sizeof(DWORD)) break;
-										fd.ftLastWriteTime.dwLowDateTime = *(DWORD *)p;
-										p += sizeof(DWORD);
-										fd.ftLastWriteTime.dwHighDateTime = *(DWORD *)p;
-										p += sizeof(DWORD);
-										remaining -= 2 * sizeof(DWORD);
-									}
-									
-									_viv_playlist_add(&fd);
-								}
+								_viv_playlist_add(&fd);
 							}
 						}
 					}
@@ -8185,49 +8048,35 @@ static void _viv_check_menus(HMENU hmenu)
 	}
 	else
 	{
-		switch(config_slideshow_rate)
-		{
-			case 250: slideshow_rate_id = VIV_ID_SLIDESHOW_RATE_250; break;
-			case 500: slideshow_rate_id = VIV_ID_SLIDESHOW_RATE_500; break;
-			case 1000: slideshow_rate_id = VIV_ID_SLIDESHOW_RATE_1000; break;
-			case 2000: slideshow_rate_id = VIV_ID_SLIDESHOW_RATE_2000; break;
-			case 3000: slideshow_rate_id = VIV_ID_SLIDESHOW_RATE_3000; break;
-			case 4000: slideshow_rate_id = VIV_ID_SLIDESHOW_RATE_4000; break;
-			case 5000: slideshow_rate_id = VIV_ID_SLIDESHOW_RATE_5000; break;
-			case 6000: slideshow_rate_id = VIV_ID_SLIDESHOW_RATE_6000; break;
-			case 7000: slideshow_rate_id = VIV_ID_SLIDESHOW_RATE_7000; break;
-			case 8000: slideshow_rate_id = VIV_ID_SLIDESHOW_RATE_8000; break;
-			case 9000: slideshow_rate_id = VIV_ID_SLIDESHOW_RATE_9000; break;
-			case 10000: slideshow_rate_id = VIV_ID_SLIDESHOW_RATE_10000; break;
-			case 20000: slideshow_rate_id = VIV_ID_SLIDESHOW_RATE_20000; break;
-			case 30000: slideshow_rate_id = VIV_ID_SLIDESHOW_RATE_30000; break;
-			case 40000: slideshow_rate_id = VIV_ID_SLIDESHOW_RATE_40000; break;
-			case 50000: slideshow_rate_id = VIV_ID_SLIDESHOW_RATE_50000; break;
-			case 60000: slideshow_rate_id = VIV_ID_SLIDESHOW_RATE_60000; break;
+		int i;
 
-			default:
-				slideshow_rate_id = VIV_ID_SLIDESHOW_RATE_CUSTOM;
+		// find the preset that matches the configured rate.
+		// VIV_ID_SLIDESHOW_RATE_250..60000 are consecutive and line up with
+		// _viv_slideshow_rate_presets[] order.
+		slideshow_rate_id = VIV_ID_SLIDESHOW_RATE_CUSTOM;
+
+		for(i=0;i<_VIV_SLIDESHOW_RATE_PRESET_COUNT;i++)
+		{
+			if (config_slideshow_rate == _viv_slideshow_rate_presets[i])
+			{
+				slideshow_rate_id = VIV_ID_SLIDESHOW_RATE_250 + i;
 				break;
+			}
 		}
 	}
 
-	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_RATE_250,slideshow_rate_id == VIV_ID_SLIDESHOW_RATE_250 ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
-	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_RATE_500,slideshow_rate_id == VIV_ID_SLIDESHOW_RATE_500 ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
-	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_RATE_1000,slideshow_rate_id == VIV_ID_SLIDESHOW_RATE_1000 ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
-	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_RATE_2000,slideshow_rate_id == VIV_ID_SLIDESHOW_RATE_2000 ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
-	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_RATE_3000,slideshow_rate_id == VIV_ID_SLIDESHOW_RATE_3000 ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
-	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_RATE_4000,slideshow_rate_id == VIV_ID_SLIDESHOW_RATE_4000 ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
-	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_RATE_5000,slideshow_rate_id == VIV_ID_SLIDESHOW_RATE_5000 ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
-	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_RATE_6000,slideshow_rate_id == VIV_ID_SLIDESHOW_RATE_6000 ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
-	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_RATE_7000,slideshow_rate_id == VIV_ID_SLIDESHOW_RATE_7000 ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
-	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_RATE_8000,slideshow_rate_id == VIV_ID_SLIDESHOW_RATE_8000 ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
-	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_RATE_9000,slideshow_rate_id == VIV_ID_SLIDESHOW_RATE_9000 ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
-	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_RATE_10000,slideshow_rate_id == VIV_ID_SLIDESHOW_RATE_10000 ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
-	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_RATE_20000,slideshow_rate_id == VIV_ID_SLIDESHOW_RATE_20000 ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
-	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_RATE_30000,slideshow_rate_id == VIV_ID_SLIDESHOW_RATE_30000 ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
-	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_RATE_40000,slideshow_rate_id == VIV_ID_SLIDESHOW_RATE_40000 ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
-	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_RATE_50000,slideshow_rate_id == VIV_ID_SLIDESHOW_RATE_50000 ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
-	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_RATE_60000,slideshow_rate_id == VIV_ID_SLIDESHOW_RATE_60000 ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
+	{
+		int i;
+
+		// radio-check every preset (CUSTOM/ANIMATION_DURATION below).
+		for(i=0;i<_VIV_SLIDESHOW_RATE_PRESET_COUNT;i++)
+		{
+			WORD command_id = VIV_ID_SLIDESHOW_RATE_250 + i;
+
+			CheckMenuItem(hmenu,command_id,slideshow_rate_id == command_id ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
+		}
+	}
+
 	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_RATE_CUSTOM,slideshow_rate_id == VIV_ID_SLIDESHOW_RATE_CUSTOM ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
 	CheckMenuItem(hmenu,VIV_ID_SLIDESHOW_RATE_ANIMATION_DURATION,slideshow_rate_id == VIV_ID_SLIDESHOW_RATE_ANIMATION_DURATION ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
 
@@ -10002,8 +9851,11 @@ static void _viv_uninstall_association_by_extension(const char *association)
 	
 	string_copy_utf8_string(key,(const utf8_t *)"SOFTWARE\\Classes\\voidImageViewer.");
 	string_cat_utf8(key,association);
-	
-	RegDeleteKey(HKEY_CURRENT_USER,key);
+
+	// RegDeleteKey fails on keys that still have subkeys (eg: shell\open\command),
+	// leaving the file association installed. SHDeleteKeyW removes the whole tree
+	// and is declared with the project's _WIN32_IE/_WIN32_WINNT settings.
+	SHDeleteKeyW(HKEY_CURRENT_USER,key);
 }
 
 static int _viv_is_association(const char *association)
@@ -10224,7 +10076,7 @@ static void _viv_update_src_pixel(int force,int update_statusbar)
 
 		if ((force) || (src_pixel_pt.x != _viv_src_pixel_x) || (src_pixel_pt.y != _viv_src_pixel_y))
 		{
-			COLORREF src_pixel_rgb;
+			COLORREF src_pixel_rgb = 0;
 			
 			_viv_src_pixel_x = src_pixel_pt.x;
 			_viv_src_pixel_y = src_pixel_pt.y;
@@ -10304,7 +10156,9 @@ static void _viv_frame_prev(void)
 		}
 		else
 		{
-			_viv_frame_position = _viv_frame_loaded_count - 1;
+			// clamp: while the animation is still loading (loaded_count==0),
+			// wrapping to -1 would index _viv_frames[-1]. Stay on frame 0.
+			_viv_frame_position = (_viv_frame_loaded_count > 0) ? (_viv_frame_loaded_count - 1) : 0;
 		}
 	
 		_viv_animation_timer_tick_start = os_get_tick_count();
@@ -10397,7 +10251,7 @@ static void _viv_playlist_delete(const WIN32_FIND_DATA *fd)
 	
 			d = _viv_playlist_shuffle_indexes[index];
 			
-			os_move_memory(_viv_playlist_shuffle_indexes + index,_viv_playlist_shuffle_indexes + index + 1,_viv_playlist_count - (index + 1));
+			os_move_memory(_viv_playlist_shuffle_indexes + index,_viv_playlist_shuffle_indexes + index + 1,(_viv_playlist_count - (index + 1)) * sizeof(_viv_playlist_t *));
 			
 			if (_viv_playlist_start == d)
 			{
@@ -15162,8 +15016,6 @@ static int _viv_send_everything_search(HWND hwnd,int add,int randomize,const wch
 	}
 	else
 	{
-		HWND everything_hwnd;
-		
 		if (_viv_random)
 		{
 			mem_free(_viv_random);
@@ -15171,58 +15023,8 @@ static int _viv_send_everything_search(HWND hwnd,int add,int randomize,const wch
 			_viv_random = 0;
 		}
 		
-		everything_hwnd = FindWindowA(EVERYTHING_IPC_WNDCLASSA,0);
-		
-		if (everything_hwnd)
+		if (_viv_send_everything_query(search,add ? _VIV_COPYDATA_ADD_EVERYTHING_SEARCH : _VIV_COPYDATA_OPEN_EVERYTHING_SEARCH,0,EVERYTHING_IPC_ALLRESULTS))
 		{
-			EVERYTHING_IPC_QUERY2 *q;
-			COPYDATASTRUCT cds;
-			DWORD size;
-			wchar_t new_search[STRING_SIZE];
-			
-			string_copy_utf8_string(new_search,"ext:bmp;gif;heic;heif;ico;jpeg;jpg;png;tif;tiff;webp <*");
-			string_cat(new_search,search);
-			string_cat_utf8(new_search,">");
-
-			size = (DWORD)(sizeof(EVERYTHING_IPC_QUERY2) + (string_get_length(new_search) + 1) * sizeof(wchar_t));
-			
-			_viv_everything_request_flags = EVERYTHING_IPC_QUERY2_REQUEST_FULL_PATH_AND_NAME; 
-					
-			if (SendMessage(everything_hwnd,EVERYTHING_WM_IPC,EVERYTHING_IPC_IS_FILE_INFO_INDEXED,EVERYTHING_IPC_FILE_INFO_FILE_SIZE))
-			{
-				_viv_everything_request_flags |= EVERYTHING_IPC_QUERY2_REQUEST_SIZE;
-			}
-			
-			if (SendMessage(everything_hwnd,EVERYTHING_WM_IPC,EVERYTHING_IPC_IS_FILE_INFO_INDEXED,EVERYTHING_IPC_FILE_INFO_DATE_MODIFIED))
-			{
-				_viv_everything_request_flags |= EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED; 
-			}
-			
-			if (SendMessage(everything_hwnd,EVERYTHING_WM_IPC,EVERYTHING_IPC_IS_FILE_INFO_INDEXED,EVERYTHING_IPC_FILE_INFO_DATE_CREATED))
-			{
-				_viv_everything_request_flags |= EVERYTHING_IPC_QUERY2_REQUEST_DATE_CREATED; 
-			}
-			
-			q = mem_alloc(size);
-			
-			q->reply_hwnd = (DWORD)_viv_hwnd;
-			q->reply_copydata_message = add ? _VIV_COPYDATA_ADD_EVERYTHING_SEARCH : _VIV_COPYDATA_OPEN_EVERYTHING_SEARCH;
-			q->search_flags = 0;
-			q->offset = 0;
-			q->max_results = EVERYTHING_IPC_ALLRESULTS;
-			q->request_flags = _viv_everything_request_flags;
-			
-			q->sort_type = EVERYTHING_IPC_SORT_NAME_ASCENDING;
-			os_copy_memory(q+1,new_search,(string_get_length(new_search) + 1) * sizeof(wchar_t));
-			
-			cds.dwData = EVERYTHING_IPC_COPYDATA_QUERY2;
-			cds.cbData = size;
-			cds.lpData = q;
-			
-			SendMessage(everything_hwnd,WM_COPYDATA,(WPARAM)_viv_hwnd,(LPARAM)&cds);
-			
-			mem_free(q);
-			
 			return 1;
 		}
 		else
@@ -15643,62 +15445,11 @@ static HBITMAP _viv_orientate_hbitmap(HBITMAP hbitmap,int orientation)
 
 static void _viv_send_random_everything_search(void)
 {
-	HWND everything_hwnd;
-	
-	everything_hwnd = FindWindowA(EVERYTHING_IPC_WNDCLASSA,0);
-	
-	if (everything_hwnd)
-	{
-		EVERYTHING_IPC_QUERY2 *q;
-		COPYDATASTRUCT cds;
-		DWORD size;
-		wchar_t new_search[STRING_SIZE];
-		
-		string_copy_utf8_string(new_search,"ext:bmp;gif;heic;heif;ico;jpeg;jpg;png;tif;tiff;webp <*");
-		string_cat(new_search,_viv_random);
-		string_cat_utf8(new_search,">");
+	// pick a random offset within the total results and request a single
+	// result; the RANDOM reply handler opens it.
+	DWORD offset = ((rand() * RAND_MAX) + rand()) % _viv_random_tot_results;
 
-		size = (DWORD)(sizeof(EVERYTHING_IPC_QUERY2) + (string_get_length(new_search) + 1) * sizeof(wchar_t));
-		
-		_viv_everything_request_flags = EVERYTHING_IPC_QUERY2_REQUEST_FULL_PATH_AND_NAME; 
-				
-		if (SendMessage(everything_hwnd,EVERYTHING_WM_IPC,EVERYTHING_IPC_IS_FILE_INFO_INDEXED,EVERYTHING_IPC_FILE_INFO_FILE_SIZE))
-		{
-			_viv_everything_request_flags |= EVERYTHING_IPC_QUERY2_REQUEST_SIZE;
-		}
-		
-		if (SendMessage(everything_hwnd,EVERYTHING_WM_IPC,EVERYTHING_IPC_IS_FILE_INFO_INDEXED,EVERYTHING_IPC_FILE_INFO_DATE_MODIFIED))
-		{
-			_viv_everything_request_flags |= EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED; 
-		}
-		
-		if (SendMessage(everything_hwnd,EVERYTHING_WM_IPC,EVERYTHING_IPC_IS_FILE_INFO_INDEXED,EVERYTHING_IPC_FILE_INFO_DATE_CREATED))
-		{
-			_viv_everything_request_flags |= EVERYTHING_IPC_QUERY2_REQUEST_DATE_CREATED; 
-		}
-		
-		q = mem_alloc(size);
-		
-		q->reply_hwnd = (DWORD)_viv_hwnd;
-		q->reply_copydata_message = _VIV_COPYDATA_RANDOM_EVERYTHING_SEARCH;
-		q->search_flags = 0;
-		q->offset = ((rand() * RAND_MAX) + rand()) % _viv_random_tot_results;
-		q->max_results = 1;
-		q->request_flags = _viv_everything_request_flags;
-		
-		debug_printf("rand index %d\n",q->offset);
-		
-		q->sort_type = EVERYTHING_IPC_SORT_NAME_ASCENDING;
-		os_copy_memory(q+1,new_search,(string_get_length(new_search) + 1) * sizeof(wchar_t));
-		
-		cds.dwData = EVERYTHING_IPC_COPYDATA_QUERY2;
-		cds.cbData = size;
-		cds.lpData = q;
-		
-		SendMessage(everything_hwnd,WM_COPYDATA,(WPARAM)_viv_hwnd,(LPARAM)&cds);
-		
-		mem_free(q);
-	}
+	_viv_send_everything_query(_viv_random,_VIV_COPYDATA_RANDOM_EVERYTHING_SEARCH,offset,1);
 }
 
 // x,y in screen coords
@@ -17142,4 +16893,159 @@ static int _viv_safe_copy_data(const void *base,SIZE_T src_size,const void *src,
 	}
 	
 	return 1;
+}
+
+// Parse one Everything reply item into a WIN32_FIND_DATA.
+// Shared by the RANDOM and OPEN/ADD COPYDATA reply handlers.
+// Keep EVERY trust-boundary check: the item, its flags and its
+// variable-length filename/SIZE/DATE payload must all fit inside
+// the COPYDATA buffer before anything is read. Returns 1 and fills
+// *fd on success, 0 on a malformed reply.
+static int _viv_everything_parse_item(const COPYDATASTRUCT *cds,const EVERYTHING_IPC_ITEM2 *item,WIN32_FIND_DATA *fd)
+{
+	DWORD filename_len;
+	char *p;
+	SIZE_T remaining;
+
+	if (item->data_offset > cds->cbData)
+	{
+		return 0;
+	}
+
+	p = ((char *)cds->lpData) + item->data_offset;
+	remaining = cds->cbData - item->data_offset;
+
+	if (remaining < sizeof(DWORD))
+	{
+		return 0;
+	}
+
+	filename_len = *(DWORD *)p;
+	if (filename_len >= MAX_PATH)
+	{
+		return 0;
+	}
+
+	p += sizeof(DWORD);
+	remaining -= sizeof(DWORD);
+
+	if (remaining < ((SIZE_T)filename_len + 1) * sizeof(wchar_t))
+	{
+		return 0;
+	}
+
+	os_zero_memory(fd,sizeof(WIN32_FIND_DATA));
+
+	os_copy_memory(fd->cFileName,(wchar_t *)p,filename_len * sizeof(wchar_t));
+	fd->cFileName[filename_len] = 0;
+
+	if (!_viv_is_valid_filename(fd))
+	{
+		return 0;
+	}
+
+	p += (filename_len + 1) * sizeof(wchar_t);
+	remaining -= (filename_len + 1) * sizeof(wchar_t);
+
+	// EVERYTHING_IPC_QUERY2_REQUEST_SIZE
+	if (_viv_everything_request_flags & EVERYTHING_IPC_QUERY2_REQUEST_SIZE)
+	{
+		if (remaining < 2 * sizeof(DWORD)) return 0;
+		fd->nFileSizeLow = *(DWORD *)p;
+		p += sizeof(DWORD);
+		fd->nFileSizeHigh = *(DWORD *)p;
+		p += sizeof(DWORD);
+		remaining -= 2 * sizeof(DWORD);
+	}
+
+	// EVERYTHING_IPC_QUERY2_REQUEST_DATE_CREATED
+	if (_viv_everything_request_flags & EVERYTHING_IPC_QUERY2_REQUEST_DATE_CREATED)
+	{
+		if (remaining < 2 * sizeof(DWORD)) return 0;
+		fd->ftCreationTime.dwLowDateTime = *(DWORD *)p;
+		p += sizeof(DWORD);
+		fd->ftCreationTime.dwHighDateTime = *(DWORD *)p;
+		p += sizeof(DWORD);
+		remaining -= 2 * sizeof(DWORD);
+	}
+
+	// EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED
+	if (_viv_everything_request_flags & EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED)
+	{
+		if (remaining < 2 * sizeof(DWORD)) return 0;
+		fd->ftLastWriteTime.dwLowDateTime = *(DWORD *)p;
+		p += sizeof(DWORD);
+		fd->ftLastWriteTime.dwHighDateTime = *(DWORD *)p;
+		p += sizeof(DWORD);
+		remaining -= 2 * sizeof(DWORD);
+	}
+
+	return 1;
+}
+
+// Send one Everything QUERY2 search. Shared by the browse and random paths;
+// they differ only in the reply message, the result offset and the max
+// results count. Returns 1 when Everything is running and the query was
+// sent, 0 when it is not available.
+static int _viv_send_everything_query(const wchar_t *search,DWORD reply_message,DWORD offset,DWORD max_results)
+{
+	HWND everything_hwnd;
+
+	everything_hwnd = FindWindowA(EVERYTHING_IPC_WNDCLASSA,0);
+	if (!everything_hwnd)
+	{
+		return 0;
+	}
+
+	{
+		EVERYTHING_IPC_QUERY2 *q;
+		COPYDATASTRUCT cds;
+		DWORD size;
+		wchar_t new_search[STRING_SIZE];
+
+		string_copy_utf8_string(new_search,"ext:bmp;gif;heic;heif;ico;jpeg;jpg;png;tif;tiff;webp <*");
+		string_cat(new_search,search);
+		string_cat_utf8(new_search,">");
+
+		size = (DWORD)(sizeof(EVERYTHING_IPC_QUERY2) + (string_get_length(new_search) + 1) * sizeof(wchar_t));
+
+		_viv_everything_request_flags = EVERYTHING_IPC_QUERY2_REQUEST_FULL_PATH_AND_NAME;
+
+		if (SendMessage(everything_hwnd,EVERYTHING_WM_IPC,EVERYTHING_IPC_IS_FILE_INFO_INDEXED,EVERYTHING_IPC_FILE_INFO_FILE_SIZE))
+		{
+			_viv_everything_request_flags |= EVERYTHING_IPC_QUERY2_REQUEST_SIZE;
+		}
+
+		if (SendMessage(everything_hwnd,EVERYTHING_WM_IPC,EVERYTHING_IPC_IS_FILE_INFO_INDEXED,EVERYTHING_IPC_FILE_INFO_DATE_MODIFIED))
+		{
+			_viv_everything_request_flags |= EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED;
+		}
+
+		if (SendMessage(everything_hwnd,EVERYTHING_WM_IPC,EVERYTHING_IPC_IS_FILE_INFO_INDEXED,EVERYTHING_IPC_FILE_INFO_DATE_CREATED))
+		{
+			_viv_everything_request_flags |= EVERYTHING_IPC_QUERY2_REQUEST_DATE_CREATED;
+		}
+
+		q = mem_alloc(size);
+
+		q->reply_hwnd = (DWORD)_viv_hwnd;
+		q->reply_copydata_message = reply_message;
+		q->search_flags = 0;
+		q->offset = offset;
+		q->max_results = max_results;
+		q->request_flags = _viv_everything_request_flags;
+
+		q->sort_type = EVERYTHING_IPC_SORT_NAME_ASCENDING;
+		os_copy_memory(q+1,new_search,(string_get_length(new_search) + 1) * sizeof(wchar_t));
+
+		cds.dwData = EVERYTHING_IPC_COPYDATA_QUERY2;
+		cds.cbData = size;
+		cds.lpData = q;
+
+		SendMessage(everything_hwnd,WM_COPYDATA,(WPARAM)_viv_hwnd,(LPARAM)&cds);
+
+		mem_free(q);
+
+		return 1;
+	}
 }

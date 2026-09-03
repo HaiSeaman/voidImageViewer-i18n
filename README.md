@@ -2,7 +2,7 @@
 
 > 一款专为 Windows 打造的轻量级、极速看图软件，支持 10 种语言无缝切换、默认 1:1 像素级放缩与动画 GIF / WebP 流畅播放。
 > 本项目基于 [voidtools/voidImageViewer](https://github.com/voidtools/voidImageViewer) 进行沉浸式体验增强与多语言扩展。
-> **当前版本：v3.1**
+> **当前版本：v3.2**
 
 [下载最新版](#下载) ｜ [新增特性](#相查原版的主要改动) ｜ [功能特性](#功能特性) ｜ [使用说明](#使用说明) ｜ [从源码构建](#从源码构建) ｜ [已知问题](#已知问题与限制)
 
@@ -24,6 +24,7 @@
 | **无边框沉浸式看图** | 默认隐藏标题栏、菜单栏、状态栏与粗边框，改用右键菜单与快捷键操控，最大化显示区域。 |
 | **窗口贴合与标题配置** | 支持窗口根据图片尺寸自动贴合消除白边，标题栏支持显示完整路径、仅文件名或无标题栏。 |
 | **中文文档与使用规范** | 提供完整的中文技术文档、配置指南与构建说明。 |
+| **稳定性加固（v3.2）** | 修复随机播放模式删除图片导致的崩溃（use-after-free）、动画暂停/状态栏像素值的未定义行为，合并 Everything 集成中的重复解析代码并保留全部安全校验，清理仓库构建产物与死代码。 |
 
 ---
 
@@ -106,16 +107,16 @@
   - Voidtools 官网论坛：[https://www.voidtools.com/forum/viewtopic.php?t=5623](https://www.voidtools.com/forum/viewtopic.php?t=5623)
   - Voidtools GitHub 仓库：[https://github.com/voidtools/voidImageViewer](https://github.com/voidtools/voidImageViewer)
 
-**v3.1 发布文件**：提供 32 位 (`x86`) 与 64 位 (`x64`) 免安装绿色便携版压缩包，解压即用；同时提供标准 NSIS 安装包（中/英双语）。
+**v3.2 发布文件**：提供 32 位 (`x86`) 与 64 位 (`x64`) 免安装绿色便携版压缩包，解压即用；同时提供标准 NSIS 安装包（中/英双语）。
 
 | 类型 | 文件 |
 | --- | --- |
-| 便携版 x64 | `voidImageViewer-3.1.x64.zip` |
-| 便携版 x86 | `voidImageViewer-3.1.x86.zip` |
-| 安装包 x64 中文 | `voidImageViewer-3.1.x64.zh-CN-Setup.exe` |
-| 安装包 x64 英文 | `voidImageViewer-3.1.x64.en-US-Setup.exe` |
-| 安装包 x86 中文 | `voidImageViewer-3.1.x86.zh-CN-Setup.exe` |
-| 安装包 x86 英文 | `voidImageViewer-3.1.x86.en-US-Setup.exe` |
+| 便携版 x64 | `voidImageViewer-3.2.x64.zip` |
+| 便携版 x86 | `voidImageViewer-3.2.x86.zip` |
+| 安装包 x64 中文 | `voidImageViewer-3.2.x64.zh-CN-Setup.exe` |
+| 安装包 x64 英文 | `voidImageViewer-3.2.x64.en-US-Setup.exe` |
+| 安装包 x86 中文 | `voidImageViewer-3.2.x86.zh-CN-Setup.exe` |
+| 安装包 x86 英文 | `voidImageViewer-3.2.x86.en-US-Setup.exe` |
 
 ---
 
@@ -201,12 +202,13 @@ voidImageViewer.exe [/开关] [文件名...]
    ```
 2. 使用 Visual Studio 打开 `vs2026/voidImageViewer.sln`。
 3. 选择构建目标架构（`x64` 或 `x86`）以及配置类型（`Release`）。
-4. 点击 **生成 -> 生成解决方案**，编译生成的可执行文件存放在 `vs2026/voidImageViewer/x64/Release/`（x64）或 `vs2026/voidImageViewer/Release/`（x86）目录下。
+4. 点击 **生成 -> 生成解决方案**，编译生成的可执行文件存放在 `vs2026/x64/Release/`（x64）或 `vs2026/Release/`（x86）目录下。
 
-你也可以在命令行中运行构建脚本（脚本会自动通过 vswhere 定位 VS 工具链）：
+你也可以在命令行中运行一键构建脚本（需已安装 Visual Studio 2026 并将 MSBuild 加入环境）：
 ```cmd
-build_vs2019.bat
+build_release_both.bat
 ```
+该脚本会依次构建 x64 与 Win32 的 Release 版本。
 
 ---
 
