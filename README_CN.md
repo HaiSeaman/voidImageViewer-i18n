@@ -4,7 +4,7 @@
 
 > 一款专为 Windows 打造的轻量级、极速看图软件，支持 10 种语言无缝切换、默认 1:1 像素级放缩与动画 GIF / WebP 流畅播放。
 > 本项目基于 [voidtools/voidImageViewer](https://github.com/voidtools/voidImageViewer) 进行沉浸式体验增强与多语言扩展。
-> **当前版本：v3.2**
+> **当前版本：v3.3**
 
 [下载最新版](#下载) ｜ [新增特性](#相较原版的主要改动) ｜ [功能特性](#功能特性) ｜ [使用说明](#使用说明) ｜ [从源码构建](#从源码构建) ｜ [许可证](#许可证与致谢)
 
@@ -27,6 +27,7 @@
 | **窗口贴合与标题配置** | 支持窗口根据图片尺寸自动贴合消除白边，标题栏支持显示完整路径、仅文件名或无标题栏。 |
 | **中文文档与使用规范** | 提供完整的中文技术文档、配置指南与构建说明。 |
 | **稳定性加固（v3.2）** | 修复随机播放模式删除图片导致的崩溃（use-after-free）、动画暂停/状态栏像素值的未定义行为，合并 Everything 集成中的重复解析代码并保留全部安全校验，清理仓库构建产物与死代码。 |
+| **体验增强与深度加固（v3.3）** | 新增左上角图片文件名显示（与窗口按钮同条带对齐、全屏自动隐藏）与 ESC 快捷键（全屏退出全屏、非全屏直接关闭程序）；修复 .jpg/.png/.tif/.tiff/.webp 文件关联描述错乱（字符串编号被 8 位类型截断）；删除 25 个 ARM/MIPS 无效编译文件与死配置，构建脚本全面可移植化。 |
 
 ---
 
@@ -109,16 +110,16 @@
   - Voidtools 官网论坛：[https://www.voidtools.com/forum/viewtopic.php?t=5623](https://www.voidtools.com/forum/viewtopic.php?t=5623)
   - Voidtools GitHub 仓库：[https://github.com/voidtools/voidImageViewer](https://github.com/voidtools/voidImageViewer)
 
-**v3.2 发布文件**：提供 32 位 (`x86`) 与 64 位 (`x64`) 免安装绿色便携版压缩包，解压即用；同时提供标准 NSIS 安装包（中/英双语）。
+**v3.3 发布文件**：提供 32 位 (`x86`) 与 64 位 (`x64`) 免安装绿色便携版压缩包，解压即用；同时提供标准 NSIS 安装包（中/英双语）。
 
 | 类型 | 文件 |
 | --- | --- |
-| 便携版 x64 | `voidImageViewer-3.2.x64.zip` |
-| 便携版 x86 | `voidImageViewer-3.2.x86.zip` |
-| 安装包 x64 中文 | `voidImageViewer-3.2.x64.zh-CN-Setup.exe` |
-| 安装包 x64 英文 | `voidImageViewer-3.2.x64.en-US-Setup.exe` |
-| 安装包 x86 中文 | `voidImageViewer-3.2.x86.zh-CN-Setup.exe` |
-| 安装包 x86 英文 | `voidImageViewer-3.2.x86.en-US-Setup.exe` |
+| 便携版 x64 | `voidImageViewer-3.3.x64.zip` |
+| 便携版 x86 | `voidImageViewer-3.3.x86.zip` |
+| 安装包 x64 中文 | `voidImageViewer-3.3.x64.zh-CN-Setup.exe` |
+| 安装包 x64 英文 | `voidImageViewer-3.3.x64.en-US-Setup.exe` |
+| 安装包 x86 中文 | `voidImageViewer-3.3.x86.zh-CN-Setup.exe` |
+| 安装包 x86 英文 | `voidImageViewer-3.3.x86.en-US-Setup.exe` |
 
 ---
 
@@ -129,7 +130,8 @@
 1. 双击 `voidImageViewer.exe` 打开软件，或直接将图片文件拖入软件窗口中。
 2. **单击鼠标右键** 呼出功能主菜单（默认开启无边框沉浸模式）。
 3. 滚动鼠标滚轮或按键盘 `↑` / `↓` 切换上一张/下一张图片。
-4. 按下 `F` 键或通过右键菜单进入全屏模式。
+4. 按下 `F` 键或通过右键菜单进入全屏模式；窗口左上角会显示当前图片的文件名。
+5. 按 `ESC` 键：全屏时退出全屏，非全屏时直接关闭程序。
 
 ### 切换语言
 

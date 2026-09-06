@@ -22,7 +22,7 @@
 // English (US) localization
 // Save as UTF-8 with BOM (required for MSVC to parse non-ASCII correctly).
 
-static const utf8_t *_localization_string_array_en_us[LOCALIZATION_ID_COUNT] = 
+const utf8_t *_localization_string_array_en_us[LOCALIZATION_ID_COUNT] = 
 {
 	// Application name
 	"English (US)", // LOCALIZATION_ID_LANGUAGE
@@ -105,7 +105,7 @@ static const utf8_t *_localization_string_array_en_us[LOCALIZATION_ID_COUNT] =
 	"I&ncrease Width", // LOCALIZATION_ID_INCREASE_WIDTH,
 	"D&ecrease Width", // LOCALIZATION_ID_DECREASE_WIDTH,
 	"In&crease Height", // LOCALIZATION_ID_INCREASE_HEIGHT,
-	"De&cre&ase Height", // LOCALIZATION_ID_DECREASE_HEIGHT,
+	"De&crease Height", // LOCALIZATION_ID_DECREASE_HEIGHT,
 	"&Zoom", // LOCALIZATION_ID_ZOOM,
 	"Zoom &In", // LOCALIZATION_ID_ZOOM_IN,
 	"Zoom &Out", // LOCALIZATION_ID_ZOOM_OUT,

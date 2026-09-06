@@ -75,8 +75,10 @@ int webp_load(IStream *stream,void *user_data,int (*info_callback)(void *user_da
 									frame = NULL;
 									frame_run = anim_info.frame_count;
 									last_timestamp = 0;
-									
-									ret = 1;
+
+									// a malformed file may report zero frames; that is a
+									// load failure, not a successful empty image.
+									ret = (frame_run != 0);
 
 									while (frame_run) 
 									{

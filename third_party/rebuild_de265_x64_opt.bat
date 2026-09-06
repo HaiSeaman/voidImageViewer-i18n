@@ -1,12 +1,32 @@
 @echo off
 rem Rebuild the x64 libde265 static library with a chosen optimization level.
 rem usage: rebuild_de265_x64_opt.bat "O2"|"Od"|"O1"
+rem cmake is taken from PATH when available, then the pip-installed copy,
+rem then cmake.exe's default install location - no hard-coded user path.
 setlocal
 set ROOT=%~dp0
 set OPT=%~1
-set CMAKE=C:\Python311\Lib\site-packages\cmake\data\bin\cmake.exe
 
-call "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat" >nul
+set VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe
+if not exist "%VSWHERE%" (
+    echo vswhere.exe not found; is Visual Studio installed?
+    exit /b 1
+)
+for /f "usebackq tokens=*" %%i in (`"%VSWHERE%" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set VS_PATH=%%i
+if not defined VS_PATH (
+    echo No Visual Studio with C++ tools found.
+    exit /b 1
+)
+call "%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat" >nul
+
+set CMAKE=cmake
+where cmake >nul 2>nul
+if errorlevel 1 set CMAKE=C:\Python311\Lib\site-packages\cmake\data\bin\cmake.exe
+if not exist "%CMAKE%" set CMAKE=%ProgramFiles%\CMake\bin\cmake.exe
+if not exist "%CMAKE%" (
+    echo cmake.exe not found in PATH or standard locations.
+    exit /b 1
+)
 
 cd /d "%ROOT%"
 

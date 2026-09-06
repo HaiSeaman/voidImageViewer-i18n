@@ -22,7 +22,7 @@
 // Español localization
 // Save as UTF-8 with BOM (required for MSVC to parse non-ASCII correctly).
 
-static const utf8_t *_localization_string_array_es[LOCALIZATION_ID_COUNT] = 
+const utf8_t *_localization_string_array_es[LOCALIZATION_ID_COUNT] = 
 {
 	// Application name
 	"Español", // LOCALIZATION_ID_LANGUAGE

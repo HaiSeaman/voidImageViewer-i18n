@@ -139,7 +139,7 @@ int heif_get_orientation(IStream *stream)
 									int offset;
 
 									p = (BYTE *)data;
-									offset = ((int)p[0] << 24) | ((int)p[1] << 16) | ((int)p[2] << 8) | p[3];
+									offset = (int)(((unsigned int)p[0] << 24) | ((unsigned int)p[1] << 16) | ((unsigned int)p[2] << 8) | p[3]);
 									if ((offset >= 4) && ((size_t)offset < size))
 									{
 										BYTE *tiff;

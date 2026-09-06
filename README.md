@@ -4,7 +4,7 @@ English | [简体中文](README_CN.md)
 
 > A lightweight, blazing-fast image viewer built for Windows, featuring seamless switching between 10 UI languages, 1:1 pixel-perfect zoom by default, and smooth animated GIF / WebP playback.
 > This project is based on [voidtools/voidImageViewer](https://github.com/voidtools/voidImageViewer) with immersive-experience enhancements and multilingual support.
-> **Current version: v3.2**
+> **Current version: v3.3**
 
 [Download](#download) | [Key Changes](#key-changes-compared-to-the-original) | [Features](#features) | [Usage](#usage) | [Building from Source](#building-from-source) | [License](#license-and-acknowledgements)
 
@@ -27,6 +27,7 @@ This fork builds on that foundation with comprehensive enhancements: **10 UI lan
 | **Window fit & title options** | The window can auto-fit to the image size to eliminate white margins; the title bar can show the full path, the file name only, or nothing at all. |
 | **Documentation** | Complete technical documentation, configuration guide and build instructions in both English and Chinese. |
 | **Stability hardening (v3.2)** | Fixed a crash when deleting images during shuffle playback (use-after-free) and undefined behavior in animation pause / status-bar pixel values; consolidated duplicated parsing code in the Everything integration while keeping all safety checks; removed build artifacts and dead code from the repository. |
+| **Experience & hardening (v3.3)** | Adds a top-left file-name caption aligned with the custom window buttons (hidden in fullscreen) and an ESC shortcut (exit fullscreen / close the viewer); fixes corrupted file-association descriptions for .jpg/.png/.tif/.tiff/.webp (8-bit string-id truncation); removes 25 never-effective ARM/MIPS compile units and dead project configurations; all build scripts are now vswhere-portable. |
 
 ---
 
@@ -109,16 +110,16 @@ This fork builds on that foundation with comprehensive enhancements: **10 UI lan
   - Voidtools forum thread: [https://www.voidtools.com/forum/viewtopic.php?t=5623](https://www.voidtools.com/forum/viewtopic.php?t=5623)
   - Voidtools GitHub repository: [https://github.com/voidtools/voidImageViewer](https://github.com/voidtools/voidImageViewer)
 
-**v3.2 release files**: portable ZIP archives for 32-bit (`x86`) and 64-bit (`x64`) — extract and run; standard NSIS installers (Chinese/English) are also provided.
+**v3.3 release files**: portable ZIP archives for 32-bit (`x86`) and 64-bit (`x64`) — extract and run; standard NSIS installers (Chinese/English) are also provided.
 
 | Type | File |
 | --- | --- |
-| Portable x64 | `voidImageViewer-3.2.x64.zip` |
-| Portable x86 | `voidImageViewer-3.2.x86.zip` |
-| Installer x64 Chinese | `voidImageViewer-3.2.x64.zh-CN-Setup.exe` |
-| Installer x64 English | `voidImageViewer-3.2.x64.en-US-Setup.exe` |
-| Installer x86 Chinese | `voidImageViewer-3.2.x86.zh-CN-Setup.exe` |
-| Installer x86 English | `voidImageViewer-3.2.x86.en-US-Setup.exe` |
+| Portable x64 | `voidImageViewer-3.3.x64.zip` |
+| Portable x86 | `voidImageViewer-3.3.x86.zip` |
+| Installer x64 Chinese | `voidImageViewer-3.3.x64.zh-CN-Setup.exe` |
+| Installer x64 English | `voidImageViewer-3.3.x64.en-US-Setup.exe` |
+| Installer x86 Chinese | `voidImageViewer-3.3.x86.zh-CN-Setup.exe` |
+| Installer x86 English | `voidImageViewer-3.3.x86.en-US-Setup.exe` |
 
 ---
 
@@ -129,7 +130,8 @@ This fork builds on that foundation with comprehensive enhancements: **10 UI lan
 1. Double-click `voidImageViewer.exe` to launch, or drag image files directly into the program window.
 2. **Right-click** to bring up the main menu (borderless immersive mode is enabled by default).
 3. Scroll the mouse wheel or press `↑` / `↓` to switch to the previous/next image.
-4. Press `F` or use the right-click menu to enter fullscreen mode.
+4. Press `F` or use the right-click menu to enter fullscreen mode; the current image's file name is shown in the top-left corner.
+5. Press `ESC`: exits fullscreen, or closes the viewer when not fullscreen.
 
 ### Switching the UI Language
 

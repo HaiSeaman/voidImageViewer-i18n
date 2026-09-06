@@ -286,7 +286,6 @@ void os_MonitorRectFromWindow(HWND hwnd,int is_fullscreen,RECT *out_monitor_rect
 			// work area
 			SystemParametersInfo(SPI_GETWORKAREA,0,(PVOID)out_monitor_rect,0);
 		}
-debug_printf("FULLSCREEN %d %d %d\n",is_fullscreen,out_monitor_rect->right,out_monitor_rect->bottom)	;
 	}
 }
 

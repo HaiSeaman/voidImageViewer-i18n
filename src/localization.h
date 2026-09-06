@@ -40,9 +40,12 @@ enum
 	LOCALIZATION_LANGUAGE_COUNT,
 };
 
-typedef BYTE localization_id_t;
+// int, not BYTE: the string table has grown past 255 entries, a BYTE here
+// silently truncates ids 256+ (JPG/PNG/TIF/TIFF/WEBP association names).
+typedef int localization_id_t;
 
-#define LOCALIZATION_ID_INVALID 255
+// menu separator marker; must not collide with a real string id.
+#define LOCALIZATION_ID_INVALID (-1)
 
 // Get localized string for a command name
 // Returns UTF-8 encoded string
@@ -355,18 +358,21 @@ enum
 
 extern BYTE localization_language;
 
+// The ten language tables are defined once in localization.c (which
+// includes the localization_*.h files); declaring them extern here keeps
+// every other translation unit from carrying its own private copy.
+extern const utf8_t *_localization_string_array_en_us[LOCALIZATION_ID_COUNT];
+extern const utf8_t *_localization_string_array_zh_cn[LOCALIZATION_ID_COUNT];
+extern const utf8_t *_localization_string_array_ja[LOCALIZATION_ID_COUNT];
+extern const utf8_t *_localization_string_array_ko[LOCALIZATION_ID_COUNT];
+extern const utf8_t *_localization_string_array_fr[LOCALIZATION_ID_COUNT];
+extern const utf8_t *_localization_string_array_de[LOCALIZATION_ID_COUNT];
+extern const utf8_t *_localization_string_array_es[LOCALIZATION_ID_COUNT];
+extern const utf8_t *_localization_string_array_pt[LOCALIZATION_ID_COUNT];
+extern const utf8_t *_localization_string_array_it[LOCALIZATION_ID_COUNT];
+extern const utf8_t *_localization_string_array_ar[LOCALIZATION_ID_COUNT];
+
 #ifdef __cplusplus
 }
 #endif
-
-#include "localization_en_us.h"
-#include "localization_zh_cn.h"
-#include "localization_ja.h"
-#include "localization_ko.h"
-#include "localization_fr.h"
-#include "localization_de.h"
-#include "localization_es.h"
-#include "localization_pt.h"
-#include "localization_it.h"
-#include "localization_ar.h"
 

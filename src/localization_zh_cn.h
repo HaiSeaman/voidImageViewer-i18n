@@ -22,7 +22,7 @@
 // Chinese (Simplified) localization
 // Save as UTF-8 with BOM (required for MSVC to parse non-ASCII correctly).
 
-static const utf8_t *_localization_string_array_zh_cn[LOCALIZATION_ID_COUNT] = 
+const utf8_t *_localization_string_array_zh_cn[LOCALIZATION_ID_COUNT] = 
 {
 	// Language
 	"简体中文", // LOCALIZATION_ID_LANGUAGE

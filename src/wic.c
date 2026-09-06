@@ -80,6 +80,11 @@ int wic_load(IStream *stream,void *user_data,int (*info_callback)(void *user_dat
 	converter = NULL;
 	buffer = NULL;
 
+	if (!stream)
+	{
+		return 0;
+	}
+
 	// GDI+ may have left the stream anywhere; WIC reads from the start.
 	{
 		LARGE_INTEGER li;

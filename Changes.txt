@@ -1,3 +1,19 @@
+Sunday, 6 September 2026: Version 3.3
+	added: filename caption - the current image's full file name is drawn in the top-left corner of the borderless window, aligned with the custom min/max/close button strip (_VIV_CAP_BTN_H), using the same white color and the system caption font; long names ellipsize before the buttons and the caption is hidden in fullscreen like the buttons.
+	added: ESC handling - when not fullscreen, ESC now closes the viewer entirely (the existing priority is kept: an in-progress action is cancelled first, fullscreen ESC still exits fullscreen first, and dialogs keep their own ESC handling).
+	bugfix: the file-association friendly names for .jpg/.png/.tif/.tiff/.webp were corrupted - localization_id_t was a BYTE, silently truncating string ids 256..260 down to 0..4, so the association registration recorded language names instead of the association descriptions; localization ids are now int and LOCALIZATION_ID_INVALID is -1 (which also makes the debug range check effective again).
+	bugfix: a malformed animated WebP reporting zero frames was treated as a successful load (blank image); it is now a load failure.
+	bugfix: wic_load did not guard against a NULL stream the way the heif/webp layers do.
+	bugfix: undefined behaviour in the HEIC EXIF orientation parser ((int)byte << 24 with the high bit set); the offset is now computed unsigned.
+	changed: the ten localization tables are now compiled once (extern declarations in localization.h, definitions only in localization.c) instead of a static copy in every translation unit (~300KB smaller binary).
+	changed: localization_language initial value is now English to match localization_init's documented fallback.
+	removed: the dead ARM64 project configurations (they linked the x64 heif/libde265 static libraries and could never link) from the vcxproj and sln.
+	removed: 25 ARM/MIPS libwebp dsp sources from the project and disk (the acceleration macros they need are never defined on x86/x64, so they compiled to empty objects); the BZ_NO_STDIO defines (no bzip2 anywhere, one config had it twice) and the unused VIV_UINT64_MAX/VIV_DWORD_MAX macros; commented-out includes in viv.h; a stray debug_printf in a non-debug path of os.c.
+	changed: all four build scripts (build_release_both.bat, third_party/rebuild_de265_x64_opt.bat, tests/build_and_run_test.bat, test_images/heif_run_one.bat) now locate Visual Studio via vswhere and probe cmake from PATH instead of hard-coded machine paths; the unit-test script now also builds/runs the playlist-delete regression plus its expected-failure check.
+	fixed: the en-US menu string "De&cre&ase Height" had a duplicated accelerator.
+	housekeeping: removed the empty .dsh-notes directory, stray test build artifacts (tests/*.exe/.obj, test_images/heif_dec_test.obj) and the redundant third_party source tarballs (the source trees are tracked); RELEASE-NOTES moved to the repository root so they are no longer hidden by the release/ ignore rule.
+	regression: x64 and Win32 Release compile clean (/W3, 0 warnings), Debug x64 builds; tests 16/16 and 3/3 pass; automated audit reports 0 dead functions, 0 dead globals, 0 unused localization ids.
+
 Saturday, 22 August 2026: Version 3.2
 	bugfix: deleting an image while shuffle mode was active corrupted the shuffle index array (os_move_memory was passed an element count where a byte count - missing the sizeof(_viv_playlist_t *) factor - was required), leaving a stale pointer to the freed node; the next navigation dereferenced it (use-after-free / random crash, wrong image shown). The move now multiplies by sizeof; a regression test (tests/test_playlist_delete.c) reproduces the faulty element-count behaviour and verifies the fixed byte-count behaviour.
 	bugfix: the status-bar pixel RGB was read from an uninitialized COLORREF when the cursor was outside the image (undefined behaviour, random pixel values); it is now initialized to 0 before the optional read.

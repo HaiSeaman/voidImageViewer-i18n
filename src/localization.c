@@ -23,6 +23,18 @@
 
 #include "viv.h"
 
+// language tables live only in this translation unit (see localization.h).
+#include "localization_en_us.h"
+#include "localization_zh_cn.h"
+#include "localization_ja.h"
+#include "localization_ko.h"
+#include "localization_fr.h"
+#include "localization_de.h"
+#include "localization_es.h"
+#include "localization_pt.h"
+#include "localization_it.h"
+#include "localization_ar.h"
+
 static const utf8_t **_localization_language_array[LOCALIZATION_LANGUAGE_COUNT] = 
 {
 	_localization_string_array_en_us, // LOCALIZATION_LANGUAGE_ENGLISH
@@ -37,7 +49,8 @@ static const utf8_t **_localization_language_array[LOCALIZATION_LANGUAGE_COUNT] 
 	_localization_string_array_ar,    // LOCALIZATION_LANGUAGE_ARABIC
 };
 
-BYTE localization_language = LOCALIZATION_LANGUAGE_CHINESE_SIMPLIFIED;
+// matches localization_init()'s fallback; overwritten before first use.
+BYTE localization_language = LOCALIZATION_LANGUAGE_ENGLISH;
 
 const utf8_t *localization_get_string(localization_id_t localization_id)
 {

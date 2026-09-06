@@ -1,8 +1,21 @@
 @echo off
 rem Build both Release exes (x64 + Win32) without pausing.
+rem Locates Visual Studio via vswhere instead of a hard-coded path.
 setlocal
 
-call "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvarsall.bat" x64 >nul
+set VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe
+if not exist "%VSWHERE%" (
+    echo vswhere.exe not found; is Visual Studio installed?
+    exit /b 1
+)
+
+for /f "usebackq tokens=*" %%i in (`"%VSWHERE%" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set VS_PATH=%%i
+if not defined VS_PATH (
+    echo No Visual Studio with C++ tools found.
+    exit /b 1
+)
+
+call "%VS_PATH%\VC\Auxiliary\Build\vcvarsall.bat" x64 >nul
 
 echo === x64 Release ===
 msbuild vs2026\voidImageViewer.sln /t:Rebuild /p:Configuration=Release /p:Platform=x64 /m /v:m /nologo

@@ -531,6 +531,7 @@ static void _viv_status_show(int show);
 static void _viv_cap_get_btn_rect(int btn_index, RECT *out, const RECT *wnd_rect);
 static int  _viv_cap_hit_test(int screen_x, int screen_y);
 static void _viv_cap_draw_all(HDC hdc);
+static void _viv_cap_draw_filename(HDC hdc);
 static void _viv_cap_invalidate(void);
 static int  _viv_cap_update_hover(int screen_x, int screen_y);
 static int  _viv_cap_is_in_caption_bar(int screen_x, int screen_y, const RECT *wnd_rect);
@@ -1228,19 +1229,19 @@ const char *_viv_association_extensions[] =
 };
 
 // registry description.
-const localization_id_t _viv_association_description_localization_id_array[] = 
+const localization_id_t _viv_association_description_localization_id_array[] =
 {
-	(localization_id_t)LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_BMP,
-	(localization_id_t)LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_GIF,
-	(localization_id_t)LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_HEIC,
-	(localization_id_t)LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_HEIF,
-	(localization_id_t)LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_ICO,
-	(localization_id_t)LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_JPEG,
-	(localization_id_t)LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_JPG,
-	(localization_id_t)LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_PNG,
-	(localization_id_t)LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_TIF,
-	(localization_id_t)LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_TIFF,
-	(localization_id_t)LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_WEBP,
+	LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_BMP,
+	LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_GIF,
+	LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_HEIC,
+	LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_HEIF,
+	LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_ICO,
+	LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_JPEG,
+	LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_JPG,
+	LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_PNG,
+	LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_TIF,
+	LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_TIFF,
+	LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_WEBP,
 };
 
 const char *_viv_association_icon_locations[] = 
@@ -4889,6 +4890,9 @@ debug_printf("PAINT %d %d %d\n",_viv_frame_position,rw,rh);
 			// === 无边框改造：在图片之上绘制右上角三按钮 ===
 			_viv_cap_draw_all(ps.hdc);
 
+			// === 左上角图片文件名（与按钮同条带、全屏隐藏） ===
+			_viv_cap_draw_filename(ps.hdc);
+
 			EndPaint(hwnd,&ps);
 		}
 		else
@@ -6946,22 +6950,29 @@ static int _viv_is_msg(MSG *msg)
 						if (_viv_doing)
 						{
 							_viv_doing_cancel();
-						
+
 							return 1;
 						}
 
 						if (_viv_is_fullscreen)
 						{
 							_viv_toggle_fullscreen();
-							
+
 							// also pause slideshow
 							if (_viv_is_slideshow)
 							{
 								_viv_pause();
 							}
-						
+
 							return 1;
 						}
+
+						// not fullscreen: ESC closes the viewer entirely. This
+						// runs before the user key table so the behaviour is
+						// deterministic; no default key table entry uses ESC.
+						_viv_exit();
+
+						return 1;
 					}
 					
 					// find the key.
@@ -11275,6 +11286,56 @@ static int _viv_cap_update_hover(int screen_x, int screen_y)
 	_viv_cap_btn_hover = new_hover;
 	_viv_cap_invalidate();
 	return 1;
+}
+
+// 左上角显示当前图片完整文件名：与右上角自绘按钮同一条带（高 _VIV_CAP_BTN_H）、
+// 同色（白 RGB(255,255,255)，即按钮图标默认色）、全屏/按钮禁用时同样隐藏。
+// 文件名不响应鼠标，仅随 WM_PAINT 重绘。
+static void _viv_cap_draw_filename(HDC hdc)
+{
+	RECT wr;
+	RECT client_rect;
+	RECT text_rect;
+	NONCLIENTMETRICSW ncm;
+	HFONT hfont;
+	HFONT oldfont;
+	int old_bk;
+	const wchar_t *filename;
+
+	if (!_viv_cap_btns_enabled) return;
+	if (_viv_is_fullscreen) return;
+	if (!hdc) return;
+	if ((!_viv_current_fd) || (!*_viv_current_fd->cFileName)) return;
+
+	filename = string_get_filename_part(_viv_current_fd->cFileName);
+	if (!*filename) return;
+
+	GetWindowRect(_viv_hwnd, &wr);
+	GetClientRect(_viv_hwnd, &client_rect);
+	MapWindowPoints(_viv_hwnd, NULL, (LPPOINT)&client_rect, 2);
+
+	// 条带与按钮绘制同坐标系：客户区顶部 _VIV_CAP_BTN_H 高，
+	// 左缘靠边，右侧止于自绘按钮区左缘（留 8px 间隙）。
+	text_rect.left = 0;
+	text_rect.top = wr.top - client_rect.top;
+	text_rect.right = (wr.right - _VIV_CAP_BTN_W * _VIV_CAP_BTN_COUNT) - client_rect.left - 8;
+	text_rect.bottom = text_rect.top + _VIV_CAP_BTN_H;
+
+	// 与系统标题栏一致的字体（自绘按钮风格即模仿标题栏）。
+	ncm.cbSize = sizeof(ncm);
+	if (!SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, sizeof(ncm), &ncm, 0)) return;
+	hfont = CreateFontIndirectW(&ncm.lfCaptionFont);
+	if (!hfont) return;
+
+	oldfont = (HFONT)SelectObject(hdc, hfont);
+	old_bk = SetBkMode(hdc, TRANSPARENT);
+	SetTextColor(hdc, RGB(255, 255, 255));
+
+	DrawTextW(hdc, filename, -1, &text_rect, DT_LEFT|DT_VCENTER|DT_SINGLELINE|DT_END_ELLIPSIS|DT_NOPREFIX);
+
+	SetBkMode(hdc, old_bk);
+	SelectObject(hdc, oldfont);
+	DeleteObject(hfont);
 }
 
 static void _viv_update_frame(void)
