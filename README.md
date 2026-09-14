@@ -1,5 +1,7 @@
 # void Image Viewer (Multilingual & Enhanced Fork)
 
+<img src="assets/662838a0273479efb85589be9463328c.png" width="1461" height="826" alt="662838a0273479efb85589be9463328c.png">
+
 English | [简体中文](README_CN.md)
 
 > A lightweight, blazing-fast image viewer built for Windows, featuring seamless switching between 10 UI languages, 1:1 pixel-perfect zoom by default, and smooth animated GIF / WebP playback.
