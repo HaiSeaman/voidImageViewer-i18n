@@ -127,6 +127,9 @@
 #define IDC_REMOVE_KEY_BUTTON					IDC_REMOVE_KEY
 #define IDC_SEARCH_EVERYTHING_RANDOM_CHECKBOX	IDC_SEARCH_EVERYTHING_RANDOM
 
+// About dialog: project page button (opens the GitHub repository)
+#define IDC_ABOUTPROJECT						1067
+
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED
@@ -134,7 +137,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        130
 #define _APS_NEXT_COMMAND_VALUE         40048
-#define _APS_NEXT_CONTROL_VALUE         1067
+#define _APS_NEXT_CONTROL_VALUE         1068
 #define _APS_NEXT_SYMED_VALUE           109
 #endif
 #endif

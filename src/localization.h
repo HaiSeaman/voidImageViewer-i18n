@@ -353,6 +353,11 @@ enum
 	LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_TIFF,
 	LOCALIZATION_ID_ASSOCIATION_DESCRIPTION_WEBP,
 
+	// About dialog "project page" button (appended last: the language tables
+	// are positional arrays, new ids must be added at the end of every table)
+	LOCALIZATION_ID_ABOUT_PROJECT,
+	LOCALIZATION_ID_ABOUT_PROJECT_URL,
+
 	LOCALIZATION_ID_COUNT,
 };
 

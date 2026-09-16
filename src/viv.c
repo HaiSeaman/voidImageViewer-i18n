@@ -535,6 +535,9 @@ static void _viv_cap_draw_filename(HDC hdc);
 static void _viv_cap_invalidate(void);
 static int  _viv_cap_update_hover(int screen_x, int screen_y);
 static int  _viv_cap_is_in_caption_bar(int screen_x, int screen_y, const RECT *wnd_rect);
+static int  _viv_cap_get_overlay_band(RECT *band);
+static int  _viv_menu_contains_command(HMENU hmenu,WORD command_id);
+static void _viv_strip_menu_accelerators(wchar_t *text);
 static void _viv_status_update(void);
 static void _viv_status_set(int part,const wchar_t *text);
 static int _viv_get_status_high(void);
@@ -3087,6 +3090,12 @@ static LRESULT CALLBACK _viv_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
 			// 用户按下按钮后如果按 Alt+Tab 切走、或者别的窗口抢走鼠标捕获，
 			// WM_NCLBUTTONUP 可能收不到，按钮会一直显示"被按住"的样子。
 			// 这里在捕获丢失时清除按下状态并重绘。
+			//
+			// 同理，拖动（左键平移/中键滚动）中捕获被抢走时不会再收到
+			// WM_xBUTTONUP，必须在这里结束拖动状态，否则 MSCROLL 会一直
+			// 把光标拉回旧锚点，光标就像被钉住一样。
+			_viv_doing_cancel();
+
 			if (_viv_cap_btn_pressed != _VIV_CAP_BTN_NONE)
 			{
 				_viv_cap_btn_pressed = _VIV_CAP_BTN_NONE;
@@ -3710,7 +3719,7 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 				{
 					POINT pt;
 					GetCursorPos(&pt);
-					
+
 					_viv_mdoing_x = pt.x;
 					_viv_mdoing_y = pt.y;
 				}
@@ -3910,9 +3919,11 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 			
 			_viv_in_popup_menu = 1;
 			
-			// === 无边框改造：追加原菜单栏的完整子菜单（文件/编辑/查看/导航/帮助） ===
+			// === 无边框改造：追加原菜单栏的完整子菜单（文件/编辑/查看/导航） ===
 			// 菜单栏已永久隐藏，这里把原菜单栏的全部内容追加到右键菜单，
 			// 确保用户通过右键能访问到原菜单栏的所有功能。
+			// 右键菜单精简：底部不再放整个"帮助"子菜单，只保留其中的"关于"，
+			// 直接放在原"帮助"的位置（其余帮助项仍可经菜单栏选项或快捷键到达）。
 			// 修复：DestroyMenu 会递归销毁子菜单，所以先记录追加前的菜单项数量，
 			// 在销毁前移除追加的子菜单项，避免销毁 _viv_hmenu 共享的子菜单。
 			before_append_count = 0;
@@ -3927,6 +3938,20 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 					HMENU submenu = GetSubMenu(_viv_hmenu, i);
 					if (submenu)
 					{
+						// "帮助"子菜单不整体追加，其位置由单独的"关于"项替代
+						if (_viv_menu_contains_command(submenu, VIV_ID_HELP_ABOUT))
+						{
+							wchar_t about_wbuf[STRING_SIZE];
+
+							string_copy_utf8_string(about_wbuf, localization_get_string(LOCALIZATION_ID_ABOUT));
+
+							// 弹出菜单里助记符可能与其他项重复（动画(A)），去掉助记符
+							_viv_strip_menu_accelerators(about_wbuf);
+
+							AppendMenuW(hmenu, MF_STRING, VIV_ID_HELP_ABOUT, about_wbuf);
+							continue;
+						}
+
 						wchar_t name[256];
 						MENUITEMINFOW mii;
 						mii.cbSize = sizeof(mii);
@@ -4085,15 +4110,20 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 						POINT pt;
 						GetCursorPos(&pt);
 
-						mx = _viv_mdoing_x - pt.x;
-						my = _viv_mdoing_y - pt.y;
-						
+						// 中键拖动滚动：光标位移就是滚动量（与左键拖动同方向：
+						// 图片跟着光标走），然后把光标拉回锚点，实现不限制行程
+						// 的"无限滚动"。
+						mx = pt.x - _viv_mdoing_x;
+						my = pt.y - _viv_mdoing_y;
+
 						if ((mx) || (my))
 						{
+							_viv_view_scroll(mx,my);
+
 							SetCursorPos(_viv_mdoing_x,_viv_mdoing_y);
 						}
 					}
-					
+
 					break;
 			
 				case _VIV_DOING_SCROLL:
@@ -10653,6 +10683,8 @@ static INT_PTR CALLBACK _viv_about_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 			SetDlgItemText(hwnd,IDC_ABOUTCOPYRIGHT,version_wbuf);
 			os_SetDlgItemText_localization_id(hwnd,IDC_ABOUTEMAIL,LOCALIZATION_ID_ABOUT_EMAIL);
 			os_SetDlgItemText_localization_id(hwnd,IDC_ABOUTWEBSITE,LOCALIZATION_ID_ABOUT_WEBSITE);
+			// 底部栏最左侧："项目地址"按钮，点击打开本 fork 的 GitHub 仓库
+			os_SetDlgItemText_localization_id(hwnd,IDC_ABOUTPROJECT,LOCALIZATION_ID_ABOUT_PROJECT);
 			os_SetDlgItemText_localization_id(hwnd,IDOK,LOCALIZATION_ID_OK_BUTTON);
 			os_SetDlgItemText_localization_id(hwnd,IDCANCEL,LOCALIZATION_ID_CANCEL_BUTTON);
 			
@@ -10674,12 +10706,18 @@ static INT_PTR CALLBACK _viv_about_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 			break;
 		
 		case WM_COMMAND:
-		
+
 			switch(LOWORD(wParam))
 			{
 				case IDOK:
 				case IDCANCEL:
 					EndDialog(hwnd,0);
+					break;
+
+				case IDC_ABOUTPROJECT:
+
+					// 与菜单"主页/捐赠"命令相同的打开方式（URL 存在语言表里）
+					ShellExecuteA(_viv_hwnd,NULL,localization_get_string(LOCALIZATION_ID_ABOUT_PROJECT_URL),NULL,NULL,SW_SHOWNORMAL);
 					break;
 			}
 
@@ -11168,7 +11206,10 @@ static void _viv_cap_draw_all(HDC hdc)
 		clip.bottom = wr.top + _VIV_CAP_BTN_H;
 		// 转换到 HDC 坐标（客户区相对坐标）
 		OffsetRect(&clip, -client_rect.left, -client_rect.top);
-		SelectClipRgn(hdc, NULL);
+		// 只在现有裁剪（WM_PAINT 的更新区域）内再叠加按钮区域。
+		// 不能用 SelectClipRgn(hdc,NULL) 先清空裁剪：那样会把 BeginPaint 给的
+		// 更新区域裁剪丢掉，按钮在每次局部重绘时都被完整重画、画到更新区域之外，
+		// 也会跟滚动搬运的旧像素叠在一起产生按钮残影。
 		IntersectClipRect(hdc, clip.left, clip.top, clip.right, clip.bottom);
 	}
 
@@ -11286,6 +11327,44 @@ static int _viv_cap_update_hover(int screen_x, int screen_y)
 	_viv_cap_btn_hover = new_hover;
 	_viv_cap_invalidate();
 	return 1;
+}
+
+// 叠层（左上传文件名 + 右上三按钮）在客户区坐标下所占的条带矩形。
+// 返回 1 表示这个叠层当前会被绘制（非全屏且按钮启用），返回 0 表示没有叠层。
+//
+// 叠层是画在客户区里的（不像系统标题栏那样属于非客户区），所以任何对客户区
+// 的位块搬运（ScrollWindowEx）都会连叠层像素一起搬走。调用方必须用这个矩形
+// 把叠层排除在滚动之外，并在滚动后重绘它，否则会留下拖动残影。
+static int _viv_cap_get_overlay_band(RECT *band)
+{
+	RECT wr;
+	RECT client_rect;
+
+	if (!band) return 0;
+	if (!_viv_hwnd) return 0;
+	if (!_viv_cap_btns_enabled) return 0;
+	if (_viv_is_fullscreen) return 0;
+
+	GetWindowRect(_viv_hwnd,&wr);
+	GetClientRect(_viv_hwnd,&client_rect);
+
+	// 与 _viv_cap_draw_all / _viv_cap_draw_filename 同一坐标系（客户区坐标）：
+	// 客户区上边缘到窗口上边缘的偏移就是条带顶部。
+	MapWindowPoints(_viv_hwnd,NULL,(LPPOINT)&client_rect,2);
+
+	band->left = 0;
+	band->top = wr.top - client_rect.top;
+	band->right = client_rect.right - client_rect.left;
+	band->bottom = band->top + _VIV_CAP_BTN_H;
+
+	if (band->top < 0) band->top = 0;
+	if (band->right < 0) band->right = 0;
+	if (band->bottom > client_rect.bottom - client_rect.top)
+	{
+		band->bottom = client_rect.bottom - client_rect.top;
+	}
+
+	return (band->bottom > band->top) ? 1 : 0;
 }
 
 // 左上角显示当前图片完整文件名：与右上角自绘按钮同一条带（高 _VIV_CAP_BTN_H）、
@@ -13600,11 +13679,43 @@ static void _viv_view_scroll(int mx,int my)
 	
 	if (config_scroll_window)
 	{
+		RECT overlay_rect;
+		RECT scroll_rect;
+		RECT *scroll_p;
+		RECT *clip_p;
+		int overlay;
+
 		// this is not working for stamimail?!?
 		// probably a RTL issue.
-		if (ScrollWindowEx(_viv_hwnd,old_view_x - _viv_view_x,old_view_y - _viv_view_y,0,0,0,0,SW_INVALIDATE) == ERROR)
+
+		// 无边框叠层（左上传文件名 / 右上三按钮）画在客户区里：直接滚动整个
+		// 客户区会把叠层像素跟着图片一起搬走，留下拖影和错位的按钮。
+		// 叠层可见时只滚动叠层下方的区域，滚动后重绘叠层条带。
+		overlay = _viv_cap_get_overlay_band(&overlay_rect);
+
+		scroll_p = 0;
+		clip_p = 0;
+
+		if (overlay)
+		{
+			GetClientRect(_viv_hwnd,&scroll_rect);
+			if (scroll_rect.top < overlay_rect.bottom)
+			{
+				scroll_rect.top = overlay_rect.bottom;
+			}
+			scroll_p = &scroll_rect;
+			clip_p = &scroll_rect;
+		}
+
+		if (ScrollWindowEx(_viv_hwnd,old_view_x - _viv_view_x,old_view_y - _viv_view_y,scroll_p,clip_p,0,0,SW_INVALIDATE) == ERROR)
 		{
 			debug_printf("scroll error %d\n",GetLastError());
+		}
+
+		if (overlay)
+		{
+			// 条带里的图片内容同样被滚走了，必须整条重绘（图片 + 叠层）
+			InvalidateRect(_viv_hwnd,&overlay_rect,FALSE);
 		}
 	}
 	else
@@ -13967,6 +14078,67 @@ static void _viv_get_key_text(wchar_t *wbuf,DWORD keyflags)
 	{
 		string_cat(wbuf,keytext);
 	}
+}
+
+// 去掉菜单文本里的键盘助记符："关于(&A)" → "关于"、"&About" → "About"。
+// 右键弹出菜单是把菜单栏各顶层菜单拼成的一个大菜单，助记符可能重复
+// （如中文"动画(A)"与"关于(A)"、英文 "&Animation" 与 "&About"），
+// 助记符重复时按字母跳转只会命中第一项，所以拼进去的新项不带助记符更稳妥。
+static void _viv_strip_menu_accelerators(wchar_t *text)
+{
+	wchar_t *r = text;
+	wchar_t *w = text;
+
+	if (!text)
+	{
+		return;
+	}
+
+	while (*r)
+	{
+		// skip "(&X)" style accelerator groups
+		if ((r[0] == L'(') && (r[1] == L'&') && (r[2]) && (r[3] == L')'))
+		{
+			r += 4;
+			continue;
+		}
+
+		if (r[0] == L'&')
+		{
+			r++;
+			continue;
+		}
+
+		*w++ = *r++;
+	}
+
+	*w = L'\0';
+}
+
+// 判断弹出菜单（的顶层项）里是否包含指定命令 ID 的菜单项。
+// 用于按内容识别子菜单（例如"帮助"子菜单含有"关于"命令），
+// 不依赖菜单项的位置，语言切换/结构调整都不会失效。
+static int _viv_menu_contains_command(HMENU hmenu,WORD command_id)
+{
+	int count;
+	int i;
+
+	if (!hmenu)
+	{
+		return 0;
+	}
+
+	count = GetMenuItemCount(hmenu);
+
+	for(i=0;i<count;i++)
+	{
+		if (GetMenuItemID(hmenu,i) == (UINT)command_id)
+		{
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 static HMENU _viv_create_menu(void)

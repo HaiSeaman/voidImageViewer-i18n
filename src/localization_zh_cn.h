@@ -313,4 +313,8 @@ const utf8_t *_localization_string_array_zh_cn[LOCALIZATION_ID_COUNT] =
 	"TIFF 图像",
 	"TIFF 图像",
 	"WebP 图像",
+	// LOCALIZATION_ID_ABOUT_PROJECT / LOCALIZATION_ID_ABOUT_PROJECT_URL
+	"项目地址",
+	"https://github.com/HaiSeaman/voidImageViewer-i18n",
+
 };

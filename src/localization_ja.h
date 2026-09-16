@@ -312,4 +312,8 @@ const utf8_t *_localization_string_array_ja[LOCALIZATION_ID_COUNT] =
 	"TIFF画像",
 	"TIFF画像",
 	"WebP画像",
+	// LOCALIZATION_ID_ABOUT_PROJECT / LOCALIZATION_ID_ABOUT_PROJECT_URL
+	"プロジェクトページ",
+	"https://github.com/HaiSeaman/voidImageViewer-i18n",
+
 };

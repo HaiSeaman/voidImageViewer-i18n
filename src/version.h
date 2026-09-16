@@ -1,6 +1,6 @@
 #define VERSION_YEAR		2026
 #define VERSION_MAJOR		3
-#define VERSION_MINOR		3
+#define VERSION_MINOR		4
 #define VERSION_REVISION	0
 #define VERSION_BUILD		0
 #define VERSION_TYPE		""
