@@ -117,7 +117,8 @@ void string_copy_utf8_string(wchar_t *buf,const utf8_t *s)
 	// buf is always a valid NUL-terminated string.
 	if (length <= 0)
 	{
-		buf[STRING_SIZE - 1] = 0;
+		// 失败/超长时缓冲区内容未定义，必须以 buf[0] 置空串，保证是有效字符串。
+		buf[0] = 0;
 	}
 }
 

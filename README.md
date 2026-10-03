@@ -6,7 +6,7 @@ English | [简体中文](README_CN.md)
 
 > A lightweight, blazing-fast image viewer built for Windows, featuring seamless switching between 10 UI languages, 1:1 pixel-perfect zoom by default, and smooth animated GIF / WebP playback.
 > This project is based on [voidtools/voidImageViewer](https://github.com/voidtools/voidImageViewer) with immersive-experience enhancements and multilingual support.
-> **Current version: v3.3**
+> **Current version: v3.5**
 
 [Download](#download) | [Key Changes](#key-changes-compared-to-the-original) | [Features](#features) | [Usage](#usage) | [Building from Source](#building-from-source) | [License](#license-and-acknowledgements)
 

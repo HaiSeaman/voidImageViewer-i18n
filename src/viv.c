@@ -1154,10 +1154,6 @@ WORD _viv_context_menu_items[] =
 	VIV_ID_VIEW_STATUS,
 	VIV_ID_VIEW_CONTROLS,
 	0,
-	VIV_ID_VIEW_ALLOW_SHRINKING,
-	VIV_ID_VIEW_KEEP_ASPECT_RATIO,
-	VIV_ID_VIEW_FILL_WINDOW,
-	VIV_ID_VIEW_1TO1,
 //	VIV_ID_VIEW_SLIDESHOW,
 	0,
 	_VIV_MENU_NAVIGATE_SORT,
@@ -8134,8 +8130,7 @@ static void _viv_check_menus(HMENU hmenu)
 	CheckMenuItem(hmenu,VIV_ID_NAV_SORT_ASCENDING,config_nav_sort_ascending ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
 	CheckMenuItem(hmenu,VIV_ID_NAV_SORT_DESCENDING,(!config_nav_sort_ascending) ? (MF_CHECKED|MFT_RADIOCHECK) : (MF_UNCHECKED|MFT_RADIOCHECK));
 	
-	CheckMenuItem(hmenu,VIV_ID_VIEW_1TO1,((rw == _viv_image_wide) && (rh == _viv_image_high)) ? MF_CHECKED : MF_UNCHECKED);
-}
+	}
 
 static void _viv_delete(int permanently)
 {
@@ -10668,7 +10663,7 @@ static INT_PTR CALLBACK _viv_about_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 		case WM_INITDIALOG:
 		{
 			HFONT hfont;
-			LOGFONT lf;
+			LOGFONT lf = {0};
 			wchar_t version_wbuf[STRING_SIZE];
 
 			os_center_dialog(hwnd);
@@ -11269,13 +11264,16 @@ static void _viv_cap_draw_all(HDC hdc)
 			{
 				// 还原图标：画两个错位方框
 				HPEN hpen = CreatePen(PS_SOLID, 1, icon_color);
-				HPEN oldpen = (HPEN)SelectObject(hdc, hpen);
-				HBRUSH oldbr = (HBRUSH)SelectObject(hdc, GetStockObject(NULL_BRUSH));
-				Rectangle(hdc, cx - 4, cy - 2, cx + 6, cy + 8);
-				Rectangle(hdc, cx - 6, cy - 4, cx + 4, cy + 6);
-				SelectObject(hdc, oldpen);
-				SelectObject(hdc, oldbr);
-				DeleteObject(hpen);
+				if (hpen)
+				{
+					HPEN oldpen = (HPEN)SelectObject(hdc, hpen);
+					HBRUSH oldbr = (HBRUSH)SelectObject(hdc, GetStockObject(NULL_BRUSH));
+					Rectangle(hdc, cx - 4, cy - 2, cx + 6, cy + 8);
+					Rectangle(hdc, cx - 6, cy - 4, cx + 4, cy + 6);
+					SelectObject(hdc, oldpen);
+					SelectObject(hdc, oldbr);
+					DeleteObject(hpen);
+				}
 			}
 			else
 			{
@@ -12138,7 +12136,7 @@ static DWORD WINAPI _viv_load_image_thread_proc(void *param)
 
 		if (!_VIV_LOAD_TERMINATE_GET())
 		{
-			void *image;
+			void *image = 0;
 			int load_ret;
 			
 			// not implemented.

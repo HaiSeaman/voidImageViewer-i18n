@@ -2,24 +2,18 @@
 // Microsoft Visual C++ generated include file.
 // Used by voidImageViewer.rc
 //
-#define IDD_FORMVIEW                    101
-#define IDD_FORMVIEW1                   101
 #define IDD_GENERAL                     101
 #define IDI_ICON1                       102
-#define IDD_DIALOG1                     106
 #define IDD_OPTIONS                     106
-#define IDD_FORMVIEW2                   107
 #define IDD_VIEW                        107
 #define IDD_CUSTOM_RATE                 109
 #define IDD_CONTROLS                    110
-#define IDB_BITMAP1                     112
 #define IDI_PREV                        116
 #define IDI_PLAY                        117
 #define IDI_NEXT                        118
 #define IDI_PAUSE                       119
 #define IDD_ABOUT                       121
 #define IDD_EDIT_KEY                    123
-#define IDI_ICON2                       124
 #define IDI_1TO1                        124
 #define IDI_BESTFIT                     126
 #define IDD_RENAME                      127
@@ -39,17 +33,13 @@
 #define IDC_CHECKALL                    1014
 #define IDC_PAGEPLACEHOLDER             1015
 #define IDC_COMBO1                      1016
-#define IDC_COMBO3                      1018
 #define IDC_MULTIPLE_INSTANCES          1019
 #define IDC_TREE1                       1020
 #define IDC_STARTMENU                   1020
-#define IDC_CHECK1                      1021
 #define IDC_APPDATA                     1021
 #define IDC_SEARCH_EVERYTHING_RANDOM    1021
 #define IDC_COMBO2                      1022
-#define IDC_BUTTON1                     1023
 #define IDC_ADD_KEY                     1023
-#define IDC_BUTTON2                     1024
 #define IDC_CHECKNONE                   1024
 #define IDC_EDIT_KEY                    1024
 #define IDC_TAB2                        1025
@@ -58,13 +48,10 @@
 #define IDC_LOOP_ANIMATIONS_ONCE        1028
 #define IDC_LEFTCLICKACTION             1029
 #define IDC_RIGHTCLICKACTION            1030
-#define IDC_LIST1                       1031
 #define IDC_COMMANDS_LIST               1031
 #define IDC_EDIT_KEY_CURRENTLY_USED_BY_LIST 1031
 #define IDC_JUMPTO_LIST                 1031
-#define IDC_LIST2                       1032
 #define IDC_KEYS_LIST                   1032
-#define IDC_BUTTON3                     1033
 #define IDC_REMOVE_KEY                  1033
 #define IDC_TAB3                        1034
 #define IDC_MOUSEWHEELACTION            1034
@@ -79,10 +66,8 @@
 #define IDC_EDIT_KEY_EDIT               1041
 #define IDC_ABOUTWEBSITE                1042
 #define IDC_RENAME_EDIT                 1042
-#define IDC_OLD_EDIT                    1043
 #define IDC_RENAME_OLD_EDIT             1043
 #define IDC_JUMPTO_EDIT                 1044
-#define IDC_EDIT1                       1045
 #define IDC_EVERYTHING_EDIT             1046
 #define IDC_WEBP                        1047
 #define IDC_PRELOAD_NEXT_IMAGE          1048
