@@ -274,13 +274,17 @@ static void _config_write_string(HANDLE h,const char *ascii_key,const wchar_t *s
 	utf8_t buf[STRING_SIZE*4 + 1];
 	int length;
 
+	// 先置空：WideCharToMultiByte 失败时不会写任何内容，
+	// 若不清空，下面的写入会把未初始化的栈数据当作字符串写进 ini。
+	buf[0] = 0;
+
 	// STRING_SIZE wchars can encode up to STRING_SIZE*4 UTF-8 bytes
 	// (plus the NUL terminator); truncate safely if the buffer is ever
 	// too small instead of passing a non-terminated buffer on.
 	length = WideCharToMultiByte(CP_UTF8,0,s,-1,(char *)buf,(int)sizeof(buf),0,0);
 	if (length <= 0)
 	{
-		buf[sizeof(buf) - 1] = 0;
+		buf[0] = 0;
 	}
 	
 	_config_write_utf8(h,(const utf8_t *)ascii_key);

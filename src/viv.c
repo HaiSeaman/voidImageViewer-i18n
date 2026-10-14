@@ -407,8 +407,10 @@ typedef struct _viv_nav_item_s
 
 typedef struct _viv_webp_s
 {
-	DWORD wide;
+	DWORD wide;        // 画布尺寸（每帧像素数据的尺寸），全程不变
 	DWORD high;
+	DWORD display_wide;  // 旋转后的显示尺寸（orientation 5-8 时宽高互换）
+	DWORD display_high;
 	HDC screen_hdc;
 	HDC mem_hdc;
 	int has_alpha;
@@ -512,6 +514,8 @@ static void _viv_playlist_add_filename(const wchar_t *filename);
 static void _viv_playlist_delete(const WIN32_FIND_DATA *fd);
 static void _viv_playlist_rename(const wchar_t *old_filename,const wchar_t *new_filename);
 static void _viv_timer_stop(void);
+static void _viv_timer_resync(void);
+static void _viv_animation_refresh_timer_after_manual_step(void);
 static int _viv_is_window_maximized(HWND hwnd);
 static INT_PTR CALLBACK _viv_custom_rate_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
 static INT_PTR CALLBACK _viv_about_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
@@ -646,6 +650,8 @@ static void _viv_stretch_blt(HDC dst_hdc,int dst_x,int dst_y,int dst_wide,int ds
 static BOOL _viv_StretchBltStitch(HDC hdcDest,int xDest,int yDest,int wDest,int hDest,HDC hdcSrc,int xSrc,int ySrc,int wSrc,int hSrc,DWORD rop,int clip_x,int clip_y,int clip_wide,int clip_high);
 static BOOL _viv_get_src_pixel_pos(int client_x,int client_y,POINT *out_src_pt);
 static void _viv_get_src_pixel_rgb(int src_x,int src_y,COLORREF *out_colorref);
+static void _viv_src_pixel_dc_free(void);
+static int _viv_animation_downscale_shift(DWORD frame_count,int wide,int high);
 static int _viv_clamp_zoom_pos(int zoom_pos);
 static void _viv_open_preload(void);
 static int _viv_safe_copy_data(const void *base,SIZE_T src_size,const void *src,void *dst,SIZE_T dst_size);
@@ -805,6 +811,9 @@ static DWORD _viv_random_tot_results = 0xffffffff;
 static DWORD _viv_everything_request_flags = 0;
 static BYTE _viv_is_timer_queue_timer = 0;
 static HANDLE _viv_timer_queue_timer_handle;
+// 当前动画定时器的周期（毫秒）。用于判断换帧后周期是否真的变了，
+// 没变就不重建定时器，避免每帧一次多余的系统调用。
+static DWORD _viv_timer_period = 0;
 static BYTE _viv_is_animation_timer_event = 0;
 static BYTE _viv_is_animation_paint = 0;
 static BYTE _viv_preload_state = 0; // 0 = loading, 1=complete, 2=failed
@@ -1779,8 +1788,19 @@ static void _viv_on_size(void)
 
 			_viv_get_render_size(&rw,&rh);
 		
-			new_view_x = (int)(((_viv_view_ix * rw) / _viv_image_wide) + 0.5) + (((_viv_dst_pos_x - 250) * (wide*2)) / 1000) - (wide / 2) - (rw / 2);
-			new_view_y = (int)(((_viv_view_iy * rh) / _viv_image_high) + 0.5) + (((_viv_dst_pos_y - 250) * (high*2)) / 1000) - (high / 2) - (rh / 2);
+			// 没有图像时（_viv_image_wide/high 为 0），下面的除法是 0.0/0，
+			// 结果是 NaN；再 (int) 转换是未定义行为，可能得到 INT_MIN 并喂给
+			// _viv_view_set，造成画面位置跳变。直接归零处理。
+			if ((_viv_image_wide > 0) && (_viv_image_high > 0))
+			{
+				new_view_x = (int)(((_viv_view_ix * rw) / _viv_image_wide) + 0.5) + (((_viv_dst_pos_x - 250) * (wide*2)) / 1000) - (wide / 2) - (rw / 2);
+				new_view_y = (int)(((_viv_view_iy * rh) / _viv_image_high) + 0.5) + (((_viv_dst_pos_y - 250) * (high*2)) / 1000) - (high / 2) - (rh / 2);
+			}
+			else
+			{
+				new_view_x = 0;
+				new_view_y = 0;
+			}
 	
 	debug_printf("RESTORE VIEW x %d y %d ix %d iy %d rw %d rh %d wide %d high %d\n",(int)(new_view_x),(int)(new_view_y),(int)_viv_view_ix,(int)_viv_view_iy,rw,rh,wide,high)		;
 	//		_viv_view_set((int)(_viv_view_ix * (double)rw),(int)(_viv_view_iy * (double)rh),1);
@@ -2048,6 +2068,9 @@ static void _viv_command_with_is_key_repeat(int command_id,int is_key_repeat)
 				UpdateWindow(_viv_hwnd);
 			}
 			
+			// 跳到首帧后动画处于暂停态，不需要定时器继续唤醒本进程。
+			_viv_animation_refresh_timer_after_manual_step();
+			
 			break;
 
 		case VIV_ID_ANIMATION_FRAME_END:
@@ -2071,6 +2094,9 @@ static void _viv_command_with_is_key_repeat(int command_id,int is_key_repeat)
 				InvalidateRect(_viv_hwnd,NULL,FALSE);
 				UpdateWindow(_viv_hwnd);
 			}
+			
+			// 跳到尾帧后动画处于暂停态，不需要定时器继续唤醒本进程。
+			_viv_animation_refresh_timer_after_manual_step();
 			
 			break;
 
@@ -3663,6 +3689,10 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 							
 							_viv_is_animation_paint = 1;
 							//UpdateWindow(hwnd);
+							
+							// 新帧的显示时长可能和上一帧不同（GIF 支持逐帧指定 delay），
+							// 把定时器周期重新对齐到新帧，避免快帧被拖慢、慢帧被过采样。
+							_viv_timer_resync();
 						}
 					}
 					
@@ -4394,7 +4424,6 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 				RECT w_rect, c_rect;
 				int non_client_w, non_client_h;
 				int target_img_w, target_img_h;
-				double aspect = (double)_viv_image_wide / (double)_viv_image_high;
 
 				GetWindowRect(hwnd, &w_rect);
 				GetClientRect(hwnd, &c_rect);
@@ -4465,6 +4494,14 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 		case WM_SIZE:
 		
 			_viv_on_size();
+
+			break;
+
+		case WM_DISPLAYCHANGE:
+
+			// 显示器分辨率/色深变了，缓存的取色 DC 是绑定旧显示格式建的，
+			// 再用它取色会得到错误颜色。释放掉，下次取色时按新格式重建。
+			_viv_src_pixel_dc_free();
 
 			break;
 			 
@@ -5739,8 +5776,7 @@ static int _viv_init(int nCmdShow)
 	os_init();
 	localization_init(); // Initialize language system
 	show_maximized = 0;
-	debug_printf("%u\n",sizeof(_viv_key_list_t));
-	
+
 	_viv_key_list = mem_alloc(sizeof(_viv_key_list_t));
 	
 	_viv_key_list_init(_viv_key_list);
@@ -6105,6 +6141,9 @@ static void _viv_kill(void)
 	_viv_clear_preload_frames();
 	_viv_clear();
 	_viv_process_pending_clear();
+
+	// 所有帧位图已释放，取色 DC 不再引用任何位图，可以安全销毁。
+	_viv_src_pixel_dc_free();
 
 	if (_viv_hwnd)
 	{
@@ -8573,6 +8612,9 @@ static void _viv_increase_animation_rate(int dec)
 	}
 	
 	_viv_status_update_temp_animation_rate();
+	
+	// 播放速率变了，帧显示时长随之变化，定时器周期要跟着对齐。
+	_viv_timer_resync();
 }
 
 static void _viv_reset_animation_rate(void)
@@ -8580,6 +8622,9 @@ static void _viv_reset_animation_rate(void)
 	_viv_animation_rate_pos = _VIV_ANIMATION_RATE_ONE;
 
 	_viv_status_update_temp_animation_rate();
+	
+	// 播放速率变了，帧显示时长随之变化，定时器周期要跟着对齐。
+	_viv_timer_resync();
 }
 
 static void _viv_file_preview(void)
@@ -10035,6 +10080,27 @@ VOID NTAPI _viv_timer_queue_timer_callback(PVOID param,BOOLEAN TimerOrWaitFired)
 	}
 }
 
+// 计算当前帧（含用户设定的播放速率）实际需要显示的毫秒数。
+// 返回值最小为 1，避免 0 周期导致定时器变成忙循环。
+static DWORD _viv_get_current_frame_delay(void)
+{
+	DWORD delay;
+	
+	if ((_viv_frame_count <= 0) || (_viv_frame_position >= _viv_frame_count))
+	{
+		return 1;
+	}
+	
+	delay = _viv_frames[_viv_frame_position].delay * (1.0f/_viv_animation_rates[_viv_animation_rate_pos]);
+	
+	if (!delay)
+	{
+		delay = 1;
+	}
+	
+	return delay;
+}
+
 static void _viv_timer_start(void)
 {
 	if (!_viv_is_animation_timer)
@@ -10046,9 +10112,17 @@ static void _viv_timer_start(void)
 		
 		if ((os_CreateTimerQueueTimer) && (os_DeleteTimerQueueTimer))
 		{
+			DWORD frame_delay;
+			
 			_viv_is_timer_queue_timer = 0;
 			
-			if (os_CreateTimerQueueTimer(&_viv_timer_queue_timer_handle,NULL,_viv_timer_queue_timer_callback,NULL,1,1,0))
+			// 按当前帧的实际显示时长定时，而不是固定 1ms 轮询。
+			// 固定 1ms 会让系统每秒唤醒约 1000 次（即使帧间隔是 100ms），
+			// 白白阻止 CPU 进入深度省电状态，并让笔记本白白耗电。
+			frame_delay = _viv_get_current_frame_delay();
+			_viv_timer_period = frame_delay;
+			
+			if (os_CreateTimerQueueTimer(&_viv_timer_queue_timer_handle,NULL,_viv_timer_queue_timer_callback,NULL,frame_delay,frame_delay,0))
 			{
 				_viv_is_timer_queue_timer = 1;
 			}
@@ -10142,6 +10216,31 @@ static void _viv_update_src_pixel(int force,int update_statusbar)
 static void _viv_animation_pause(void)
 {
 	_viv_animation_play = !_viv_animation_play;
+	
+	// 暂停时真正停掉定时器：否则系统仍会按帧周期不断唤醒本进程，
+	// CPU 无法进入深度省电状态（用户看到的是"暂停了还在耗电"）。
+	if (_viv_animation_play)
+	{
+		_viv_timer_start();
+		_viv_timer_resync();
+	}
+	else
+	{
+		_viv_timer_stop();
+	}
+}
+
+// 单步/跳帧这类手动换帧后调用：暂停状态下不需要定时器继续跑。
+static void _viv_animation_refresh_timer_after_manual_step(void)
+{
+	if (_viv_animation_play)
+	{
+		_viv_timer_resync();
+	}
+	else
+	{
+		_viv_timer_stop();
+	}
 }
 
 static void _viv_frame_step(void)
@@ -10173,6 +10272,9 @@ static void _viv_frame_step(void)
 			UpdateWindow(_viv_hwnd);
 		}
 	}
+	
+	// 手动单步后动画处于暂停态，不需要定时器继续唤醒本进程。
+	_viv_animation_refresh_timer_after_manual_step();
 }
 
 static void _viv_frame_prev(void)
@@ -10206,6 +10308,9 @@ static void _viv_frame_prev(void)
 		InvalidateRect(_viv_hwnd,NULL,FALSE);
 		UpdateWindow(_viv_hwnd);
 	}
+	
+	// 手动回退一帧后动画处于暂停态，不需要定时器继续唤醒本进程。
+	_viv_animation_refresh_timer_after_manual_step();
 }
 
 static void _viv_view_1to1(void)
@@ -10353,7 +10458,9 @@ static void _viv_playlist_rename(const wchar_t *old_filename,const wchar_t *new_
 	{
 		if (string_compare(d->fd.cFileName,old_filename) == 0)
 		{
-			string_copy(d->fd.cFileName,new_filename);
+			// cFileName 只有 MAX_PATH 个 wchar。用带长度限制的版本复制，
+			// 否则超长的新文件名会越界写坏结构体里的 next/prev 指针。
+			string_copy_with_bufsize(d->fd.cFileName,MAX_PATH,new_filename);
 		
 			break;
 		}
@@ -10525,6 +10632,48 @@ static void _viv_timer_stop(void)
 		}
 
 		_viv_update_prevent_sleep();
+	}
+}
+
+// 帧切换后调用：把定时器周期调整为下一帧的实际显示时长。
+// 动画各帧的 delay 可能不同（GIF 允许逐帧指定），固定周期会导致快帧拖慢、
+// 慢帧被过度采样，所以换帧后重新对齐一次。
+static void _viv_timer_resync(void)
+{
+	if (!_viv_is_animation_timer)
+	{
+		return;
+	}
+	
+	if ((os_CreateTimerQueueTimer) && (os_DeleteTimerQueueTimer) && (_viv_is_timer_queue_timer))
+	{
+		DWORD frame_delay;
+		
+		frame_delay = _viv_get_current_frame_delay();
+		
+		// 绝大多数动画每帧时长一致，周期没变就别重建定时器，省掉系统调用。
+		if (frame_delay != _viv_timer_period)
+		{
+			_viv_timer_period = frame_delay;
+			
+			// 删掉旧定时器并按新周期重建：ChangeTimerQueueTimer 不在 os.c 的
+			// GetProcAddress 列表里（该文件用动态解析兼顾老系统），重建更稳。
+			os_DeleteTimerQueueTimer(NULL,_viv_timer_queue_timer_handle,NULL);
+			_viv_is_timer_queue_timer = 0;
+			
+			if (os_CreateTimerQueueTimer(&_viv_timer_queue_timer_handle,NULL,_viv_timer_queue_timer_callback,NULL,frame_delay,frame_delay,0))
+			{
+				_viv_is_timer_queue_timer = 1;
+			}
+			
+			// 周期变了才需要重置计时基准。
+			_viv_animation_timer_tick_start = os_get_tick_count();
+			_viv_timer_tick = 0;
+		}
+	}
+	else if (_viv_is_animation_timer)
+	{
+		SetTimer(_viv_hwnd,VIV_ID_ANIMATION_TIMER,USER_TIMER_MINIMUM,0);
 	}
 }
 
@@ -11717,6 +11866,79 @@ static void _viv_frame_skip(int size)
 	}
 }
 
+// =============================================================================
+// 动画内存安全阀
+//
+// 多帧动画会把每一帧都解码成一张"原图尺寸"的 32bpp 位图常驻内存
+// （见 _viv_load_image_thread_proc 的帧循环）。位图数据由 GDI 管理，
+// 不计入进程工作集，但真实占用系统内存：
+//   1920x1080 x 60 帧 = 60 x 7.9MB ≈ 475 MB
+//   3000x3000 x 40 帧 = 40 x 34.3MB ≈ 1373 MB
+// 再叠加"预加载下一张"与"缓存上一张"，最坏情况可达数 GB。
+//
+// 这里在解码前先估算总内存，超过上限就按比例缩小解码尺寸，
+// 让动画继续可播放，而不是耗尽内存。单帧图片不受影响。
+// =============================================================================
+
+// 动画解码后允许占用的上限（字节）。超过则降低解码分辨率。
+#define _VIV_ANIMATION_MEMORY_LIMIT		(500u * 1024u * 1024u)
+
+// 估算多帧动画解码后的内存需求，超过上限时返回需要的"缩半次数"。
+// 返回 0 表示不需要降分辨率；返回 n 表示宽高各右移 n 位（面积降到 1/4^n）。
+//
+// 为什么要降分辨率：每一帧都会被解码成一张"图片尺寸"的 32bpp 位图常驻内存，
+// 超大动图（手机连拍导出的实况照片等）可达数 GB。
+static int _viv_animation_downscale_shift(DWORD frame_count,int wide,int high)
+{
+	VIV_UINT64 total;
+	int shift;
+	int w;
+	int h;
+
+	// 单帧图片没有累积问题，不处理。
+	if (frame_count <= 1)
+	{
+		return 0;
+	}
+
+	if ((wide <= 0) || (high <= 0))
+	{
+		return 0;
+	}
+
+	// 估算总内存：帧数 x 宽 x 高 x 4 字节（32bpp）。
+	// 用 64 位乘法，避免帧数很大时溢出。
+	total = (VIV_UINT64)frame_count * (VIV_UINT64)wide * (VIV_UINT64)high * 4;
+
+	if (total <= _VIV_ANIMATION_MEMORY_LIMIT)
+	{
+		return 0;
+	}
+
+	// 宽高每缩半一次，总内存降到 1/4。找出缩半几次能回到上限以内。
+	shift = 0;
+	w = wide;
+	h = high;
+
+	while (total > _VIV_ANIMATION_MEMORY_LIMIT)
+	{
+		w = w / 2;
+		h = h / 2;
+		shift++;
+
+		// 缩到 16 像素以下就没有观看价值了，到此为止。
+		// （极端情况可能仍略超上限，但已经比不处理小了几个数量级。）
+		if ((w < 16) || (h < 16))
+		{
+			break;
+		}
+
+		total = (VIV_UINT64)frame_count * (VIV_UINT64)w * (VIV_UINT64)h * 4;
+	}
+
+	return shift;
+}
+
 static int _viv_webp_info_proc(_viv_webp_t *viv_webp,DWORD frame_count,DWORD wide,DWORD high,int has_alpha)
 {
 	int ret;
@@ -11727,6 +11949,11 @@ static int _viv_webp_info_proc(_viv_webp_t *viv_webp,DWORD frame_count,DWORD wid
 	viv_webp->high = high;
 	viv_webp->has_alpha = has_alpha;
 	viv_webp->frame_count = frame_count;
+
+	// 显示尺寸默认等于画布尺寸。orientation 在 _viv_webp_frame_proc 里
+	// 首次用到时再按需交换一次（5-8 需要），此后再不改动。
+	viv_webp->display_wide = wide;
+	viv_webp->display_high = high;
 
 	viv_webp->screen_hdc = GetDC(NULL);
 	if (viv_webp->screen_hdc)
@@ -11900,16 +12127,16 @@ static int _viv_webp_frame_proc(_viv_webp_t *viv_webp,BYTE *pixels,int delay)
 					DeleteObject(hbitmap);
 					hbitmap = new_hbitmap;
 
-					// orientations 5-8 swap the image dimensions; keep the
-					// reported size in sync with the orientated bitmap (the
-					// GDI+ path does the same).
-					if ((viv_webp->orientation >= 5) && (viv_webp->orientation <= 8))
+					// orientation 5-8 会把画面宽高互换。只在第一帧计算一次
+					// 显示尺寸并保存下来；绝不能每帧都交换 viv_webp->wide/high，
+					// 否则各帧的宽高会来回翻转，画面尺寸逐帧抖动。
+					if ((viv_webp->frame_index == 0) && (viv_webp->orientation >= 5) && (viv_webp->orientation <= 8))
 					{
 						DWORD temp;
 
-						temp = viv_webp->wide;
-						viv_webp->wide = viv_webp->high;
-						viv_webp->high = temp;
+						temp = viv_webp->display_wide;
+						viv_webp->display_wide = viv_webp->display_high;
+						viv_webp->display_high = temp;
 					}
 				}
 			}
@@ -11918,8 +12145,8 @@ static int _viv_webp_frame_proc(_viv_webp_t *viv_webp,BYTE *pixels,int delay)
 			{
 				_viv_reply_load_image_first_frame_t first_frame;
 
-				first_frame.wide = viv_webp->wide;
-				first_frame.high = viv_webp->high;
+				first_frame.wide = viv_webp->display_wide;
+				first_frame.high = viv_webp->display_high;
 				first_frame.frame.hbitmap = hbitmap;
 				first_frame.frame.mipmap = NULL;
 				first_frame.frame.delay = 0;
@@ -11945,7 +12172,7 @@ static int _viv_webp_frame_proc(_viv_webp_t *viv_webp,BYTE *pixels,int delay)
 				
 //printf("DELAY %d\n",delay)				;
 
-				_viv_get_mipmap(hbitmap,viv_webp->wide,viv_webp->high,_viv_load_render_wide/2,_viv_load_render_high/2,&mip_wide,&mip_high,&frame.mipmap);
+				_viv_get_mipmap(hbitmap,viv_webp->display_wide,viv_webp->display_high,_viv_load_render_wide/2,_viv_load_render_high/2,&mip_wide,&mip_high,&frame.mipmap);
 				
 				_viv_reply_add(_VIV_REPLY_LOAD_IMAGE_ADDITIONAL_FRAME,sizeof(_viv_frame_t),&frame);
 			}
@@ -12193,7 +12420,9 @@ static DWORD WINAPI _viv_load_image_thread_proc(void *param)
 							//First of all we should get the number of frame dimensions
 							//Images considered by GDI+ as:
 							//frames[animation_frame_index][how_many_animation];
-							if (os_GdipImageGetFrameDimensionsCount(image,&count) == 0)
+							// count 为 0 时（异常/损坏图像）不要再访问 DimensionIDs[0]，
+							// 那是越界读；也没有任何帧维度可取。
+							if ((os_GdipImageGetFrameDimensionsCount(image,&count) == 0) && (count > 0))
 							{
 								os_PropertyItem_t *frame_delay;
 								SIZE_T frame_delay_size;
@@ -12236,6 +12465,42 @@ static DWORD WINAPI _viv_load_image_thread_proc(void *param)
 										
 										// PropertyTagFrameDelay 0x5100
 										os_GdipGetPropertyItem(image,0x5100,size,frame_delay);
+									}
+									
+									// 内存安全阀：多帧动画会把每一帧都解码成原图尺寸的 32bpp
+									// 位图常驻内存，超大动图（如手机连拍导出的实况照片）可达
+									// 数 GB。超限时按 2 的幂次降低解码分辨率，动画照常播放。
+									//
+									// load_wide/load_high 决定位图尺寸（GdipDrawImageRectI 会把
+									// 帧缩绘到该尺寸）；first_frame.wide/high 是程序认为的
+									// "图片尺寸"，mipmap 生成与坐标换算都依赖它。两者必须
+									// 同步缩小，否则会越界读取、画面错乱。
+									//
+									// 注意：first_frame.wide/high 在上面已按 EXIF 方向交换过
+									// （方向 5-8），而 load_wide/load_high 仍是原始宽高，
+									// 所以这里只做同比例缩小，不去交换两者。
+									if ((load_wide > 0) && (load_high > 0))
+									{
+										int shift;
+
+										shift = _viv_animation_downscale_shift(first_frame.frame_count,load_wide,load_high);
+										if (shift)
+										{
+											load_wide = load_wide >> shift;
+											load_high = load_high >> shift;
+
+											if (load_wide < 1) load_wide = 1;
+											if (load_high < 1) load_high = 1;
+
+											first_frame.wide = (UINT)(((UINT)first_frame.wide) >> shift);
+											first_frame.high = (UINT)(((UINT)first_frame.high) >> shift);
+
+											if (!first_frame.wide) first_frame.wide = 1;
+											if (!first_frame.high) first_frame.high = 1;
+
+											debug_printf("animation memory guard: %u frames, shift %d, load %dx%d\n",
+												first_frame.frame_count,shift,load_wide,load_high);
+										}
 									}
 								}
 
@@ -16946,58 +17211,59 @@ static BOOL _viv_get_src_pixel_pos(int client_x,int client_y,POINT *out_pixel_pt
 	return FALSE;
 }
 
-// get the source pixel color from the specified position.
-// doesn't use mipmaps.
+// 复用的取色 DC（见 _viv_get_src_pixel_rgb）。
+// 取色函数用完立即换出位图，所以这个 DC 不会长期持有任何帧位图，
+// 换图时无需额外处理。
+static HDC _viv_src_pixel_dc = 0;
+
+// 程序退出时释放取色 DC。
+static void _viv_src_pixel_dc_free(void)
+{
+	if (_viv_src_pixel_dc)
+	{
+		DeleteDC(_viv_src_pixel_dc);
+		_viv_src_pixel_dc = 0;
+	}
+}
+
 static void _viv_get_src_pixel_rgb(int src_x,int src_y,COLORREF *out_colorref)
 {
-	RECT client_rect;
-	int wide;
-	int high;
-	int rx;
-	int ry;
-	int rw;
-	int rh;
-	
-	GetClientRect(_viv_hwnd,&client_rect);
-	wide = client_rect.right - client_rect.left;
-	high = client_rect.bottom - client_rect.top - _viv_get_status_high() - _viv_get_controls_high();
-
 	if (_viv_frame_count)
 	{
-		HDC screen_hdc;
+		HDC mem_hdc;
 		
-		screen_hdc = GetDC(0);
-		
-		if (screen_hdc)
+		// 复用缓存的屏幕兼容 DC：省掉每次取色的 GetDC(0)/ReleaseDC 和
+		// CreateCompatibleDC/DeleteDC 共 4 次系统调用。
+		// （原实现每取一个像素就建/拆一次 DC，鼠标快速移动时每秒上千次。）
+		if (!_viv_src_pixel_dc)
 		{
-			HDC mem_hdc;
+			HDC screen_hdc;
 			
-			_viv_get_render_size(&rw,&rh);
-
-			rw = (int)(rw * _viv_dst_zoom_values[_viv_dst_zoom_x_pos]);
-			rh = (int)(rh * _viv_dst_zoom_values[_viv_dst_zoom_y_pos]);
-
-			rx = (((_viv_dst_pos_x - 250) * (wide*2)) / 1000) - (rw / 2) - _viv_view_x;
-			ry = (((_viv_dst_pos_y - 250) * (high*2)) / 1000) - (rh / 2) - _viv_view_y;
-			
-			mem_hdc = CreateCompatibleDC(screen_hdc);
-			if (mem_hdc)
+			screen_hdc = GetDC(0);
+			if (screen_hdc)
 			{
-				HGDIOBJ last_hbitmap;
-				
-				last_hbitmap = SelectObject(mem_hdc,_viv_frames[_viv_frame_position].hbitmap);
-				
-				if (last_hbitmap)
-				{
-					*out_colorref = GetPixel(mem_hdc,src_x,src_y);
-					
-					SelectObject(mem_hdc,last_hbitmap);
-				}
-				
-				DeleteDC(mem_hdc);
+				_viv_src_pixel_dc = CreateCompatibleDC(screen_hdc);
+				ReleaseDC(0,screen_hdc);
 			}
+		}
+		
+		mem_hdc = _viv_src_pixel_dc;
+		
+		if (mem_hdc)
+		{
+			HGDIOBJ last_hbitmap;
 			
-			ReleaseDC(0,screen_hdc);
+			last_hbitmap = SelectObject(mem_hdc,_viv_frames[_viv_frame_position].hbitmap);
+			
+			if ((last_hbitmap) && (last_hbitmap != HGDI_ERROR))
+			{
+				*out_colorref = GetPixel(mem_hdc,src_x,src_y);
+				
+				// 必须立刻还原：一张位图同一时刻只能被一个 DC 选中。
+				// 若长期持有，绘制路径（WM_PAINT 的 mipmap 命中原图时）
+				// 或方向校正路径再选中同一位图就会失败。
+				SelectObject(mem_hdc,last_hbitmap);
+			}
 		}
 	}
 }

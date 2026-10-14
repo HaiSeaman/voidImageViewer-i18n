@@ -61,6 +61,7 @@ third_party/staging-*/
 
 # ===== 测试工具产物（源码 heif_dec_test.cpp 保留） =====
 test_images/dec_*.raw
+tests/build/
 __pycache__/
 *.pyc
 

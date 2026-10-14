@@ -235,8 +235,6 @@ void mem_free_debug(const char *file,int line,void *p)
 		debug_fatal("INVALID FREE from %s(%d): %p",file,line,p);
 	}
 	
-	mem_usage -= HeapSize(GetProcessHeap(),0,(((mem_debug_t *)p)-1));
-
 	{
 		int magici;
 		for(magici=0;magici<MEM_MAGIC_SIZE;magici++)
@@ -265,6 +263,10 @@ void mem_free_debug(const char *file,int line,void *p)
 	}
 
 	EnterCriticalSection(&mem_debug_cs);
+
+	// mem_usage 的累加在 mem_alloc_debug 里是在临界区内做的，
+	// 这里也必须放在临界区内，否则多线程下会丢失更新。
+	mem_usage -= HeapSize(GetProcessHeap(),0,(((mem_debug_t *)p)-1));
 
 	// unlink
 	if ((((mem_debug_t *)p)-1) == mem_debug_start)

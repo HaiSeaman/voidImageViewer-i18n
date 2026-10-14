@@ -6,7 +6,7 @@ English | [简体中文](README_CN.md)
 
 > A lightweight, blazing-fast image viewer built for Windows, featuring seamless switching between 10 UI languages, 1:1 pixel-perfect zoom by default, and smooth animated GIF / WebP playback.
 > This project is based on [voidtools/voidImageViewer](https://github.com/voidtools/voidImageViewer) with immersive-experience enhancements and multilingual support.
-> **Current version: v3.5**
+> **Current version: v3.6**
 
 [Download](#download) | [Key Changes](#key-changes-compared-to-the-original) | [Features](#features) | [Usage](#usage) | [Building from Source](#building-from-source) | [License](#license-and-acknowledgements)
 
@@ -30,6 +30,9 @@ This fork builds on that foundation with comprehensive enhancements: **10 UI lan
 | **Documentation** | Complete technical documentation, configuration guide and build instructions in both English and Chinese. |
 | **Stability hardening (v3.2)** | Fixed a crash when deleting images during shuffle playback (use-after-free) and undefined behavior in animation pause / status-bar pixel values; consolidated duplicated parsing code in the Everything integration while keeping all safety checks; removed build artifacts and dead code from the repository. |
 | **Experience & hardening (v3.3)** | Adds a top-left file-name caption aligned with the custom window buttons (hidden in fullscreen) and an ESC shortcut (exit fullscreen / close the viewer); fixes corrupted file-association descriptions for .jpg/.png/.tif/.tiff/.webp (8-bit string-id truncation); removes 25 never-effective ARM/MIPS compile units and dead project configurations; all build scripts are now vswhere-portable. |
+| **Interaction fixes & audit (v3.4)** | Fixes ghosting/misalignment of the borderless overlay while dragging an image, and restores middle-button drag-scrolling (broken since an early version); replaces the "Help" submenu at the bottom of the context menu with a single "About" item and adds a repository link button to the About dialog; completes a full-database translation-completeness and code-cleanliness audit. |
+| **Menu simplification & stability (v3.5)** | Trims the top level of the right-click menu (removes the four "Allow Shrinking / Keep Aspect Ratio / Fill Window / 1:1" entries that duplicated the View submenu — the commands and shortcuts are fully preserved); fixes six stability hazards (a failed string copy that did not terminate its buffer, a duplicated 1:1 check-mark refresh, uninitialized locals and image pointer, an unchecked pen handle, a duplicated header declaration); removes 15 unused resource IDs and leftover build artifacts. |
+| **Battery-friendly & memory-safe (v3.6)** | The animation timer no longer polls every 1 ms — it now follows the actual frame duration and **truly stops when paused** (wake-ups drop from ~1000/s to ~10/s, which helps laptop battery life); adds a **memory guard for animated images** (decoding resolution is reduced automatically above 500 MB — measured reductions up to 94% — preventing huge animations from exhausting memory); the pixel-sampling path now reuses one cached DC; fixes three defects (long-filename buffer overflow, per-frame EXIF orientation flipping in animated WebP, division-by-zero NaN when resizing with no image), plus six latent hazards and five build-configuration issues. |
 
 ---
 
@@ -112,16 +115,16 @@ This fork builds on that foundation with comprehensive enhancements: **10 UI lan
   - Voidtools forum thread: [https://www.voidtools.com/forum/viewtopic.php?t=5623](https://www.voidtools.com/forum/viewtopic.php?t=5623)
   - Voidtools GitHub repository: [https://github.com/voidtools/voidImageViewer](https://github.com/voidtools/voidImageViewer)
 
-**v3.3 release files**: portable ZIP archives for 32-bit (`x86`) and 64-bit (`x64`) — extract and run; standard NSIS installers (Chinese/English) are also provided.
+**v3.6 release files**: portable ZIP archives for 32-bit (`x86`) and 64-bit (`x64`) — extract and run; standard NSIS installers (Chinese/English) are also provided.
 
 | Type | File |
 | --- | --- |
-| Portable x64 | `voidImageViewer-3.3.x64.zip` |
-| Portable x86 | `voidImageViewer-3.3.x86.zip` |
-| Installer x64 Chinese | `voidImageViewer-3.3.x64.zh-CN-Setup.exe` |
-| Installer x64 English | `voidImageViewer-3.3.x64.en-US-Setup.exe` |
-| Installer x86 Chinese | `voidImageViewer-3.3.x86.zh-CN-Setup.exe` |
-| Installer x86 English | `voidImageViewer-3.3.x86.en-US-Setup.exe` |
+| Portable x64 | `voidImageViewer-3.6.x64.zip` |
+| Portable x86 | `voidImageViewer-3.6.x86.zip` |
+| Installer x64 Chinese | `voidImageViewer-3.6.x64.zh-CN-Setup.exe` |
+| Installer x64 English | `voidImageViewer-3.6.x64.en-US-Setup.exe` |
+| Installer x86 Chinese | `voidImageViewer-3.6.x86.zh-CN-Setup.exe` |
+| Installer x86 English | `voidImageViewer-3.6.x86.en-US-Setup.exe` |
 
 ---
 

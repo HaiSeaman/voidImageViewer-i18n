@@ -4,7 +4,7 @@
 
 > 一款专为 Windows 打造的轻量级、极速看图软件，支持 10 种语言无缝切换、默认 1:1 像素级放缩与动画 GIF / WebP 流畅播放。
 > 本项目基于 [voidtools/voidImageViewer](https://github.com/voidtools/voidImageViewer) 进行沉浸式体验增强与多语言扩展。
-> **当前版本：v3.5**
+> **当前版本：v3.6**
 
 [下载最新版](#下载) ｜ [新增特性](#相较原版的主要改动) ｜ [功能特性](#功能特性) ｜ [使用说明](#使用说明) ｜ [从源码构建](#从源码构建) ｜ [许可证](#许可证与致谢)
 
@@ -28,6 +28,9 @@
 | **中文文档与使用规范** | 提供完整的中文技术文档、配置指南与构建说明。 |
 | **稳定性加固（v3.2）** | 修复随机播放模式删除图片导致的崩溃（use-after-free）、动画暂停/状态栏像素值的未定义行为，合并 Everything 集成中的重复解析代码并保留全部安全校验，清理仓库构建产物与死代码。 |
 | **体验增强与深度加固（v3.3）** | 新增左上角图片文件名显示（与窗口按钮同条带对齐、全屏自动隐藏）与 ESC 快捷键（全屏退出全屏、非全屏直接关闭程序）；修复 .jpg/.png/.tif/.tiff/.webp 文件关联描述错乱（字符串编号被 8 位类型截断）；删除 25 个 ARM/MIPS 无效编译文件与死配置，构建脚本全面可移植化。 |
+| **交互修正与审计（v3.4）** | 修复无边框叠层拖动图片时的残影错位、修复自早期版本起失效的中键拖动滚动；右键菜单底部以单个【关于】替代【帮助】子菜单，关于对话框新增【项目地址】按钮直达 GitHub 仓库；完成一次全库翻译完整性与代码洁净度审计。 |
+| **菜单精简与稳定性（v3.5）** | 精简右键一级菜单（移除与【视图】子菜单重复的「允许缩小／保持纵横比／填充窗口／1:1」4 个入口，功能与快捷键全部保留）；修复 6 处稳定性隐患（字符串复制失败未正确收尾、1:1 勾选重复刷新、未初始化局部变量与图像指针、未判空的画笔句柄、头文件重复声明）；清理 15 个无用资源 ID 与仓库残留产物。 |
+| **性能省电与内存安全（v3.6）** | 动画定时器由「固定 1ms 空转」改为**按帧间隔驱动、暂停即真正停表**（唤醒次数从约 1000 次/秒降至约 10 次/秒，改善笔记本续航）；新增**多帧动画内存安全阀**（超 500MB 自动降低解码分辨率，实测最大降幅 94%，防大动图耗尽内存）；取色路径复用缓存 DC；修复长文件名越界写、动画 WebP 方向逐帧翻转、无图片时除零 NaN 三个缺陷，另修 6 处潜伏隐患与 5 项构建配置问题。 |
 
 ---
 
@@ -110,16 +113,16 @@
   - Voidtools 官网论坛：[https://www.voidtools.com/forum/viewtopic.php?t=5623](https://www.voidtools.com/forum/viewtopic.php?t=5623)
   - Voidtools GitHub 仓库：[https://github.com/voidtools/voidImageViewer](https://github.com/voidtools/voidImageViewer)
 
-**v3.3 发布文件**：提供 32 位 (`x86`) 与 64 位 (`x64`) 免安装绿色便携版压缩包，解压即用；同时提供标准 NSIS 安装包（中/英双语）。
+**v3.6 发布文件**：提供 32 位 (`x86`) 与 64 位 (`x64`) 免安装绿色便携版压缩包，解压即用；同时提供标准 NSIS 安装包（中/英双语）。
 
 | 类型 | 文件 |
 | --- | --- |
-| 便携版 x64 | `voidImageViewer-3.3.x64.zip` |
-| 便携版 x86 | `voidImageViewer-3.3.x86.zip` |
-| 安装包 x64 中文 | `voidImageViewer-3.3.x64.zh-CN-Setup.exe` |
-| 安装包 x64 英文 | `voidImageViewer-3.3.x64.en-US-Setup.exe` |
-| 安装包 x86 中文 | `voidImageViewer-3.3.x86.zh-CN-Setup.exe` |
-| 安装包 x86 英文 | `voidImageViewer-3.3.x86.en-US-Setup.exe` |
+| 便携版 x64 | `voidImageViewer-3.6.x64.zip` |
+| 便携版 x86 | `voidImageViewer-3.6.x86.zip` |
+| 安装包 x64 中文 | `voidImageViewer-3.6.x64.zh-CN-Setup.exe` |
+| 安装包 x64 英文 | `voidImageViewer-3.6.x64.en-US-Setup.exe` |
+| 安装包 x86 中文 | `voidImageViewer-3.6.x86.zh-CN-Setup.exe` |
+| 安装包 x86 英文 | `voidImageViewer-3.6.x86.en-US-Setup.exe` |
 
 ---
 

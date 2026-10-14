@@ -90,6 +90,13 @@ void string_copy_with_bufsize(wchar_t *d,SIZE_T bufsize,const wchar_t *s)
 {
 	uintptr_t size;
 	
+	// bufsize 是无符号数。若传 0，bufsize-1 会下溢成极大值，
+	// 下面的循环就永远填不满，一直写到源串末尾 —— 必然越界。
+	if (!bufsize)
+	{
+		return;
+	}
+	
 	size = bufsize - 1;
 	
 	while(*s)
