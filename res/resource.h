@@ -19,6 +19,9 @@
 #define IDD_RENAME                      127
 #define IDD_JUMPTO                      128
 #define IDD_EVERYTHING                  129
+#define IDD_FAVORITES                   130
+#define IDD_FILTER                      131
+#define IDD_IMAGE_INFO                  132
 #define IDC_TAB1                        1003
 #define IDC_BMP                         1006
 #define IDC_GIF                         1007
@@ -115,14 +118,27 @@
 // About dialog: project page button (opens the GitHub repository)
 #define IDC_ABOUTPROJECT						1067
 
+// v3.7: recent/favorites/filter/image info
+#define IDC_FAVORITES_LIST						1070
+#define IDC_FAVORITES_OPEN						1071
+#define IDC_FAVORITES_REMOVE					1072
+#define IDC_FAVORITES_CLEAR						1073
+#define IDC_FILTER_LABEL						1074
+#define IDC_FILTER_EDIT							1075
+#define IDC_FILTER_COUNT						1076
+#define IDC_FILTER_CLOSE						1077
+#define IDC_INFO_LIST							1078
+#define IDC_INFO_COPY							1079
+#define IDC_INFO_REFRESH						1080
+
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        130
+#define _APS_NEXT_RESOURCE_VALUE        133
 #define _APS_NEXT_COMMAND_VALUE         40048
-#define _APS_NEXT_CONTROL_VALUE         1068
+#define _APS_NEXT_CONTROL_VALUE         1081
 #define _APS_NEXT_SYMED_VALUE           109
 #endif
 #endif

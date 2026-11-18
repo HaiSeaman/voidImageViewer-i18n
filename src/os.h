@@ -84,6 +84,60 @@ void os_fill_clipped_rect(HDC hdc,int x,int y,int wide,int high,int clip_x,int c
 void os_fill_rect(HDC hdc,int x,int y,int wide,int high,HBRUSH hbrush);
 void os_set_rect(RECT *rect,int x,int y,int wide,int high);
 int os_get_orientation(const wchar_t *filename);
+
+// v3.7: 图片元数据（Windows 属性系统 + GDI+ 回退）。
+// 读不到的字段保持 0/空字符串，由 UI 决定是否显示。
+typedef struct _os_image_metadata_s
+{
+	wchar_t camera_make[128];
+	wchar_t camera_model[128];
+	wchar_t lens[128];
+	wchar_t software[128];
+	wchar_t date_taken[64];
+
+	double exposure_time;
+	int has_exposure_time;
+	double fnumber;
+	int has_fnumber;
+	int iso;
+	int has_iso;
+	double focal_length;
+	int has_focal_length;
+	double focal_length_35mm;
+	int has_focal_length_35mm;
+	double exposure_bias;
+	int has_exposure_bias;
+	int flash;
+	int has_flash;
+	int metering;
+	int has_metering;
+	int white_balance;
+	int has_white_balance;
+	int exposure_program;
+	int has_exposure_program;
+
+	wchar_t image_description[256];
+	wchar_t artist[128];
+	wchar_t copyright[128];
+	wchar_t exif_version[32];
+	wchar_t color_space[32];
+	int orientation;
+	int has_orientation;
+
+	double gps_latitude[3];
+	int has_gps_latitude;
+	wchar_t gps_latitude_ref[4];
+	double gps_longitude[3];
+	int has_gps_longitude;
+	wchar_t gps_longitude_ref[4];
+	double gps_altitude;
+	int has_gps_altitude;
+	double gps_direction;
+	int has_gps_direction;
+}os_image_metadata_t;
+
+void os_get_image_metadata(const wchar_t *filename,os_image_metadata_t *metadata);
+void os_get_image_pixel_info(const wchar_t *filename,int *pixel_format,int *dpi_x,int *dpi_y,int *has_alpha);
 DWORD os_get_window_style(HWND hwnd);
 DWORD os_get_window_ex_style(HWND hwnd);
 int os_get_static_wide(HWND hwnd,int id);
@@ -100,8 +154,12 @@ extern int (WINAPI *os_GdiplusStartup)( ULONG_PTR *token,const os_GdiplusStartup
 extern VOID (WINAPI *os_GdiplusShutdown)(ULONG_PTR token);
 extern int (__stdcall *os_GdipLoadImageFromStream)(IStream* stream, void **image);
 extern int (__stdcall *os_GdipLoadImageFromStreamICM)(IStream* stream, void **image);
+extern int (__stdcall *os_GdipLoadImageFromFile)(const wchar_t *filename, void **image);
 extern int (__stdcall *os_GdipGetImageWidth)(void *image, UINT *width);
 extern int (__stdcall *os_GdipGetImageHeight)(void *image, UINT *height);
+extern int (__stdcall *os_GdipGetImagePixelFormat)(void *image, int *format);
+extern int (__stdcall *os_GdipGetImageHorizontalResolution)(void *image, float *dpi);
+extern int (__stdcall *os_GdipGetImageVerticalResolution)(void *image, float *dpi);
 extern int (__stdcall *os_GdipImageGetFrameDimensionsCount)(void *image, UINT* count);
 extern int (__stdcall *os_GdipImageGetFrameDimensionsList)(void *image, GUID* dimensionIDs,UINT count);
 extern int (__stdcall *os_GdipImageGetFrameCount)(void *image, const GUID* dimensionID,UINT* count);

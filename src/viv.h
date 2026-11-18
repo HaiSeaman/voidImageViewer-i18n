@@ -56,6 +56,7 @@ typedef unsigned __int64 VIV_UINT64;
 #include <shlwapi.h>
 #include "../res/resource.h"
 #include <commdlg.h> // OPENFILENAME
+#include <commctrl.h> // ListView / toolbar / status bar
 #include <Shellapi.h> // ShellExecute
 #include <uxtheme.h>
 #include <shlobj.h> // DROPFILES
@@ -231,7 +232,19 @@ enum
 	VIV_ID_VIEW_REFRESH,
 	VIV_ID_VIEW_CAPTION,
 	VIV_ID_VIEW_THICKFRAME,
+
+	// v3.7
+	VIV_ID_FILE_CLEAR_RECENT,
+	VIV_ID_FILE_ADD_FAVORITE,
+	VIV_ID_FILE_REMOVE_FAVORITE,
+	VIV_ID_FILE_MANAGE_FAVORITES,
+	VIV_ID_NAV_FILTER,
+	VIV_ID_VIEW_IMAGE_INFO,
 };
+
+// v3.7: 动态菜单项 ID 区间（最近打开 / 收藏夹）
+#define VIV_ID_FILE_RECENT_BASE		20000
+#define VIV_ID_FILE_FAVORITE_BASE	21000
 
 #include "version.h"
 #include "debug.h"

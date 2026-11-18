@@ -323,6 +323,8 @@ enum
 	_VIV_MENU_NAVIGATE,
 	_VIV_MENU_NAVIGATE_SORT,
 	_VIV_MENU_NAVIGATE_PLAYLIST,
+	_VIV_MENU_FILE_RECENT,
+	_VIV_MENU_FILE_FAVORITES,
 	_VIV_MENU_HELP,
 	_VIV_MENU_COUNT,
 };
@@ -658,6 +660,31 @@ static int _viv_safe_copy_data(const void *base,SIZE_T src_size,const void *src,
 static int _viv_everything_parse_item(const COPYDATASTRUCT *cds,const EVERYTHING_IPC_ITEM2 *item,WIN32_FIND_DATA *fd);
 static int _viv_send_everything_query(const wchar_t *search,DWORD reply_message,DWORD offset,DWORD max_results);
 
+// v3.7
+static void _viv_get_localized_wtext(wchar_t *buf,localization_id_t id);
+static void _viv_apply_rtl(HWND hwnd);
+static const wchar_t *_viv_get_current_image_path(void);
+static void _viv_recent_add_current(void);
+static void _viv_populate_recent_menu(void);
+static void _viv_populate_favorites_menu(void);
+static void _viv_open_recent_or_favorite(const wchar_t *path);
+static void _viv_favorite_toggle(void);
+static void _viv_show_favorites(void);
+static INT_PTR CALLBACK _viv_favorites_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
+static void _viv_filter_show(void);
+static void _viv_filter_hide(int clear);
+static void _viv_filter_on_edit_changed(void);
+static void _viv_filter_update_count(void);
+static int _viv_filter_match(const WIN32_FIND_DATA *fd);
+static INT_PTR CALLBACK _viv_filter_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
+static void _viv_filter_position(void);
+static void _viv_show_image_info(void);
+static void _viv_info_refresh(void);
+static void _viv_info_update_texts(void);
+static INT_PTR CALLBACK _viv_info_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
+static void _viv_info_save_geometry(void);
+static void _viv_info_copy_all(void);
+
 static HMODULE _viv_stobject_hmodule = 0;
 static _viv_playlist_t *_viv_playlist_start = 0;
 static _viv_playlist_t *_viv_playlist_last = 0;
@@ -773,6 +800,15 @@ static int _viv_mousemove_y = -1;
 static BYTE _viv_in_popup_menu = 0;
 static GUID _viv_FrameDimensionTime = {0x6aedbd6d,0x3fb5,0x418a,{0x83,0xa6,0x7f,0x45,0x22,0x9d,0xc8,0x72}};
 static HMENU _viv_hmenu = 0;
+// v3.7: 动态菜单与三个新功能的窗口/状态
+static HMENU _viv_recent_menu = 0;
+static HMENU _viv_favorites_menu = 0;
+static HWND _viv_filter_hwnd = 0;
+static int _viv_filter_active = 0;
+static wchar_t _viv_filter_text[STRING_SIZE];
+static int _viv_filter_match_count = 0;
+static int _viv_filter_total_count = 0;
+static HWND _viv_info_hwnd = 0;
 static int _viv_dst_pos_x = 500;
 static int _viv_dst_pos_y = 500;
 #define _VIV_DST_ZOOM_MAX	139
@@ -862,6 +898,8 @@ static _viv_command_t _viv_commands[] =
 
 	{LOCALIZATION_ID_OPEN_FILE,MF_STRING,_VIV_MENU_FILE,VIV_ID_FILE_OPEN_FILE},
 	{LOCALIZATION_ID_OPEN_FOLDER,MF_STRING,_VIV_MENU_FILE,VIV_ID_FILE_OPEN_FOLDER},
+	{LOCALIZATION_ID_RECENT_FILES,MF_POPUP,_VIV_MENU_FILE,_VIV_MENU_FILE_RECENT},
+	{LOCALIZATION_ID_FAVORITES,MF_POPUP,_VIV_MENU_FILE,_VIV_MENU_FILE_FAVORITES},
 	{LOCALIZATION_ID_OPEN_EVERYTHING_SEARCH,MF_STRING|MF_OWNERDRAW,_VIV_MENU_FILE,VIV_ID_FILE_OPEN_EVERYTHING_SEARCH},
 	{LOCALIZATION_ID_ADD_FILE,MF_STRING|MF_OWNERDRAW,_VIV_MENU_FILE,VIV_ID_FILE_ADD_FILE},
 	{LOCALIZATION_ID_ADD_FOLDER,MF_STRING|MF_OWNERDRAW,_VIV_MENU_FILE,VIV_ID_FILE_ADD_FOLDER},
@@ -916,6 +954,7 @@ static _viv_command_t _viv_commands[] =
 	{LOCALIZATION_ID_VIEW_WINDOW_SIZE_200_PERCENT,MF_STRING,_VIV_MENU_VIEW_WINDOW_SIZE,VIV_ID_VIEW_WINDOW_SIZE_200},
 	{LOCALIZATION_ID_VIEW_WINDOW_SIZE_AUTO_FIT,MF_STRING,_VIV_MENU_VIEW_WINDOW_SIZE,VIV_ID_VIEW_WINDOW_SIZE_AUTO_FIT},
 	{LOCALIZATION_ID_REFRESH,MF_STRING,_VIV_MENU_VIEW,VIV_ID_VIEW_REFRESH},
+	{LOCALIZATION_ID_IMAGE_INFO,MF_STRING,_VIV_MENU_VIEW,VIV_ID_VIEW_IMAGE_INFO},
 	{LOCALIZATION_ID_INVALID,MF_SEPARATOR,_VIV_MENU_VIEW,0},
 	{LOCALIZATION_ID_ALLOW_SHRINKING,MF_STRING,_VIV_MENU_VIEW,VIV_ID_VIEW_ALLOW_SHRINKING},
 	{LOCALIZATION_ID_KEEP_ASPECT_RATIO,MF_STRING,_VIV_MENU_VIEW,VIV_ID_VIEW_KEEP_ASPECT_RATIO},
@@ -1030,6 +1069,7 @@ static _viv_command_t _viv_commands[] =
 	{LOCALIZATION_ID_SORT_DESCENDING,MF_STRING|MFT_RADIOCHECK,_VIV_MENU_NAVIGATE_SORT,VIV_ID_NAV_SORT_DESCENDING},
 	{LOCALIZATION_ID_SHUFFLE,MF_STRING,_VIV_MENU_NAVIGATE,VIV_ID_NAV_SHUFFLE},
 	{LOCALIZATION_ID_INVALID,MF_SEPARATOR,_VIV_MENU_NAVIGATE,0},
+	{LOCALIZATION_ID_FILTER,MF_STRING,_VIV_MENU_NAVIGATE,VIV_ID_NAV_FILTER},
 	{LOCALIZATION_ID_JUMP_TO,MF_STRING,_VIV_MENU_NAVIGATE,VIV_ID_NAV_JUMPTO},
 
 	{LOCALIZATION_ID_HELP,MF_POPUP,_VIV_MENU_ROOT,_VIV_MENU_HELP},
@@ -1101,6 +1141,7 @@ _viv_default_key_t _viv_default_keys[] =
 	{VIV_ID_VIEW_ONTOP_ALWAYS,CONFIG_KEYFLAG_CTRL | 'T'},
 	{VIV_ID_VIEW_OPTIONS,'O'},
 	{VIV_ID_VIEW_REFRESH,VK_F5},
+	{VIV_ID_VIEW_IMAGE_INFO,CONFIG_KEYFLAG_CTRL | 'I'},
 	{VIV_ID_SLIDESHOW_PAUSE,VK_SPACE},
 	{VIV_ID_SLIDESHOW_RATE_DEC,VK_DOWN},
 	{VIV_ID_SLIDESHOW_RATE_INC,VK_UP},
@@ -1121,6 +1162,7 @@ _viv_default_key_t _viv_default_keys[] =
 	{VIV_ID_NAV_HOME,VK_HOME},
 	{VIV_ID_NAV_END,VK_END},
 	{VIV_ID_NAV_JUMPTO,'J'},
+	{VIV_ID_NAV_FILTER,CONFIG_KEYFLAG_ALT | 'F'},
 	{VIV_ID_HELP_HELP,VK_F1},
 	{VIV_ID_HELP_ABOUT,CONFIG_KEYFLAG_CTRL | VK_F1},
 };
@@ -1331,6 +1373,20 @@ static void _viv_change_language(localization_id_t lang)
 	_viv_update_title();
 	_viv_status_update();
 	_viv_check_menus(new_hmenu);
+	
+	// v3.7: 动态菜单/信息窗口/筛选条语言即时更新
+	_viv_populate_recent_menu();
+	_viv_populate_favorites_menu();
+	if (IsWindow(_viv_info_hwnd))
+	{
+		_viv_info_update_texts();
+	}
+	if (IsWindow(_viv_filter_hwnd))
+	{
+		os_SetDlgItemText_localization_id(_viv_filter_hwnd,IDC_FILTER_LABEL,LOCALIZATION_ID_FILTER);
+		_viv_apply_rtl(_viv_filter_hwnd);
+		_viv_filter_update_count();
+	}
 
 	// 重建工具栏以更新按钮文本（语言切换后旧文本不会自动刷新）
 	if (_viv_toolbar_hwnd)
@@ -1500,6 +1556,11 @@ static BOOL _viv_open_from_filename(const wchar_t *filename)
 	HANDLE h;
 	wchar_t full_path_and_filename[STRING_SIZE];
 	wchar_t cwd[STRING_SIZE];
+
+	if (_viv_filter_active)
+	{
+		_viv_filter_hide(1);
+	}
 
 	ret = FALSE;
 	GetCurrentDirectory(STRING_SIZE,cwd);
@@ -1818,6 +1879,19 @@ static void _viv_command(int command_id)
 
 static void _viv_command_with_is_key_repeat(int command_id,int is_key_repeat)
 {
+	// v3.7: 动态菜单项（最近打开 / 收藏夹）
+	if ((command_id >= VIV_ID_FILE_RECENT_BASE) && (command_id < VIV_ID_FILE_RECENT_BASE + CONFIG_RECENT_MAX))
+	{
+		_viv_open_recent_or_favorite(config_recent_get(command_id - VIV_ID_FILE_RECENT_BASE));
+		return;
+	}
+	
+	if ((command_id >= VIV_ID_FILE_FAVORITE_BASE) && (command_id < VIV_ID_FILE_FAVORITE_BASE + CONFIG_FAVORITE_MAX))
+	{
+		_viv_open_recent_or_favorite(config_favorite_get(command_id - VIV_ID_FILE_FAVORITE_BASE));
+		return;
+	}
+	
 	// Parse the menu selections:
 	switch (command_id)
 	{
@@ -2576,6 +2650,11 @@ debug_printf("SWP %d %d %d %d\n",rect.left,rect.top,rect.right - rect.left,rect.
 				wchar_t filter_wbuf[STRING_SIZE];
 				wchar_t title_wbuf[STRING_SIZE];
 				
+				if (_viv_filter_active)
+				{
+					_viv_filter_hide(1);
+				}
+				
 				os_zero_memory(&ofn,sizeof(OPENFILENAME));
 
 				string_copy(tobuf,_viv_last_open_file ? _viv_last_open_file : L"");
@@ -2633,6 +2712,11 @@ debug_printf("SWP %d %d %d %d\n",rect.left,rect.top,rect.right - rect.left,rect.
 			{
 				wchar_t filename[STRING_SIZE];
 				
+				if (_viv_filter_active)
+				{
+					_viv_filter_hide(1);
+				}
+				
 				string_copy(filename,_viv_last_open_folder ? _viv_last_open_folder : L"");
 				
 				if (os_browse_for_folder(_viv_hwnd,filename))
@@ -2689,6 +2773,29 @@ debug_printf("SWP %d %d %d %d\n",rect.left,rect.top,rect.right - rect.left,rect.
 			
 		case VIV_ID_NAV_JUMPTO:
 			_viv_show_jumpto();
+			break;
+			
+		case VIV_ID_NAV_FILTER:
+			_viv_filter_show();
+			break;
+			
+		case VIV_ID_VIEW_IMAGE_INFO:
+			_viv_show_image_info();
+			break;
+			
+		case VIV_ID_FILE_CLEAR_RECENT:
+			config_recent_clear();
+			config_save_settings(config_appdata);
+			_viv_populate_recent_menu();
+			break;
+			
+		case VIV_ID_FILE_ADD_FAVORITE:
+		case VIV_ID_FILE_REMOVE_FAVORITE:
+			_viv_favorite_toggle();
+			break;
+			
+		case VIV_ID_FILE_MANAGE_FAVORITES:
+			_viv_show_favorites();
 			break;
 			
 		case VIV_ID_FILE_PREVIEW:
@@ -2793,6 +2900,7 @@ debug_printf("SWP %d %d %d %d\n",rect.left,rect.top,rect.right - rect.left,rect.
 static void _viv_exit(void)
 {
 	InterlockedExchange((volatile LONG *)&_viv_load_image_terminate,1);
+	_viv_info_save_geometry();
 	config_save_settings(config_appdata);
 	PostQuitMessage(0);
 }
@@ -2802,6 +2910,11 @@ static void _viv_handle_drop(HWND hwnd,HDROP hdrop)
 	wchar_t filename[STRING_SIZE];
 	DWORD count;
 	int is_shift;
+	
+	if (_viv_filter_active)
+	{
+		_viv_filter_hide(1);
+	}
 	
 	if (_viv_random)
 	{
@@ -3469,6 +3582,8 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 
 			hmenu = GetMenu(hwnd);
 
+			_viv_populate_recent_menu();
+			_viv_populate_favorites_menu();
 			_viv_check_menus(hmenu);
 			
 			break;
@@ -3808,6 +3923,10 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 			
 			hmenu = CreatePopupMenu();
 			
+			// 右键菜单显示前先刷新最近/收藏，保证“添加/移除收藏”状态跟当前图片一致。
+			_viv_populate_recent_menu();
+			_viv_populate_favorites_menu();
+			
 			{
 				int i;
 				HMENU submenu;
@@ -4000,6 +4119,10 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 			// 用户想再次操作可以再次右键。
 			{
 				int cmd = TrackPopupMenu(hmenu, tpm_flags | TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, 0);
+				
+				// 菜单已经关闭；先清标志，允许命令处理里刷新最近/收藏动态菜单。
+				_viv_in_popup_menu = 0;
+				
 				if (cmd)
 				{
 					// 执行用户选中的命令
@@ -4008,7 +4131,6 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 			}
 
 			// start the hide cursor timer again.
-			_viv_in_popup_menu = 0;
 			_viv_update_show_cursor();
 
 			// 修复：在销毁右键菜单前，先移除从 _viv_hmenu 追加的共享子菜单项，
@@ -4494,6 +4616,7 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 		case WM_SIZE:
 		
 			_viv_on_size();
+			_viv_filter_position();
 
 			break;
 
@@ -4505,26 +4628,28 @@ debug_printf("NEXT AFTER LOAD %S\n",fd->cFileName);
 
 			break;
 			 
-		case WM_MOVE:
-		{
-			if (!IsIconic(hwnd))
+			case WM_MOVE:
 			{
-				if (!IsMaximized(hwnd))
+				if (!IsIconic(hwnd))
 				{
-					if (!_viv_is_fullscreen)
+					if (!IsMaximized(hwnd))
 					{
-						RECT rect;
-						
-						GetWindowRect(hwnd,&rect);
-			
-						config_x = rect.left;
-						config_y = rect.top;
+						if (!_viv_is_fullscreen)
+						{
+							RECT rect;
+							
+							GetWindowRect(hwnd,&rect);
+				
+							config_x = rect.left;
+							config_y = rect.top;
+						}
 					}
 				}
+				
+				_viv_filter_position();
+				
+				break;
 			}
-			
-			break;
-		}
 			
 		case WM_NOTIFY:
 
@@ -6106,6 +6231,20 @@ static int _viv_init(int nCmdShow)
 static void _viv_kill(void)
 {
 	_viv_show_cursor();
+	
+	// v3.7: 先关掉浮动窗口，避免它们持有失效的主窗口句柄。
+	if (IsWindow(_viv_filter_hwnd))
+	{
+		DestroyWindow(_viv_filter_hwnd);
+		_viv_filter_hwnd = 0;
+	}
+	
+	if (IsWindow(_viv_info_hwnd))
+	{
+		_viv_info_save_geometry();
+		DestroyWindow(_viv_info_hwnd);
+		_viv_info_hwnd = 0;
+	}
 
 	// don't load another image..
 	if (_viv_load_image_next_fd)
@@ -6223,6 +6362,1582 @@ static void _viv_kill(void)
 #ifdef _DEBUG
 	mem_debug();
 #endif	
+}
+
+// ============================================================================
+// v3.7: 最近打开 / 收藏夹 / 筛选 / 图片信息
+// ============================================================================
+
+static void _viv_menu_escape_ampersands(wchar_t *dst,const wchar_t *src,int dst_size)
+{
+	int i;
+	
+	i = 0;
+	while((*src) && (i + 2 < dst_size))
+	{
+		if (*src == '&')
+		{
+			dst[i++] = '&';
+		}
+		dst[i++] = *src++;
+	}
+	dst[i] = 0;
+}
+
+static void _viv_get_localized_wtext(wchar_t *buf,localization_id_t id)
+{
+	string_copy_utf8_string(buf,localization_get_string(id));
+}
+
+// v3.7: 切换语言时同步设置/清除 RTL，避免阿拉伯语切回英语后布局仍是镜像。
+static void _viv_apply_rtl(HWND hwnd)
+{
+	LONG_PTR ex_style;
+	LONG_PTR new_ex_style;
+	
+	if (!IsWindow(hwnd))
+	{
+		return;
+	}
+	
+	ex_style = GetWindowLongPtr(hwnd,GWL_EXSTYLE);
+	new_ex_style = ex_style;
+	
+	if (localization_is_rtl())
+	{
+		new_ex_style |= WS_EX_LAYOUTRTL;
+	}
+	else
+	{
+		new_ex_style &= ~WS_EX_LAYOUTRTL;
+	}
+	
+	if (new_ex_style != ex_style)
+	{
+		SetWindowLongPtr(hwnd,GWL_EXSTYLE,new_ex_style);
+		SetWindowPos(hwnd,0,0,0,0,0,
+			SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+		InvalidateRect(hwnd,NULL,TRUE);
+	}
+}
+
+// 当前显示图片的完整路径：优先 current，预加载切换瞬间用 frame 兜底。
+static const wchar_t *_viv_get_current_image_path(void)
+{
+	if ((_viv_current_fd) && (_viv_current_fd->cFileName[0]))
+	{
+		return _viv_current_fd->cFileName;
+	}
+	
+	if ((_viv_frame_fd) && (_viv_frame_fd->cFileName[0]))
+	{
+		return _viv_frame_fd->cFileName;
+	}
+	
+	return 0;
+}
+
+static void _viv_menu_add_path(HMENU menu,UINT id,const wchar_t *path,int index)
+{
+	wchar_t text[STRING_SIZE];
+	wchar_t escaped[STRING_SIZE];
+	wchar_t parent[STRING_SIZE];
+	wchar_t number[64];
+	const wchar_t *name;
+	const wchar_t *parent_name;
+	
+	if (!path)
+	{
+		return;
+	}
+	
+	name = string_get_filename_part(path);
+	string_get_path_part(parent,path);
+	{
+		uintptr_t parent_len;
+		
+		parent_len = string_get_length(parent);
+		while((parent_len > 0) && ((parent[parent_len - 1] == '\\') || (parent[parent_len - 1] == '/')))
+		{
+			parent[--parent_len] = 0;
+		}
+	}
+	parent_name = string_get_filename_part(parent);
+	
+	string_format_number(number,index + 1);
+	string_copy(text,number);
+	string_cat_utf8(text,(const utf8_t *)". ");
+	string_cat(text,name);
+	
+	if (*parent_name)
+	{
+		string_cat_utf8(text,(const utf8_t *)"  (");
+		string_cat(text,parent_name);
+		string_cat_utf8(text,(const utf8_t *)")");
+	}
+	
+	if (string_get_length(text) > 110)
+	{
+		text[107] = 0;
+		string_cat_utf8(text,(const utf8_t *)"...");
+	}
+	
+	_viv_menu_escape_ampersands(escaped,text,sizeof(escaped)/sizeof(wchar_t));
+	
+	AppendMenuW(menu,MF_STRING,id,escaped);
+}
+
+static void _viv_populate_recent_menu(void)
+{
+	int i;
+	int count;
+	
+	if ((!_viv_recent_menu) || (_viv_in_popup_menu))
+	{
+		return;
+	}
+	
+	while(GetMenuItemCount(_viv_recent_menu) > 0)
+	{
+		DeleteMenu(_viv_recent_menu,0,MF_BYPOSITION);
+	}
+	
+	count = config_recent_count();
+	for(i=0;i<count;i++)
+	{
+		_viv_menu_add_path(_viv_recent_menu,VIV_ID_FILE_RECENT_BASE + i,config_recent_get(i),i);
+	}
+	
+	if (!count)
+	{
+		wchar_t empty_text[STRING_SIZE];
+		
+		_viv_get_localized_wtext(empty_text,LOCALIZATION_ID_EMPTY);
+		AppendMenuW(_viv_recent_menu,MF_STRING | MF_GRAYED,0,empty_text);
+	}
+	
+	{
+		wchar_t clear_text[STRING_SIZE];
+		
+		_viv_get_localized_wtext(clear_text,LOCALIZATION_ID_CLEAR_RECENT);
+		AppendMenuW(_viv_recent_menu,MF_SEPARATOR,0,0);
+		AppendMenuW(_viv_recent_menu,MF_STRING,VIV_ID_FILE_CLEAR_RECENT,clear_text);
+	}
+}
+
+static void _viv_populate_favorites_menu(void)
+{
+	int i;
+	int count;
+	int is_favorite;
+	const wchar_t *current_path;
+	
+	if ((!_viv_favorites_menu) || (_viv_in_popup_menu))
+	{
+		return;
+	}
+	
+	current_path = _viv_get_current_image_path();
+	
+	while(GetMenuItemCount(_viv_favorites_menu) > 0)
+	{
+		DeleteMenu(_viv_favorites_menu,0,MF_BYPOSITION);
+	}
+	
+	count = config_favorite_count();
+	for(i=0;i<count;i++)
+	{
+		_viv_menu_add_path(_viv_favorites_menu,VIV_ID_FILE_FAVORITE_BASE + i,config_favorite_get(i),i);
+	}
+	
+	if (!count)
+	{
+		wchar_t empty_text[STRING_SIZE];
+		
+		_viv_get_localized_wtext(empty_text,LOCALIZATION_ID_EMPTY);
+		AppendMenuW(_viv_favorites_menu,MF_STRING | MF_GRAYED,0,empty_text);
+	}
+	
+	AppendMenuW(_viv_favorites_menu,MF_SEPARATOR,0,0);
+	
+	is_favorite = 0;
+	if (current_path)
+	{
+		is_favorite = config_favorite_contains(current_path);
+	}
+	
+	if (is_favorite)
+	{
+		wchar_t text[STRING_SIZE];
+		
+		_viv_get_localized_wtext(text,LOCALIZATION_ID_REMOVE_FROM_FAVORITES);
+		AppendMenuW(_viv_favorites_menu,MF_STRING,VIV_ID_FILE_REMOVE_FAVORITE,text);
+	}
+	else
+	{
+		UINT flags;
+		wchar_t text[STRING_SIZE];
+		
+		flags = MF_STRING;
+		if ((!current_path) || (_viv_load_failed) || (_viv_file_not_found))
+		{
+			flags |= MF_GRAYED;
+		}
+		
+		_viv_get_localized_wtext(text,LOCALIZATION_ID_ADD_TO_FAVORITES);
+		AppendMenuW(_viv_favorites_menu,flags,VIV_ID_FILE_ADD_FAVORITE,text);
+	}
+	
+	{
+		wchar_t text[STRING_SIZE];
+		
+		_viv_get_localized_wtext(text,LOCALIZATION_ID_MANAGE_FAVORITES);
+		AppendMenuW(_viv_favorites_menu,MF_STRING,VIV_ID_FILE_MANAGE_FAVORITES,text);
+	}
+}
+
+static void _viv_recent_add_current(void)
+{
+	const wchar_t *path;
+	
+	path = _viv_get_current_image_path();
+	
+	if ((!path) || (_viv_file_not_found) || (_viv_load_failed))
+	{
+		// 没有图片/加载失败时也要刷新收藏菜单，让“添加”正确变灰。
+		_viv_populate_favorites_menu();
+		return;
+	}
+	
+	config_recent_add(path);
+	_viv_populate_recent_menu();
+	// 图片变化后收藏夹的“添加/移除”状态也必须刷新，否则启动时生成的灰色项会一直留着。
+	_viv_populate_favorites_menu();
+}
+
+static void _viv_open_recent_or_favorite(const wchar_t *path)
+{
+	if ((!path) || (!path[0]))
+	{
+		return;
+	}
+	
+	if (GetFileAttributesW(path) == INVALID_FILE_ATTRIBUTES)
+	{
+		wchar_t msg[STRING_SIZE];
+		
+		string_copy_utf8_string(msg,localization_get_string(LOCALIZATION_ID_STATUS_BAR_FILE_NOT_FOUND));
+		_viv_status_set_temp_text(msg);
+		
+		config_recent_remove(path);
+		_viv_populate_recent_menu();
+		return;
+	}
+	
+	if (_viv_filter_active)
+	{
+		_viv_filter_hide(1);
+	}
+	
+	_viv_playlist_clearall();
+	if (!_viv_open_from_filename(path))
+	{
+		wchar_t msg[STRING_SIZE];
+		
+		string_copy_utf8_string(msg,localization_get_string(LOCALIZATION_ID_STATUS_BAR_FILE_NOT_FOUND));
+		_viv_status_set_temp_text(msg);
+	}
+}
+
+static void _viv_favorite_toggle(void)
+{
+	const wchar_t *path;
+	
+	path = _viv_get_current_image_path();
+	
+	if (!path)
+	{
+		return;
+	}
+	
+	if (config_favorite_contains(path))
+	{
+		config_favorite_remove(path);
+	}
+	else
+	{
+		if (!config_favorite_add(path))
+		{
+			MessageBeep(MB_ICONWARNING);
+			return;
+		}
+	}
+	
+	config_save_settings(config_appdata);
+	_viv_populate_favorites_menu();
+}
+
+static wchar_t _viv_favorites_open_path[STRING_SIZE];
+
+static void _viv_favorites_fill_list(HWND hwnd)
+{
+	HWND list_hwnd;
+	int i;
+	int count;
+	
+	list_hwnd = GetDlgItem(hwnd,IDC_FAVORITES_LIST);
+	if (!list_hwnd)
+	{
+		return;
+	}
+	
+	ListBox_ResetContent(list_hwnd);
+	
+	count = config_favorite_count();
+	for(i=0;i<count;i++)
+	{
+		ListBox_AddString(list_hwnd,config_favorite_get(i));
+	}
+	
+	if (count)
+	{
+		ListBox_SetCurSel(list_hwnd,0);
+	}
+}
+
+static INT_PTR CALLBACK _viv_favorites_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
+{
+	switch(msg)
+	{
+		case WM_INITDIALOG:
+			
+			os_SetWindowText_localization_id(hwnd,LOCALIZATION_ID_FAVORITES);
+			os_SetDlgItemText_localization_id(hwnd,IDC_FAVORITES_OPEN,LOCALIZATION_ID_OPEN);
+			os_SetDlgItemText_localization_id(hwnd,IDC_FAVORITES_REMOVE,LOCALIZATION_ID_REMOVE);
+			os_SetDlgItemText_localization_id(hwnd,IDC_FAVORITES_CLEAR,LOCALIZATION_ID_CLEAR);
+			os_SetDlgItemText_localization_id(hwnd,IDCANCEL,LOCALIZATION_ID_CLOSE);
+			
+			_viv_apply_rtl(hwnd);
+			
+			os_center_dialog(hwnd);
+			_viv_favorites_fill_list(hwnd);
+			return TRUE;
+			
+		case WM_COMMAND:
+			
+			switch(LOWORD(wParam))
+			{
+				case IDC_FAVORITES_OPEN:
+				{
+					HWND list_hwnd;
+					int sel;
+					
+					list_hwnd = GetDlgItem(hwnd,IDC_FAVORITES_LIST);
+					sel = ListBox_GetCurSel(list_hwnd);
+					if (sel != LB_ERR)
+					{
+						_viv_favorites_open_path[0] = 0;
+						ListBox_GetText(list_hwnd,sel,_viv_favorites_open_path);
+						EndDialog(hwnd,1);
+					}
+					break;
+				}
+				
+				case IDC_FAVORITES_LIST:
+					if (HIWORD(wParam) == LBN_DBLCLK)
+					{
+						SendMessage(hwnd,WM_COMMAND,IDC_FAVORITES_OPEN,0);
+					}
+					break;
+					
+				case IDC_FAVORITES_REMOVE:
+				{
+					HWND list_hwnd;
+					int sel;
+					wchar_t path[STRING_SIZE];
+					
+					list_hwnd = GetDlgItem(hwnd,IDC_FAVORITES_LIST);
+					sel = ListBox_GetCurSel(list_hwnd);
+					if (sel != LB_ERR)
+					{
+						path[0] = 0;
+						if (ListBox_GetText(list_hwnd,sel,path) != LB_ERR)
+						{
+							config_favorite_remove(path);
+							config_save_settings(config_appdata);
+							_viv_favorites_fill_list(hwnd);
+							_viv_populate_favorites_menu();
+						}
+					}
+					break;
+				}
+				
+				case IDC_FAVORITES_CLEAR:
+				{
+					wchar_t clear_text[STRING_SIZE];
+					wchar_t favorites_text[STRING_SIZE];
+					
+					_viv_get_localized_wtext(clear_text,LOCALIZATION_ID_CLEAR);
+					_viv_get_localized_wtext(favorites_text,LOCALIZATION_ID_FAVORITES);
+					
+					if (MessageBoxW(hwnd,clear_text,favorites_text,
+						MB_YESNO | MB_ICONQUESTION) == IDYES)
+					{
+						config_favorite_clear();
+						config_save_settings(config_appdata);
+						_viv_favorites_fill_list(hwnd);
+						_viv_populate_favorites_menu();
+					}
+					break;
+				}
+					
+				case IDCANCEL:
+					EndDialog(hwnd,0);
+					break;
+			}
+			break;
+			
+		case WM_CLOSE:
+			EndDialog(hwnd,0);
+			return TRUE;
+	}
+	
+	return FALSE;
+}
+
+static void _viv_show_favorites(void)
+{
+	int ret;
+	
+	if (_viv_filter_active)
+	{
+		_viv_filter_hide(1);
+	}
+	
+	_viv_favorites_open_path[0] = 0;
+	
+	_viv_modal_dialog_count++;
+	ret = DialogBoxParam(os_hinstance,MAKEINTRESOURCE(IDD_FAVORITES),_viv_hwnd,_viv_favorites_proc,0);
+	_viv_modal_dialog_count--;
+	
+	if ((ret) && (_viv_favorites_open_path[0]))
+	{
+		_viv_open_recent_or_favorite(_viv_favorites_open_path);
+	}
+}
+
+static int _viv_filter_match(const WIN32_FIND_DATA *fd)
+{
+	const wchar_t *text;
+	const wchar_t *haystack;
+	int is_path_search;
+	
+	if ((!_viv_filter_active) || (!_viv_filter_text[0]))
+	{
+		return 1;
+	}
+	
+	if (!fd)
+	{
+		return 0;
+	}
+	
+	is_path_search = 0;
+	for(text=_viv_filter_text;*text;text++)
+	{
+		if ((*text == '\\') || (*text == '/') || (*text == ':'))
+		{
+			is_path_search = 1;
+			break;
+		}
+	}
+	
+	haystack = is_path_search ? fd->cFileName : string_get_filename_part(fd->cFileName);
+	
+	return StrStrI(haystack,_viv_filter_text) ? 1 : 0;
+}
+
+static void _viv_filter_update_count(void)
+{
+	HWND count_hwnd;
+	wchar_t text[STRING_SIZE];
+	wchar_t matches_text[STRING_SIZE];
+	
+	// shortcut: 每次输入都全量统计；若超大文件夹出现输入卡顿，再加防抖定时器。
+	_viv_filter_match_count = 0;
+	_viv_filter_total_count = 0;
+	
+	if (!IsWindow(_viv_filter_hwnd))
+	{
+		return;
+	}
+	
+	count_hwnd = GetDlgItem(_viv_filter_hwnd,IDC_FILTER_COUNT);
+	if (!count_hwnd)
+	{
+		return;
+	}
+	
+	if (!_viv_filter_active)
+	{
+		SetWindowTextW(count_hwnd,L"");
+		return;
+	}
+	
+	if (_viv_random)
+	{
+		wchar_t text[STRING_SIZE];
+		
+		_viv_get_localized_wtext(text,LOCALIZATION_ID_FILTER_DISABLED_RANDOM);
+		SetWindowTextW(count_hwnd,text);
+		return;
+	}
+	
+	if (_viv_playlist_start)
+	{
+		_viv_playlist_t *d;
+		
+		d = _viv_playlist_start;
+		while(d)
+		{
+			_viv_filter_total_count++;
+			if (_viv_filter_match(&d->fd))
+			{
+				_viv_filter_match_count++;
+			}
+			d = d->next;
+		}
+	}
+	else
+	{
+		HANDLE h;
+		WIN32_FIND_DATA fd;
+		wchar_t search_wbuf[STRING_SIZE];
+		wchar_t path_wbuf[STRING_SIZE];
+		
+		if ((_viv_current_fd) && (_viv_current_fd->cFileName[0]))
+		{
+			string_get_path_part(path_wbuf,_viv_current_fd->cFileName);
+		}
+		else
+		{
+			GetCurrentDirectory(STRING_SIZE,path_wbuf);
+		}
+		
+		string_copy(search_wbuf,path_wbuf);
+		string_cat_utf8(search_wbuf,(const utf8_t *)"\\*.*");
+		
+		h = FindFirstFile(search_wbuf,&fd);
+		if (h != INVALID_HANDLE_VALUE)
+		{
+			for(;;)
+			{
+				if (_viv_is_valid_filename(&fd))
+				{
+					_viv_filter_total_count++;
+					
+					string_path_combine(search_wbuf,path_wbuf,fd.cFileName);
+					string_copy_with_bufsize(fd.cFileName,MAX_PATH,search_wbuf);
+					
+					if (_viv_filter_match(&fd))
+					{
+						_viv_filter_match_count++;
+					}
+				}
+				
+				if (!FindNextFile(h,&fd)) break;
+			}
+			
+			FindClose(h);
+		}
+	}
+	
+	if (!_viv_filter_match_count)
+	{
+		wchar_t no_match_text[STRING_SIZE];
+		
+		_viv_get_localized_wtext(no_match_text,LOCALIZATION_ID_FILTER_NO_MATCH);
+		SetWindowTextW(count_hwnd,no_match_text);
+	}
+	else
+	{
+		_viv_get_localized_wtext(matches_text,LOCALIZATION_ID_FILTER_MATCHES);
+		wsprintfW(text,L"%d %s / %d",_viv_filter_match_count,matches_text,_viv_filter_total_count);
+		
+		SetWindowTextW(count_hwnd,text);
+	}
+}
+
+static void _viv_filter_on_edit_changed(void)
+{
+	if (!IsWindow(_viv_filter_hwnd))
+	{
+		return;
+	}
+	
+	GetDlgItemText(_viv_filter_hwnd,IDC_FILTER_EDIT,_viv_filter_text,STRING_SIZE);
+	_viv_filter_text[STRING_SIZE - 1] = 0;
+	
+	_viv_filter_active = (_viv_filter_text[0]) ? 1 : 0;
+	
+	_viv_filter_update_count();
+}
+
+static void _viv_filter_position(void)
+{
+	RECT wnd_rect;
+	RECT filter_rect;
+	int wide;
+	int x;
+	int y;
+	int offset;
+	
+	if (!IsWindow(_viv_filter_hwnd))
+	{
+		return;
+	}
+	
+	GetWindowRect(_viv_hwnd,&wnd_rect);
+	GetWindowRect(_viv_filter_hwnd,&filter_rect);
+	
+	wide = filter_rect.right - filter_rect.left;
+	offset = (8 * os_logical_wide) / 96;
+	
+	x = wnd_rect.left + ((wnd_rect.right - wnd_rect.left - wide) / 2);
+	y = wnd_rect.top + offset;
+	
+	SetWindowPos(_viv_filter_hwnd,HWND_TOP,x,y,0,0,SWP_NOSIZE | SWP_NOACTIVATE);
+}
+
+static WNDPROC _viv_filter_edit_old_proc = 0;
+
+static LRESULT CALLBACK _viv_filter_edit_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
+{
+	if (msg == WM_KEYDOWN)
+	{
+		if (wParam == VK_RETURN)
+		{
+			SendMessage(GetParent(hwnd),WM_COMMAND,MAKEWPARAM(IDOK,0),0);
+			return 0;
+		}
+		
+		if (wParam == VK_ESCAPE)
+		{
+			SendMessage(GetParent(hwnd),WM_COMMAND,MAKEWPARAM(IDCANCEL,0),0);
+			return 0;
+		}
+	}
+	
+	if (!_viv_filter_edit_old_proc)
+	{
+		return DefWindowProcW(hwnd,msg,wParam,lParam);
+	}
+	
+	return CallWindowProc(_viv_filter_edit_old_proc,hwnd,msg,wParam,lParam);
+}
+
+static INT_PTR CALLBACK _viv_filter_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
+{
+	switch(msg)
+	{
+		case WM_INITDIALOG:
+		{
+			HWND edit_hwnd;
+			wchar_t placeholder[STRING_SIZE];
+			
+			os_SetDlgItemText_localization_id(hwnd,IDC_FILTER_LABEL,LOCALIZATION_ID_FILTER);
+			SetWindowTextW(GetDlgItem(hwnd,IDC_FILTER_CLOSE),L"X");
+			
+			_viv_get_localized_wtext(placeholder,LOCALIZATION_ID_FILTER_PLACEHOLDER);
+			SendDlgItemMessageW(hwnd,IDC_FILTER_EDIT,EM_SETCUEBANNER,TRUE,(LPARAM)placeholder);
+			
+			_viv_apply_rtl(hwnd);
+			
+			edit_hwnd = GetDlgItem(hwnd,IDC_FILTER_EDIT);
+			if (edit_hwnd)
+			{
+				WNDPROC old_proc;
+				
+				old_proc = (WNDPROC)SetWindowLongPtr(edit_hwnd,GWLP_WNDPROC,(LONG_PTR)_viv_filter_edit_proc);
+				if (old_proc)
+				{
+					_viv_filter_edit_old_proc = old_proc;
+				}
+			}
+			
+			_viv_filter_position();
+			SetWindowTextW(GetDlgItem(hwnd,IDC_FILTER_EDIT),_viv_filter_text);
+			
+			return TRUE;
+		}
+			
+		case WM_COMMAND:
+			
+			switch(LOWORD(wParam))
+			{
+				case IDC_FILTER_EDIT:
+					if (HIWORD(wParam) == EN_CHANGE)
+					{
+						_viv_filter_on_edit_changed();
+					}
+					break;
+					
+				case IDC_FILTER_CLOSE:
+				case IDCANCEL:
+					_viv_filter_hide(1);
+					break;
+					
+				case IDOK:
+					if (_viv_filter_active)
+					{
+						if (!_viv_next(0,0,0,0))
+						{
+							_viv_home(0,0);
+						}
+						_viv_filter_update_count();
+					}
+					break;
+			}
+			break;
+			
+		case WM_CLOSE:
+			_viv_filter_hide(1);
+			return TRUE;
+	}
+	
+	return FALSE;
+}
+
+static void _viv_filter_show(void)
+{
+	if (_viv_random)
+	{
+		wchar_t msg[STRING_SIZE];
+		
+		string_copy_utf8_string(msg,localization_get_string(LOCALIZATION_ID_FILTER_DISABLED_RANDOM));
+		_viv_status_set_temp_text(msg);
+		return;
+	}
+	
+	if (!IsWindow(_viv_filter_hwnd))
+	{
+		_viv_filter_hwnd = CreateDialog(os_hinstance,MAKEINTRESOURCE(IDD_FILTER),_viv_hwnd,_viv_filter_proc);
+		if (!_viv_filter_hwnd)
+		{
+			return;
+		}
+	}
+	
+	_viv_filter_position();
+	ShowWindow(_viv_filter_hwnd,SW_SHOW);
+	
+	SetWindowTextW(GetDlgItem(_viv_filter_hwnd,IDC_FILTER_EDIT),_viv_filter_text);
+	SendDlgItemMessage(_viv_filter_hwnd,IDC_FILTER_EDIT,EM_SETSEL,0,-1);
+	SetFocus(GetDlgItem(_viv_filter_hwnd,IDC_FILTER_EDIT));
+	
+	_viv_filter_update_count();
+}
+
+static void _viv_filter_hide(int clear)
+{
+	if (clear)
+	{
+		_viv_filter_text[0] = 0;
+		_viv_filter_active = 0;
+		
+		if (IsWindow(_viv_filter_hwnd))
+		{
+			SetWindowTextW(GetDlgItem(_viv_filter_hwnd,IDC_FILTER_EDIT),L"");
+		}
+		
+		_viv_filter_update_count();
+	}
+	
+	if (IsWindow(_viv_filter_hwnd))
+	{
+		ShowWindow(_viv_filter_hwnd,SW_HIDE);
+	}
+	
+	if (IsWindow(_viv_hwnd))
+	{
+		SetFocus(_viv_hwnd);
+	}
+}
+
+// 图片信息窗口
+
+static void _viv_info_format_one_decimal(wchar_t *buf,double value)
+{
+	int negative;
+	int scaled;
+	
+	// 畸形 EXIF 可能给出 NaN / 无穷大；先钳制，避免转 int 未定义。
+	if (value != value)
+	{
+		value = 0.0;
+	}
+	if (value > 1.0e8)
+	{
+		value = 1.0e8;
+	}
+	if (value < -1.0e8)
+	{
+		value = -1.0e8;
+	}
+	
+	negative = (value < 0.0) ? 1 : 0;
+	if (negative)
+	{
+		value = -value;
+	}
+	
+	scaled = (int)(value * 10.0 + 0.5);
+	
+	wsprintfW(buf,L"%s%d.%d",negative ? L"-" : L"",scaled / 10,scaled % 10);
+}
+
+static void _viv_info_format_time(const FILETIME *ft,wchar_t *buf)
+{
+	FILETIME local_ft;
+	SYSTEMTIME st;
+	
+	buf[0] = 0;
+	
+	if ((FileTimeToLocalFileTime(ft,&local_ft)) &&
+		(FileTimeToSystemTime(&local_ft,&st)))
+	{
+		wsprintfW(buf,L"%04d-%02d-%02d %02d:%02d:%02d",
+			st.wYear,st.wMonth,st.wDay,st.wHour,st.wMinute,st.wSecond);
+	}
+}
+
+static void _viv_info_add_row(HWND list_hwnd,const wchar_t *name,const wchar_t *value)
+{
+	LVITEMW item;
+	int index;
+	
+	index = ListView_GetItemCount(list_hwnd);
+	
+	os_zero_memory(&item,sizeof(item));
+	item.mask = LVIF_TEXT;
+	item.iItem = index;
+	item.iSubItem = 0;
+	item.pszText = (LPWSTR)name;
+	
+	index = ListView_InsertItem(list_hwnd,&item);
+	if (index >= 0)
+	{
+		ListView_SetItemText(list_hwnd,index,1,(LPWSTR)value);
+	}
+}
+
+static void _viv_info_add_localized_row(HWND list_hwnd,localization_id_t id,const wchar_t *value)
+{
+	wchar_t name[STRING_SIZE];
+	
+	string_copy_utf8_string(name,localization_get_string(id));
+	_viv_info_add_row(list_hwnd,name,value);
+}
+
+static void _viv_info_add_section(HWND list_hwnd,localization_id_t id)
+{
+	wchar_t name[STRING_SIZE];
+	
+	string_copy_utf8_string(name,localization_get_string(id));
+	_viv_info_add_row(list_hwnd,name,L"");
+}
+
+static void _viv_info_add_uint_row(HWND list_hwnd,localization_id_t id,__int64 value)
+{
+	wchar_t buf[64];
+	
+	string_format_number(buf,value);
+	_viv_info_add_localized_row(list_hwnd,id,buf);
+}
+
+static const wchar_t *_viv_info_format_name(const wchar_t *path)
+{
+	const wchar_t *ext;
+	
+	ext = string_get_extension(path);
+	
+	if ((StrCmpIW(ext,L"jpg") == 0) || (StrCmpIW(ext,L"jpeg") == 0)) return L"JPEG";
+	if ((StrCmpIW(ext,L"tif") == 0) || (StrCmpIW(ext,L"tiff") == 0)) return L"TIFF";
+	if (StrCmpIW(ext,L"png") == 0) return L"PNG";
+	if (StrCmpIW(ext,L"bmp") == 0) return L"BMP";
+	if (StrCmpIW(ext,L"gif") == 0) return L"GIF";
+	if (StrCmpIW(ext,L"webp") == 0) return L"WebP";
+	if ((StrCmpIW(ext,L"heic") == 0) || (StrCmpIW(ext,L"heif") == 0)) return L"HEIC/HEIF";
+	if (StrCmpIW(ext,L"ico") == 0) return L"ICO";
+	
+	return ext;
+}
+
+static void _viv_info_refresh(void)
+{
+	HWND list_hwnd;
+	WIN32_FIND_DATA fd;
+	const wchar_t *path;
+	int have_file;
+	int pixel_format;
+	int dpi_x;
+	int dpi_y;
+	int has_alpha;
+	os_image_metadata_t metadata;
+	int exif_count;
+	int i;
+	wchar_t yes_text[STRING_SIZE];
+	wchar_t no_text[STRING_SIZE];
+	
+	// shortcut: 元数据同步读取；若网络路径明显卡 UI，再改成工作线程。
+	if (!IsWindow(_viv_info_hwnd))
+	{
+		return;
+	}
+	
+	_viv_get_localized_wtext(yes_text,LOCALIZATION_ID_INFO_YES);
+	_viv_get_localized_wtext(no_text,LOCALIZATION_ID_INFO_NO);
+	
+	list_hwnd = GetDlgItem(_viv_info_hwnd,IDC_INFO_LIST);
+	if (!list_hwnd)
+	{
+		return;
+	}
+	
+	ListView_DeleteAllItems(list_hwnd);
+	
+	path = _viv_get_current_image_path();
+	
+	if (!path)
+	{
+		_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_NO_IMAGE,L"");
+		return;
+	}
+	
+	have_file = 0;
+	os_zero_memory(&fd,sizeof(fd));
+	{
+		HANDLE h;
+		
+		h = FindFirstFileW(path,&fd);
+		if (h != INVALID_HANDLE_VALUE)
+		{
+			have_file = 1;
+			FindClose(h);
+		}
+	}
+	
+	// 文件信息
+	{
+		wchar_t value[STRING_SIZE];
+		wchar_t time_buf[64];
+		
+		_viv_info_add_section(list_hwnd,LOCALIZATION_ID_INFO_FILE_SECTION);
+		
+		_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_FILENAME,string_get_filename_part(path));
+		_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_FULL_PATH,path);
+		
+		if (have_file)
+		{
+			LARGE_INTEGER size;
+			
+			size.HighPart = fd.nFileSizeHigh;
+			size.LowPart = fd.nFileSizeLow;
+			
+			string_format_number(value,(__int64)((size.QuadPart + 1023) / 1024));
+			string_cat_utf8(value,(const utf8_t *)" KB");
+			_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_FILE_SIZE,value);
+			
+			_viv_info_format_time(&fd.ftCreationTime,time_buf);
+			if (time_buf[0]) _viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_CREATED,time_buf);
+			
+			_viv_info_format_time(&fd.ftLastWriteTime,time_buf);
+			if (time_buf[0]) _viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_MODIFIED,time_buf);
+		}
+	}
+	
+	// 图像信息
+	{
+		wchar_t value[STRING_SIZE];
+		wchar_t num[64];
+		
+		_viv_info_add_section(list_hwnd,LOCALIZATION_ID_INFO_IMAGE_SECTION);
+		_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_FORMAT,_viv_info_format_name(path));
+		
+		string_format_number(value,_viv_image_wide);
+		string_cat_utf8(value,(const utf8_t *)" x ");
+		string_format_number(num,_viv_image_high);
+		string_cat(value,num);
+		_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_DIMENSIONS,value);
+		
+		os_get_image_pixel_info(path,&pixel_format,&dpi_x,&dpi_y,&has_alpha);
+		
+		{
+			int bits;
+			
+			bits = 0;
+			if (pixel_format == 0x00030803) bits = 8;       // 8bppIndexed
+			else if (pixel_format == 0x00021808) bits = 24; // 24bppRGB
+			else if (pixel_format) bits = 32;
+			
+			if (bits)
+			{
+				string_format_number(value,bits);
+				string_cat_utf8(value,(const utf8_t *)" bit");
+				_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_BIT_DEPTH,value);
+			}
+		}
+		
+		if (pixel_format)
+		{
+			_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_ALPHA,
+				has_alpha ? yes_text : no_text);
+		}
+		
+		wsprintfW(value,L"%d x %d",dpi_x,dpi_y);
+		_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_DPI,value);
+		
+		_viv_info_add_uint_row(list_hwnd,LOCALIZATION_ID_INFO_FRAMES,_viv_frame_count);
+		
+		if (_viv_frame_count > 1)
+		{
+			_viv_info_add_uint_row(list_hwnd,LOCALIZATION_ID_INFO_FRAME_POS,_viv_frame_position + 1);
+			
+			if ((_viv_frames) && (_viv_frame_position >= 0) && (_viv_frame_position < _viv_frame_loaded_count))
+			{
+				string_format_number(value,_viv_frames[_viv_frame_position].delay);
+				string_cat_utf8(value,(const utf8_t *)" ms");
+				_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_FRAME_DELAY,value);
+			}
+			
+			{
+				VIV_UINT64 duration;
+				
+				duration = 0;
+				if (_viv_frames)
+				{
+					for(i=0;i<_viv_frame_loaded_count;i++)
+					{
+						duration += _viv_frames[i].delay;
+					}
+				}
+				
+				string_format_number(value,(__int64)duration);
+				string_cat_utf8(value,(const utf8_t *)" ms");
+				_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_DURATION,value);
+			}
+		}
+		
+		{
+			VIV_UINT64 memory;
+			
+			memory = (VIV_UINT64)_viv_frame_count * (VIV_UINT64)_viv_image_wide * (VIV_UINT64)_viv_image_high * 4;
+			memory = memory / (1024 * 1024);
+			
+			string_format_number(value,(__int64)memory);
+			string_cat_utf8(value,(const utf8_t *)" MB");
+			_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_MEMORY,value);
+		}
+	}
+	
+	// EXIF
+	os_get_image_metadata(path,&metadata);
+	
+	exif_count = 0;
+	
+	{
+		wchar_t value[STRING_SIZE];
+		wchar_t one[64];
+		
+		_viv_info_add_section(list_hwnd,LOCALIZATION_ID_INFO_EXIF_SECTION);
+		
+		if (metadata.camera_make[0]) { _viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_CAMERA_MAKE,metadata.camera_make); exif_count++; }
+		if (metadata.camera_model[0]) { _viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_CAMERA_MODEL,metadata.camera_model); exif_count++; }
+		if (metadata.lens[0]) { _viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_LENS,metadata.lens); exif_count++; }
+		if (metadata.software[0]) { _viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_SOFTWARE,metadata.software); exif_count++; }
+		if (metadata.date_taken[0]) { _viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_DATE_TAKEN,metadata.date_taken); exif_count++; }
+		
+		if (metadata.has_exposure_time)
+		{
+			if ((metadata.exposure_time >= (1.0 / 1000000.0)) && (metadata.exposure_time < 1.0))
+			{
+				int denominator;
+				
+				denominator = (int)(1.0 / metadata.exposure_time + 0.5);
+				wsprintfW(value,L"1/%d s",denominator);
+			}
+			else
+			{
+				_viv_info_format_one_decimal(one,metadata.exposure_time);
+				wsprintfW(value,L"%s s",one);
+			}
+			_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_EXPOSURE_TIME,value);
+			exif_count++;
+		}
+		
+		if (metadata.has_fnumber)
+		{
+			_viv_info_format_one_decimal(one,metadata.fnumber);
+			wsprintfW(value,L"f/%s",one);
+			_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_FNUMBER,value);
+			exif_count++;
+		}
+		
+		if (metadata.has_iso)
+		{
+			string_format_number(value,metadata.iso);
+			_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_ISO,value);
+			exif_count++;
+		}
+		
+		if (metadata.has_focal_length)
+		{
+			_viv_info_format_one_decimal(one,metadata.focal_length);
+			wsprintfW(value,L"%s mm",one);
+			_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_FOCAL_LENGTH,value);
+			exif_count++;
+		}
+		
+		if (metadata.has_focal_length_35mm)
+		{
+			_viv_info_format_one_decimal(one,metadata.focal_length_35mm);
+			wsprintfW(value,L"%s mm",one);
+			_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_FOCAL_35MM,value);
+			exif_count++;
+		}
+		
+		if (metadata.has_exposure_bias)
+		{
+			_viv_info_format_one_decimal(one,metadata.exposure_bias);
+			wsprintfW(value,L"%s EV",one);
+			_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_EXPOSURE_BIAS,value);
+			exif_count++;
+		}
+		
+		if (metadata.has_flash)
+		{
+			_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_FLASH,
+				(metadata.flash & 1) ? yes_text : no_text);
+			exif_count++;
+		}
+		
+		if (metadata.has_metering)
+		{
+			string_format_number(value,metadata.metering);
+			_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_METERING,value);
+			exif_count++;
+		}
+		
+		if (metadata.has_white_balance)
+		{
+			string_format_number(value,metadata.white_balance);
+			_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_WHITE_BALANCE,value);
+			exif_count++;
+		}
+		
+		if (metadata.has_exposure_program)
+		{
+			string_format_number(value,metadata.exposure_program);
+			_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_EXPOSURE_PROGRAM,value);
+			exif_count++;
+		}
+		
+		if (metadata.image_description[0]) { _viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_IMAGE_DESCRIPTION,metadata.image_description); exif_count++; }
+		if (metadata.artist[0]) { _viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_ARTIST,metadata.artist); exif_count++; }
+		if (metadata.copyright[0]) { _viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_COPYRIGHT,metadata.copyright); exif_count++; }
+		if (metadata.exif_version[0]) { _viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_EXIF_VERSION,metadata.exif_version); exif_count++; }
+		if (metadata.color_space[0]) { _viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_COLOR_SPACE,metadata.color_space); exif_count++; }
+		if (metadata.has_orientation) { _viv_info_add_uint_row(list_hwnd,LOCALIZATION_ID_INFO_ORIENTATION,metadata.orientation); exif_count++; }
+		
+		// GPS
+		if ((metadata.has_gps_latitude) || (metadata.has_gps_longitude) || (metadata.has_gps_altitude) || (metadata.has_gps_direction))
+		{
+			wchar_t sec[64];
+			
+			_viv_info_add_section(list_hwnd,LOCALIZATION_ID_INFO_GPS_SECTION);
+			
+			if (metadata.has_gps_latitude)
+			{
+				_viv_info_format_one_decimal(sec,metadata.gps_latitude[2]);
+				wsprintfW(value,L"%d°%d'%s\"%s",
+					(int)metadata.gps_latitude[0],
+					(int)metadata.gps_latitude[1],
+					sec,
+					metadata.gps_latitude_ref);
+				_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_GPS_LATITUDE,value);
+				exif_count++;
+			}
+			
+			if (metadata.has_gps_longitude)
+			{
+				_viv_info_format_one_decimal(sec,metadata.gps_longitude[2]);
+				wsprintfW(value,L"%d°%d'%s\"%s",
+					(int)metadata.gps_longitude[0],
+					(int)metadata.gps_longitude[1],
+					sec,
+					metadata.gps_longitude_ref);
+				_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_GPS_LONGITUDE,value);
+				exif_count++;
+			}
+			
+			if (metadata.has_gps_altitude)
+			{
+				_viv_info_format_one_decimal(sec,metadata.gps_altitude);
+				wsprintfW(value,L"%s m",sec);
+				_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_GPS_ALTITUDE,value);
+				exif_count++;
+			}
+			
+			if (metadata.has_gps_direction)
+			{
+				_viv_info_format_one_decimal(sec,metadata.gps_direction);
+				wsprintfW(value,L"%s°",sec);
+				_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_GPS_DIRECTION,value);
+				exif_count++;
+			}
+		}
+	}
+	
+	if (!exif_count)
+	{
+		_viv_info_add_localized_row(list_hwnd,LOCALIZATION_ID_INFO_NO_EXIF,L"");
+	}
+}
+
+static void _viv_info_copy_all(void)
+{
+	HWND list_hwnd;
+	int count;
+	int i;
+	wchar_t *buffer;
+	SIZE_T buffer_chars;
+	HGLOBAL hglobal;
+	wchar_t *dst;
+	
+	if (!IsWindow(_viv_info_hwnd))
+	{
+		return;
+	}
+	
+	list_hwnd = GetDlgItem(_viv_info_hwnd,IDC_INFO_LIST);
+	if (!list_hwnd)
+	{
+		return;
+	}
+	
+	count = ListView_GetItemCount(list_hwnd);
+	buffer_chars = (SIZE_T)(count + 1) * (STRING_SIZE + 256 + 8);
+	buffer = (wchar_t *)mem_alloc(buffer_chars * sizeof(wchar_t));
+	if (!buffer)
+	{
+		return;
+	}
+	
+	buffer[0] = 0;
+	
+	for(i=0;i<count;i++)
+	{
+		wchar_t name[256];
+		wchar_t value[STRING_SIZE];
+		const wchar_t *p;
+		SIZE_T used;
+		
+		name[0] = 0;
+		value[0] = 0;
+		
+		ListView_GetItemText(list_hwnd,i,0,name,sizeof(name)/sizeof(wchar_t));
+		ListView_GetItemText(list_hwnd,i,1,value,sizeof(value)/sizeof(wchar_t));
+		
+		used = string_get_length(buffer);
+		
+#define VIV_INFO_APPEND_W(s) \
+		do { p = (s); while((*p) && (used + 1 < buffer_chars)) { buffer[used++] = *p++; } buffer[used] = 0; } while(0)
+		
+		VIV_INFO_APPEND_W(name);
+		if (value[0])
+		{
+			VIV_INFO_APPEND_W(L": ");
+			VIV_INFO_APPEND_W(value);
+		}
+		VIV_INFO_APPEND_W(L"\r\n");
+		
+#undef VIV_INFO_APPEND_W
+	}
+	
+	hglobal = GlobalAlloc(GMEM_MOVEABLE,(string_get_length(buffer) + 1) * sizeof(wchar_t));
+	if (hglobal)
+	{
+		dst = (wchar_t *)GlobalLock(hglobal);
+		if (dst)
+		{
+			string_copy(dst,buffer);
+			GlobalUnlock(hglobal);
+			
+			if (OpenClipboard(_viv_info_hwnd))
+			{
+				EmptyClipboard();
+				if (SetClipboardData(CF_UNICODETEXT,hglobal))
+				{
+					hglobal = 0;
+				}
+				CloseClipboard();
+			}
+		}
+	}
+	
+	if (hglobal)
+	{
+		GlobalFree(hglobal);
+	}
+	
+	mem_free(buffer);
+}
+
+static void _viv_info_update_texts(void)
+{
+	HWND list_hwnd;
+	LVCOLUMNW column;
+	int dpi;
+	wchar_t name_col[STRING_SIZE];
+	wchar_t value_col[STRING_SIZE];
+	
+	if (!IsWindow(_viv_info_hwnd))
+	{
+		return;
+	}
+	
+	_viv_apply_rtl(_viv_info_hwnd);
+	
+	_viv_get_localized_wtext(name_col,LOCALIZATION_ID_INFO_COLUMN_NAME);
+	_viv_get_localized_wtext(value_col,LOCALIZATION_ID_INFO_COLUMN_VALUE);
+	
+	os_SetWindowText_localization_id(_viv_info_hwnd,LOCALIZATION_ID_IMAGE_INFO);
+	os_SetDlgItemText_localization_id(_viv_info_hwnd,IDC_INFO_COPY,LOCALIZATION_ID_INFO_COPY_ALL);
+	os_SetDlgItemText_localization_id(_viv_info_hwnd,IDC_INFO_REFRESH,LOCALIZATION_ID_REFRESH);
+	os_SetDlgItemText_localization_id(_viv_info_hwnd,IDCANCEL,LOCALIZATION_ID_CLOSE);
+	
+	list_hwnd = GetDlgItem(_viv_info_hwnd,IDC_INFO_LIST);
+	if (list_hwnd)
+	{
+		RECT list_rect;
+		int value_wide;
+		
+		dpi = os_logical_wide;
+		
+		os_zero_memory(&column,sizeof(column));
+		column.mask = LVCF_TEXT | LVCF_WIDTH;
+		column.pszText = name_col;
+		column.cx = (140 * dpi) / 96;
+		ListView_SetColumn(list_hwnd,0,&column);
+		
+		GetClientRect(list_hwnd,&list_rect);
+		value_wide = list_rect.right - list_rect.left - ((140 * dpi) / 96) - 4;
+		if (value_wide < (60 * dpi) / 96)
+		{
+			value_wide = (60 * dpi) / 96;
+		}
+		
+		column.pszText = value_col;
+		column.cx = value_wide;
+		ListView_SetColumn(list_hwnd,1,&column);
+	}
+	
+	_viv_info_refresh();
+}
+
+static void _viv_info_save_geometry(void)
+{
+	RECT rect;
+	
+	if (!IsWindow(_viv_info_hwnd))
+	{
+		return;
+	}
+	
+	GetWindowRect(_viv_info_hwnd,&rect);
+	
+	config_info_x = rect.left;
+	config_info_y = rect.top;
+	config_info_wide = rect.right - rect.left;
+	config_info_high = rect.bottom - rect.top;
+}
+
+static INT_PTR CALLBACK _viv_info_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
+{
+	switch(msg)
+	{
+		case WM_INITDIALOG:
+		{
+			HWND list_hwnd;
+			LVCOLUMNW column;
+			int dpi;
+			wchar_t name_col[STRING_SIZE];
+			wchar_t value_col[STRING_SIZE];
+			
+			_viv_info_hwnd = hwnd;
+			
+			_viv_get_localized_wtext(name_col,LOCALIZATION_ID_INFO_COLUMN_NAME);
+			_viv_get_localized_wtext(value_col,LOCALIZATION_ID_INFO_COLUMN_VALUE);
+			
+			os_SetWindowText_localization_id(hwnd,LOCALIZATION_ID_IMAGE_INFO);
+			os_SetDlgItemText_localization_id(hwnd,IDC_INFO_COPY,LOCALIZATION_ID_INFO_COPY_ALL);
+			os_SetDlgItemText_localization_id(hwnd,IDC_INFO_REFRESH,LOCALIZATION_ID_REFRESH);
+			os_SetDlgItemText_localization_id(hwnd,IDCANCEL,LOCALIZATION_ID_CLOSE);
+			
+			_viv_apply_rtl(hwnd);
+			
+			list_hwnd = GetDlgItem(hwnd,IDC_INFO_LIST);
+			if (list_hwnd)
+			{
+				ListView_SetExtendedListViewStyle(list_hwnd,
+					LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_GRIDLINES);
+				
+				dpi = os_logical_wide;
+				
+				os_zero_memory(&column,sizeof(column));
+				column.mask = LVCF_TEXT | LVCF_WIDTH;
+				column.pszText = name_col;
+				column.cx = (140 * dpi) / 96;
+				ListView_InsertColumn(list_hwnd,0,&column);
+				
+				column.pszText = value_col;
+				column.cx = (190 * dpi) / 96;
+				ListView_InsertColumn(list_hwnd,1,&column);
+			}
+			
+			if ((config_info_wide > 0) && (config_info_high > 0) &&
+				(config_info_wide < 5000) && (config_info_high < 5000))
+			{
+				RECT rect;
+				
+				rect.left = config_info_x;
+				rect.top = config_info_y;
+				rect.right = config_info_x + config_info_wide;
+				rect.bottom = config_info_y + config_info_high;
+				
+				os_make_rect_completely_visible(hwnd,&rect);
+				SetWindowPos(hwnd,0,rect.left,rect.top,
+					rect.right - rect.left,rect.bottom - rect.top,
+					SWP_NOZORDER | SWP_NOACTIVATE);
+			}
+			else
+			{
+				os_center_dialog(hwnd);
+			}
+			
+			_viv_info_refresh();
+			
+			return TRUE;
+		}
+		
+		case WM_SIZE:
+		{
+			HWND list_hwnd;
+			RECT rect;
+			int wide;
+			int high;
+			int button_y;
+			int dpi;
+			
+			GetClientRect(hwnd,&rect);
+			wide = rect.right - rect.left;
+			high = rect.bottom - rect.top;
+			dpi = os_logical_wide;
+			button_y = high - ((22 * dpi) / 96);
+			
+			list_hwnd = GetDlgItem(hwnd,IDC_INFO_LIST);
+			if (list_hwnd)
+			{
+				RECT list_rect;
+				int list_wide;
+				
+				MoveWindow(list_hwnd,(6 * dpi) / 96,(6 * dpi) / 96,
+					wide - ((12 * dpi) / 96),button_y - ((8 * dpi) / 96),TRUE);
+				
+				GetClientRect(list_hwnd,&list_rect);
+				list_wide = list_rect.right - list_rect.left - ((140 * dpi) / 96) - 4;
+				if (list_wide < (60 * dpi) / 96)
+				{
+					list_wide = (60 * dpi) / 96;
+				}
+				ListView_SetColumnWidth(list_hwnd,1,list_wide);
+			}
+			
+			MoveWindow(GetDlgItem(hwnd,IDC_INFO_COPY),wide - ((176 * dpi) / 96),button_y,
+				(54 * dpi) / 96,(14 * dpi) / 96,TRUE);
+			MoveWindow(GetDlgItem(hwnd,IDC_INFO_REFRESH),wide - ((118 * dpi) / 96),button_y,
+				(50 * dpi) / 96,(14 * dpi) / 96,TRUE);
+			MoveWindow(GetDlgItem(hwnd,IDCANCEL),wide - ((64 * dpi) / 96),button_y,
+				(56 * dpi) / 96,(14 * dpi) / 96,TRUE);
+			
+			break;
+		}
+		
+		case WM_GETMINMAXINFO:
+			((MINMAXINFO *)lParam)->ptMinTrackSize.x = (360 * os_logical_wide) / 96;
+			((MINMAXINFO *)lParam)->ptMinTrackSize.y = (300 * os_logical_wide) / 96;
+			return TRUE;
+			
+		case WM_COMMAND:
+			
+			switch(LOWORD(wParam))
+			{
+				case IDC_INFO_COPY:
+					_viv_info_copy_all();
+					break;
+					
+				case IDC_INFO_REFRESH:
+					_viv_info_refresh();
+					break;
+					
+				case IDCANCEL:
+					SendMessage(hwnd,WM_CLOSE,0,0);
+					break;
+			}
+			break;
+			
+		case WM_NOTIFY:
+			if (((NMHDR *)lParam)->idFrom == IDC_INFO_LIST)
+			{
+				if (((NMHDR *)lParam)->code == LVN_KEYDOWN)
+				{
+					NMLVKEYDOWN *key;
+					
+					key = (NMLVKEYDOWN *)lParam;
+					if ((key->wVKey == 'C') && (GetKeyState(VK_CONTROL) < 0))
+					{
+						_viv_info_copy_all();
+					}
+				}
+			}
+			break;
+			
+		case WM_CLOSE:
+			_viv_info_save_geometry();
+			DestroyWindow(hwnd);
+			_viv_info_hwnd = 0;
+			return TRUE;
+	}
+	
+	return FALSE;
+}
+
+static void _viv_show_image_info(void)
+{
+	if (IsWindow(_viv_info_hwnd))
+	{
+		ShowWindow(_viv_info_hwnd,SW_SHOW);
+		SetForegroundWindow(_viv_info_hwnd);
+		_viv_info_refresh();
+		return;
+	}
+	
+	_viv_info_hwnd = CreateDialog(os_hinstance,MAKEINTRESOURCE(IDD_IMAGE_INFO),_viv_hwnd,_viv_info_proc);
+	if (_viv_info_hwnd)
+	{
+		ShowWindow(_viv_info_hwnd,SW_SHOW);
+		SetForegroundWindow(_viv_info_hwnd);
+	}
 }
 
 static int _viv_main(int nCmdShow)
@@ -6531,45 +8246,43 @@ debug_printf("next %d\n",config_shuffle);
 				if (config_shuffle)
 				{
 					int index;
+					int step;
+					int scan;
+					int found;
 					
 					index = _viv_playlist_shuffle_index_from_fd(_viv_current_fd);
+					step = prev ? -1 : 1;
 					
-	debug_printf("cur %d %d\n",index,_viv_current_fd->dwReserved1);
-					
-					if (index != -1)
+					if (index == -1)
 					{
-						if (prev)
-						{
-							index--;
-							if (index < 0)
-							{
-								index = _viv_playlist_count - 1;
-							}
-						}
-						else
-						{
-							index++;
-							if (index >= _viv_playlist_count)
-							{
-								index = 0;
-							}
-						}
+						index = prev ? (_viv_playlist_count - 1) : 0;
 					}
 					else
 					{
-						if (prev)
+						index += step;
+						if (index < 0) index = _viv_playlist_count - 1;
+						if (index >= _viv_playlist_count) index = 0;
+					}
+					
+					found = 0;
+					if (_viv_playlist_count > 0)
+					{
+						for(scan=0;scan<_viv_playlist_count;scan++)
 						{
-							index = _viv_playlist_count - 1;
-						}
-						else
-						{
-							index = 0;
+							if (_viv_filter_match(&_viv_playlist_shuffle_indexes[index]->fd))
+							{
+								os_copy_memory(&best_fd,&_viv_playlist_shuffle_indexes[index]->fd,sizeof(WIN32_FIND_DATA));
+								found = 1;
+								break;
+							}
+							
+							index += step;
+							if (index < 0) index = _viv_playlist_count - 1;
+							if (index >= _viv_playlist_count) index = 0;
 						}
 					}
 					
-					os_copy_memory(&best_fd,&_viv_playlist_shuffle_indexes[index]->fd,sizeof(WIN32_FIND_DATA));
-
-					got_best = 1;
+					got_best = found;
 				}
 				else
 				{
@@ -6580,6 +8293,12 @@ debug_printf("next %d\n",config_shuffle);
 					
 					while(d)
 					{
+						if (!_viv_filter_match(&d->fd))
+						{
+							d = d->next;
+							continue;
+						}
+						
 						if (d != current_d)
 						{
 							int compare_ret;
@@ -6659,9 +8378,20 @@ debug_printf("FIND next\n");
 						if (_viv_is_valid_filename(&fd))
 						{
 							int compare_ret;
+							WIN32_FIND_DATA filter_fd;
 							
 							fd.dwReserved0 = 0;
 							fd.dwReserved1 = 0;
+							
+							filter_fd = fd;
+							string_path_combine(search_wbuf,path_wbuf,fd.cFileName);
+							string_copy_with_bufsize(filter_fd.cFileName,MAX_PATH,search_wbuf);
+							
+							if (!_viv_filter_match(&filter_fd))
+							{
+								if (!FindNextFile(h,&fd)) break;
+								continue;
+							}
 							
 							compare_ret = _viv_fd_compare(&fd,_viv_current_fd);
 
@@ -6791,19 +8521,32 @@ static void _viv_home(int end,int is_preload)
 			if (config_shuffle)
 			{
 				int index;
+				int step;
+				int scan;
+				int found;
 				
-				if (end)
+				index = end ? (_viv_playlist_count - 1) : 0;
+				step = end ? -1 : 1;
+				found = 0;
+				
+				if (_viv_playlist_count > 0)
 				{
-					index = _viv_playlist_count - 1;
-				}
-				else
-				{
-					index = 0;
+					for(scan=0;scan<_viv_playlist_count;scan++)
+					{
+						if (_viv_filter_match(&_viv_playlist_shuffle_indexes[index]->fd))
+						{
+							os_copy_memory(&best_fd,&_viv_playlist_shuffle_indexes[index]->fd,sizeof(WIN32_FIND_DATA));
+							found = 1;
+							break;
+						}
+						
+						index += step;
+						if (index < 0) index = _viv_playlist_count - 1;
+						if (index >= _viv_playlist_count) index = 0;
+					}
 				}
 				
-				os_copy_memory(&best_fd,&_viv_playlist_shuffle_indexes[index]->fd,sizeof(WIN32_FIND_DATA));
-
-				got_best = 1;
+				got_best = found;
 			}
 			else	
 			{
@@ -6812,6 +8555,12 @@ static void _viv_home(int end,int is_preload)
 				d = _viv_playlist_start;
 				while(d)
 				{
+					if (!_viv_filter_match(&d->fd))
+					{
+						d = d->next;
+						continue;
+					}
+					
 					if (end)
 					{
 						if ((!got_best) || (_viv_fd_compare(&d->fd,&best_fd) > 0))
@@ -6860,8 +8609,20 @@ static void _viv_home(int end,int is_preload)
 				{
 					if (_viv_is_valid_filename(&fd))
 					{
+						WIN32_FIND_DATA filter_fd;
+						
 						fd.dwReserved0 = 0;
 						fd.dwReserved1 = 0;
+						
+						filter_fd = fd;
+						string_path_combine(search_wbuf,path_wbuf,fd.cFileName);
+						string_copy_with_bufsize(filter_fd.cFileName,MAX_PATH,search_wbuf);
+						
+						if (!_viv_filter_match(&filter_fd))
+						{
+							if (!FindNextFile(h,&fd)) break;
+							continue;
+						}
 						
 						if (end)
 						{
@@ -6903,7 +8664,11 @@ static void _viv_home(int end,int is_preload)
 			}
 			else
 			{
-				_viv_blank();
+				// 筛选激活且无匹配时不能 _viv_blank()，否则会清空整个播放列表。
+				if (!_viv_filter_active)
+				{
+					_viv_blank();
+				}
 			}
 		}
 	}
@@ -7012,6 +8777,14 @@ static int _viv_is_msg(MSG *msg)
 					// cancel action
 					if ((key_flags == 0) && (msg->wParam == VK_ESCAPE))
 					{
+						// v3.7: 筛选优先，Esc 先清筛选，不直接关程序。
+						if ((_viv_filter_active) && (IsWindow(_viv_filter_hwnd)))
+						{
+							_viv_filter_hide(1);
+							
+							return 1;
+						}
+						
 						if (_viv_doing)
 						{
 							_viv_doing_cancel();
@@ -8079,6 +9852,7 @@ static void _viv_check_menus(HMENU hmenu)
 	EnableMenuItem(hmenu,VIV_ID_FILE_PREVIEW,is_image_enabled);
 	EnableMenuItem(hmenu,VIV_ID_FILE_PRINT,is_image_enabled);
 	EnableMenuItem(hmenu,VIV_ID_FILE_PROPERTIES,is_image_enabled);
+	EnableMenuItem(hmenu,VIV_ID_VIEW_IMAGE_INFO,is_image_enabled);
 	EnableMenuItem(hmenu,VIV_ID_FILE_SET_DESKTOP_WALLPAPER,is_image_enabled);
 	EnableMenuItem(hmenu,VIV_ID_FILE_RENAME,is_image_enabled);
 
@@ -14473,6 +16247,11 @@ static HMENU _viv_create_menu(void)
 				}
 			}
 		}
+		
+		_viv_recent_menu = menus[_VIV_MENU_FILE_RECENT];
+		_viv_favorites_menu = menus[_VIV_MENU_FILE_FAVORITES];
+		_viv_populate_recent_menu();
+		_viv_populate_favorites_menu();
 	}
 	
 	return hmenu;
@@ -16511,6 +18290,14 @@ static void _viv_start_first_frame(void)
 	// timer using the newly displayed image's total loop duration.
 	// (For static images, _viv_get_slideshow_duration falls back to config_slideshow_rate.)
 	_viv_reset_slideshow_timer();
+	
+	// v3.7: 只记录真正显示过的图片；后台预加载不会走到这里。
+	_viv_recent_add_current();
+	
+	if (IsWindow(_viv_info_hwnd))
+	{
+		_viv_info_refresh();
+	}
 }
 
 // the preload has completed and we

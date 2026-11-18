@@ -55,8 +55,26 @@ typedef struct config_key_s
 #define CONFIG_MAG_FILTER_COLORONCOLOR			0
 #define CONFIG_MAG_FILTER_HALFTONE				1
 
+// 最近打开 / 收藏夹上限（v3.7）
+#define CONFIG_RECENT_MAX		20
+#define CONFIG_FAVORITE_MAX		100
+
 void config_load_settings(void);
 void config_save_settings(int appdata);
+
+// 最近打开 / 收藏夹（v3.7）
+int config_recent_count(void);
+const wchar_t *config_recent_get(int index);
+void config_recent_add(const wchar_t *path);
+void config_recent_remove(const wchar_t *path);
+void config_recent_clear(void);
+
+int config_favorite_count(void);
+const wchar_t *config_favorite_get(int index);
+int config_favorite_contains(const wchar_t *path);
+int config_favorite_add(const wchar_t *path);
+int config_favorite_remove(const wchar_t *path);
+void config_favorite_clear(void);
 
 extern BYTE config_appdata;
 extern BYTE config_keep_centered;
@@ -125,6 +143,10 @@ extern BYTE config_orientation;
 extern BYTE config_title_bar_format;
 extern int config_add_command_line_timeout;
 extern int config_language;
+extern int config_info_x;
+extern int config_info_y;
+extern int config_info_wide;
+extern int config_info_high;
 
 #ifdef __cplusplus
 }

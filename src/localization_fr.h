@@ -315,5 +315,7 @@ const utf8_t *_localization_string_array_fr[LOCALIZATION_ID_COUNT] =
 	// LOCALIZATION_ID_ABOUT_PROJECT / LOCALIZATION_ID_ABOUT_PROJECT_URL
 	"Page du projet",
 	"https://github.com/HaiSeaman/voidImageViewer-i18n",
+	// v3.7 (English fallback)
+	"Recent Files","Favorites","Clear Recent List","Add to Favorites","Remove from Favorites","Manage Favorites...","Open","Remove","Clear","(Empty)","Filter","Type a name to filter...","matches","No matches","Current image is not in the filter results","Filter is not available in random mode","Image Information","File Information","Image Information","EXIF","GPS","Copy All","Loading...","No image open","This image has no readable EXIF data","Unknown","Yes","No","File name","Full path","File size","Created","Modified","Format","Dimensions","Bit depth","Alpha channel","DPI","Frames","Current frame","Frame delay","Duration","Estimated decode memory","Camera make","Camera model","Lens","Software","Date taken","Exposure time","Aperture","ISO","Focal length","35mm equivalent","Exposure bias","Flash","Metering mode","White balance","Exposure program","Image description","Artist","Copyright","EXIF version","Color space","Orientation","Latitude","Longitude","Altitude","GPS direction","GPS time","Property","Value",
 
 };

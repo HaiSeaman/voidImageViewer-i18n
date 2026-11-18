@@ -6,7 +6,7 @@ English | [简体中文](README_CN.md)
 
 > A lightweight, blazing-fast image viewer built for Windows, featuring seamless switching between 10 UI languages, 1:1 pixel-perfect zoom by default, and smooth animated GIF / WebP playback.
 > This project is based on [voidtools/voidImageViewer](https://github.com/voidtools/voidImageViewer) with immersive-experience enhancements and multilingual support.
-> **Current version: v3.6**
+> **Current version: v3.7**
 
 [Download](#download) | [Key Changes](#key-changes-compared-to-the-original) | [Features](#features) | [Usage](#usage) | [Building from Source](#building-from-source) | [License](#license-and-acknowledgements)
 
@@ -33,6 +33,7 @@ This fork builds on that foundation with comprehensive enhancements: **10 UI lan
 | **Interaction fixes & audit (v3.4)** | Fixes ghosting/misalignment of the borderless overlay while dragging an image, and restores middle-button drag-scrolling (broken since an early version); replaces the "Help" submenu at the bottom of the context menu with a single "About" item and adds a repository link button to the About dialog; completes a full-database translation-completeness and code-cleanliness audit. |
 | **Menu simplification & stability (v3.5)** | Trims the top level of the right-click menu (removes the four "Allow Shrinking / Keep Aspect Ratio / Fill Window / 1:1" entries that duplicated the View submenu — the commands and shortcuts are fully preserved); fixes six stability hazards (a failed string copy that did not terminate its buffer, a duplicated 1:1 check-mark refresh, uninitialized locals and image pointer, an unchecked pen handle, a duplicated header declaration); removes 15 unused resource IDs and leftover build artifacts. |
 | **Battery-friendly & memory-safe (v3.6)** | The animation timer no longer polls every 1 ms — it now follows the actual frame duration and **truly stops when paused** (wake-ups drop from ~1000/s to ~10/s, which helps laptop battery life); adds a **memory guard for animated images** (decoding resolution is reduced automatically above 500 MB — measured reductions up to 94% — preventing huge animations from exhausting memory); the pixel-sampling path now reuses one cached DC; fixes three defects (long-filename buffer overflow, per-frame EXIF orientation flipping in animated WebP, division-by-zero NaN when resizing with no image), plus six latent hazards and five build-configuration issues. |
+| **Browsing & image information (v3.7)** | Adds **Recent Files / Favorites** (File menu and context menu; 20 recent entries, 100 favorites); adds **playlist filtering by name** (`Alt+F` floating bar, file-name/full-path matching, works with shuffle and preloading); adds an **Image Information panel** (`Ctrl+I`, modeless, file/image/EXIF/GPS, Property System + GDI+ fallback, Copy All). Also fixes the greyed-out favorite command, wrong recent path during preload activation, zero-match filter clearing the playlist, RTL not restored, malformed EXIF handling and more. |
 
 ---
 
@@ -92,7 +93,16 @@ This fork builds on that foundation with comprehensive enhancements: **10 UI lan
 
 - **Smart preloading**: "preload next image" and "cache previous image" for lag-free image switching.
 - **Flexible sorting**: by file name, file size, modification time, creation time, or full path, in ascending/descending order, with **Natural Sort** support.
+- **Filter by name (v3.7)**: press `Alt+F` for a floating filter bar; live file-name or full-path matching, `Enter` jumps to the next match, `Esc` clears. Filtering only affects navigation candidates — it never deletes or reorders the playlist, and zero matches never clears it.
+- **Recent Files / Favorites (v3.7)**: two new File submenus; up to 20 recent entries and 100 favorites, with a manager dialog for open/remove/clear.
 - **Everything integration**: directly use local global search results from [Everything](https://www.voidtools.com/) as the image playlist.
+
+### Image Information panel (v3.7)
+
+- Press `Ctrl+I` to open a modeless information window; it refreshes while you browse.
+- Two-column ListView: file information, image information, EXIF and GPS.
+- EXIF is read from the Windows Property System first, with a GDI+ property fallback when core fields are missing; unreadable metadata is reported as “No readable EXIF data”.
+- “Copy All” / `Ctrl+C`, remembered window geometry, RTL and high-DPI support.
 
 ### File & Editing Operations
 
@@ -115,16 +125,16 @@ This fork builds on that foundation with comprehensive enhancements: **10 UI lan
   - Voidtools forum thread: [https://www.voidtools.com/forum/viewtopic.php?t=5623](https://www.voidtools.com/forum/viewtopic.php?t=5623)
   - Voidtools GitHub repository: [https://github.com/voidtools/voidImageViewer](https://github.com/voidtools/voidImageViewer)
 
-**v3.6 release files**: portable ZIP archives for 32-bit (`x86`) and 64-bit (`x64`) — extract and run; standard NSIS installers (Chinese/English) are also provided.
+**v3.7 release files**: portable ZIP archives for 32-bit (`x86`) and 64-bit (`x64`) — extract and run; standard NSIS installers (Chinese/English) are also provided.
 
 | Type | File |
 | --- | --- |
-| Portable x64 | `voidImageViewer-3.6.x64.zip` |
-| Portable x86 | `voidImageViewer-3.6.x86.zip` |
-| Installer x64 Chinese | `voidImageViewer-3.6.x64.zh-CN-Setup.exe` |
-| Installer x64 English | `voidImageViewer-3.6.x64.en-US-Setup.exe` |
-| Installer x86 Chinese | `voidImageViewer-3.6.x86.zh-CN-Setup.exe` |
-| Installer x86 English | `voidImageViewer-3.6.x86.en-US-Setup.exe` |
+| Portable x64 | `voidImageViewer-3.7.x64.zip` |
+| Portable x86 | `voidImageViewer-3.7.x86.zip` |
+| Installer x64 Chinese | `voidImageViewer-3.7.x64.zh-CN-Setup.exe` |
+| Installer x64 English | `voidImageViewer-3.7.x64.en-US-Setup.exe` |
+| Installer x86 Chinese | `voidImageViewer-3.7.x86.zh-CN-Setup.exe` |
+| Installer x86 English | `voidImageViewer-3.7.x86.en-US-Setup.exe` |
 
 ---
 
@@ -135,8 +145,11 @@ This fork builds on that foundation with comprehensive enhancements: **10 UI lan
 1. Double-click `voidImageViewer.exe` to launch, or drag image files directly into the program window.
 2. **Right-click** to bring up the main menu (borderless immersive mode is enabled by default).
 3. Scroll the mouse wheel or press `↑` / `↓` to switch to the previous/next image.
-4. Press `F` or use the right-click menu to enter fullscreen mode; the current image's file name is shown in the top-left corner.
-5. Press `ESC`: exits fullscreen, or closes the viewer when not fullscreen.
+4. Press `Alt+F` to open the name filter bar; `Enter` jumps to the next match, `Esc` clears it.
+5. Press `Ctrl+I` to open the Image Information panel (file / image / EXIF / GPS).
+6. Right-click → File → Recent Files / Favorites to reopen an image quickly or favorite the current one.
+7. Press `F` or use the right-click menu to enter fullscreen mode; the current image's file name is shown in the top-left corner.
+8. Press `ESC`: exits fullscreen, or closes the viewer when not fullscreen.
 
 ### Switching the UI Language
 
@@ -190,6 +203,9 @@ All settings are stored in the `voidImageViewer.ini` file. Common key options:
 | `title_bar_format` | Title bar format (`0` = full path, `1` = file name only, `2` = none) | `1` |
 | `preload_next` | Preload the next image | `1` |
 | `cache_last` | Cache the previous image | `1` |
+| `recent_count` / `recent_0..19` | Recent Files count and path list | `0` / empty |
+| `favorite_count` / `favorite_0..99` | Favorites count and path list | `0` / empty |
+| `info_x` / `info_y` / `info_wide` / `info_high` | Image Information window geometry | `0` (centered first time) |
 
 ---
 

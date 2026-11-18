@@ -97,6 +97,321 @@ BYTE config_title_bar_format = 1; // 0=full path, 1=filename, 2=none
 int config_add_command_line_timeout = 500; // in milliseconds
 int config_language = -1; // -1 = auto detect, 0-9 = specific language
 
+// 图片信息窗口几何（v3.7）
+int config_info_x = 0;
+int config_info_y = 0;
+int config_info_wide = 0;
+int config_info_high = 0;
+
+// 最近打开 / 收藏夹（v3.7）
+typedef struct _config_path_list_s
+{
+	wchar_t **items;
+	int count;
+	int allocated;
+}config_path_list_t;
+
+static config_path_list_t _config_recent_list;
+static config_path_list_t _config_favorite_list;
+
+static int _config_path_list_find(const config_path_list_t *list,const wchar_t *path)
+{
+	int i;
+	
+	for(i=0;i<list->count;i++)
+	{
+		if (StrCmpIW(list->items[i],path) == 0)
+		{
+			return i;
+		}
+	}
+	
+	return -1;
+}
+
+static void _config_path_list_clear(config_path_list_t *list)
+{
+	int i;
+	
+	for(i=0;i<list->count;i++)
+	{
+		mem_free(list->items[i]);
+	}
+	
+	if (list->items)
+	{
+		mem_free(list->items);
+	}
+	
+	list->items = 0;
+	list->count = 0;
+	list->allocated = 0;
+}
+
+static void _config_path_list_remove_at(config_path_list_t *list,int index)
+{
+	if ((index >= 0) && (index < list->count))
+	{
+		mem_free(list->items[index]);
+		
+		os_move_memory(
+			list->items + index,
+			list->items + index + 1,
+			(list->count - index - 1) * sizeof(wchar_t *));
+		
+		list->count--;
+	}
+}
+
+static int _config_path_list_insert(config_path_list_t *list,int index,const wchar_t *path)
+{
+	uintptr_t length;
+	wchar_t *copy;
+	
+	if (!path)
+	{
+		return 0;
+	}
+	
+	length = string_get_length(path);
+	if ((!length) || (length >= STRING_SIZE))
+	{
+		return 0;
+	}
+	
+	if (list->count >= list->allocated)
+	{
+		int new_allocated;
+		wchar_t **new_items;
+		
+		new_allocated = list->allocated ? (list->allocated * 2) : 8;
+		new_items = (wchar_t **)mem_alloc(new_allocated * sizeof(wchar_t *));
+		
+		if (list->count)
+		{
+			os_copy_memory(new_items,list->items,list->count * sizeof(wchar_t *));
+		}
+		
+		if (list->items)
+		{
+			mem_free(list->items);
+		}
+		
+		list->items = new_items;
+		list->allocated = new_allocated;
+	}
+	
+	copy = (wchar_t *)mem_alloc((length + 1) * sizeof(wchar_t));
+	string_copy(copy,path);
+	
+	if (index < 0)
+	{
+		index = 0;
+	}
+	
+	if (index > list->count)
+	{
+		index = list->count;
+	}
+	
+	if (index < list->count)
+	{
+		os_move_memory(
+			list->items + index + 1,
+			list->items + index,
+			(list->count - index) * sizeof(wchar_t *));
+	}
+	
+	list->items[index] = copy;
+	list->count++;
+	
+	return 1;
+}
+
+int config_recent_count(void)
+{
+	return _config_recent_list.count;
+}
+
+const wchar_t *config_recent_get(int index)
+{
+	if ((index < 0) || (index >= _config_recent_list.count))
+	{
+		return 0;
+	}
+	
+	return _config_recent_list.items[index];
+}
+
+void config_recent_add(const wchar_t *path)
+{
+	int index;
+	
+	if (!path)
+	{
+		return;
+	}
+	
+	index = _config_path_list_find(&_config_recent_list,path);
+	if (index >= 0)
+	{
+		_config_path_list_remove_at(&_config_recent_list,index);
+	}
+	
+	if (!_config_path_list_insert(&_config_recent_list,0,path))
+	{
+		return;
+	}
+	
+	while(_config_recent_list.count > CONFIG_RECENT_MAX)
+	{
+		_config_path_list_remove_at(&_config_recent_list,_config_recent_list.count - 1);
+	}
+}
+
+void config_recent_remove(const wchar_t *path)
+{
+	int index;
+	
+	if (!path)
+	{
+		return;
+	}
+	
+	index = _config_path_list_find(&_config_recent_list,path);
+	if (index >= 0)
+	{
+		_config_path_list_remove_at(&_config_recent_list,index);
+	}
+}
+
+void config_recent_clear(void)
+{
+	_config_path_list_clear(&_config_recent_list);
+}
+
+int config_favorite_count(void)
+{
+	return _config_favorite_list.count;
+}
+
+const wchar_t *config_favorite_get(int index)
+{
+	if ((index < 0) || (index >= _config_favorite_list.count))
+	{
+		return 0;
+	}
+	
+	return _config_favorite_list.items[index];
+}
+
+int config_favorite_contains(const wchar_t *path)
+{
+	if (!path)
+	{
+		return 0;
+	}
+	
+	return _config_path_list_find(&_config_favorite_list,path) >= 0;
+}
+
+int config_favorite_add(const wchar_t *path)
+{
+	if (!path)
+	{
+		return 0;
+	}
+	
+	if (config_favorite_contains(path))
+	{
+		return 0;
+	}
+	
+	if (_config_favorite_list.count >= CONFIG_FAVORITE_MAX)
+	{
+		return 0;
+	}
+	
+	return _config_path_list_insert(&_config_favorite_list,_config_favorite_list.count,path);
+}
+
+int config_favorite_remove(const wchar_t *path)
+{
+	int index;
+	
+	if (!path)
+	{
+		return 0;
+	}
+	
+	index = _config_path_list_find(&_config_favorite_list,path);
+	if (index < 0)
+	{
+		return 0;
+	}
+	
+	_config_path_list_remove_at(&_config_favorite_list,index);
+	
+	return 1;
+}
+
+void config_favorite_clear(void)
+{
+	_config_path_list_clear(&_config_favorite_list);
+}
+
+static void _config_load_path_list(ini_t *ini,const char *prefix,config_path_list_t *list,int max_count)
+{
+	char key[64];
+	int i;
+	int count;
+	
+	_config_path_list_clear(list);
+	
+	wsprintfA(key,"%s_count",prefix);
+	count = ini_get_int(ini,(const utf8_t *)key,0);
+	if (count < 0)
+	{
+		count = 0;
+	}
+	
+	if (count > max_count)
+	{
+		count = max_count;
+	}
+	
+	for(i=0;i<count;i++)
+	{
+		const utf8_t *value;
+		wchar_t path[STRING_SIZE];
+		
+		wsprintfA(key,"%s_%d",prefix,i);
+		
+		value = ini_get_string(ini,(const utf8_t *)key);
+		if (!value)
+		{
+			break;
+		}
+		
+		path[0] = 0;
+		if (MultiByteToWideChar(CP_UTF8,0,(const char *)value,-1,path,STRING_SIZE) <= 0)
+		{
+			continue;
+		}
+		
+		// 防御性去重：同一路径只保留第一次出现。
+		if (_config_path_list_find(list,path) >= 0)
+		{
+			continue;
+		}
+		
+		if (!_config_path_list_insert(list,list->count,path))
+		{
+			break;
+		}
+	}
+}
+
 static void _config_load_settings_by_location(const wchar_t *path,int is_root)
 {
 	ini_t *ini;
@@ -107,6 +422,12 @@ static void _config_load_settings_by_location(const wchar_t *path,int is_root)
 	ini = ini_open(filename,"voidImageViewer");
 	if (ini)
 	{
+		// appdata 必须先读：它决定最近/收藏列表从哪个 ini 加载。
+		if (is_root)
+		{
+			config_appdata = ini_get_int(ini,(const utf8_t *)"appdata",config_appdata);
+		}
+		
 		config_x = ini_get_int(ini,(const utf8_t *)"x",config_x);
 		config_y = ini_get_int(ini,(const utf8_t *)"y",config_y);
 		config_wide = ini_get_int(ini,(const utf8_t *)"wide",config_wide);
@@ -174,15 +495,21 @@ static void _config_load_settings_by_location(const wchar_t *path,int is_root)
 		config_toolbar_move_window = ini_get_int(ini,(const utf8_t *)"toolbar_move_window",config_toolbar_move_window);
 		config_title_bar_format = ini_get_int(ini,(const utf8_t *)"title_bar_format",config_title_bar_format);
 		config_add_command_line_timeout = ini_get_int(ini,(const utf8_t *)"add_command_line_timeout",config_add_command_line_timeout);
+		config_info_x = ini_get_int(ini,(const utf8_t *)"info_x",config_info_x);
+		config_info_y = ini_get_int(ini,(const utf8_t *)"info_y",config_info_y);
+		config_info_wide = ini_get_int(ini,(const utf8_t *)"info_wide",config_info_wide);
+		config_info_high = ini_get_int(ini,(const utf8_t *)"info_high",config_info_high);
 		config_language = ini_get_int(ini,(const utf8_t *)"language",config_language);
 		if (config_language < -1 || config_language >= LOCALIZATION_LANGUAGE_COUNT)
 		{
 			config_language = -1;
 		}
 
-		if (is_root)
+		// appdata=1 时，根 ini 只保存 appdata，最近/收藏必须从真正生效的那份 ini 读。
+		if ((!is_root) || (!config_appdata))
 		{
-			config_appdata = ini_get_int(ini,(const utf8_t *)(const utf8_t *)"appdata",config_appdata);
+			_config_load_path_list(ini,"recent",&_config_recent_list,CONFIG_RECENT_MAX);
+			_config_load_path_list(ini,"favorite",&_config_favorite_list,CONFIG_FAVORITE_MAX);
 		}
 
 		{
@@ -300,6 +627,21 @@ static void _config_write_utf8(HANDLE h,const utf8_t *s)
 	WriteFile(h,s,utf8_length(s),&num_written,0);
 }
 
+static void _config_save_path_list(HANDLE h,const char *prefix,const config_path_list_t *list)
+{
+	char key[64];
+	int i;
+	
+	wsprintfA(key,"%s_count",prefix);
+	_config_write_int(h,key,list->count);
+	
+	for(i=0;i<list->count;i++)
+	{
+		wsprintfA(key,"%s_%d",prefix,i);
+		_config_write_string(h,key,list->items[i]);
+	}
+}
+
 static void _config_save_settings_by_location(const wchar_t *path,int is_root)
 {
 	HANDLE h;
@@ -387,7 +729,14 @@ static void _config_save_settings_by_location(const wchar_t *path,int is_root)
 			_config_write_int(h,"toolbar_move_window",config_toolbar_move_window);
 			_config_write_int(h,"title_bar_format",config_title_bar_format);
 			_config_write_int(h,"add_command_line_timeout",config_add_command_line_timeout);
+			_config_write_int(h,"info_x",config_info_x);
+			_config_write_int(h,"info_y",config_info_y);
+			_config_write_int(h,"info_wide",config_info_wide);
+			_config_write_int(h,"info_high",config_info_high);
 			_config_write_int(h,"language",config_language);
+			
+			_config_save_path_list(h,"recent",&_config_recent_list);
+			_config_save_path_list(h,"favorite",&_config_favorite_list);
 					
 			// save keys
 			{

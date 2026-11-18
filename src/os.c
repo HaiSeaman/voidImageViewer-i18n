@@ -123,8 +123,12 @@ int (WINAPI *os_GdiplusStartup)(OUT ULONG_PTR *token,const os_GdiplusStartupInpu
 VOID (WINAPI *os_GdiplusShutdown)(ULONG_PTR token) = 0;
 int (__stdcall *os_GdipLoadImageFromStream)(IStream* stream, void **image) = 0;
 int (__stdcall *os_GdipLoadImageFromStreamICM)(IStream* stream, void **image) = 0;
+int (__stdcall *os_GdipLoadImageFromFile)(const wchar_t *filename, void **image) = 0;
 int (__stdcall *os_GdipGetImageWidth)(void *image, UINT *width) = 0;
 int (__stdcall *os_GdipGetImageHeight)(void *image, UINT *height) = 0;
+int (__stdcall *os_GdipGetImagePixelFormat)(void *image, int *format) = 0;
+int (__stdcall *os_GdipGetImageHorizontalResolution)(void *image, float *dpi) = 0;
+int (__stdcall *os_GdipGetImageVerticalResolution)(void *image, float *dpi) = 0;
 int (__stdcall *os_GdipImageGetFrameDimensionsCount)(void *image, UINT* count) = 0;
 int (__stdcall *os_GdipImageGetFrameDimensionsList)(void *image, GUID* dimensionIDs,UINT count) = 0;
 int (__stdcall *os_GdipImageGetFrameCount)(void *image, const GUID* dimensionID,UINT* count) = 0;
@@ -157,6 +161,7 @@ static const GUID _os_IID_IFileOpenDialog = {0xd57c7288,0xd4ad,0x4768,{0xbe,0x02
 static const GUID _os_CLSID_FileOpenDialog = {0xdc1c5a9c,0xe88a,0x4dde,{0xa5,0xa1,0x60,0xf8,0x2a,0x20,0xae,0xf7}};
 static const GUID _os_IID_IPropertyStore = {0x886d8eeb,0x8cf2,0x4446,{0x8d,0x02,0xcd,0xba,0x1d,0xbd,0xcf,0x99}};
 static const GUID _os_FMTID_ImageProperties = {0x14B81DA1,0x0135,0x4D31,{0x96,0xD9,0x6C,0xBF,0xC9,0x67,0x1A,0x99}};
+static const GUID _os_FMTID_GPS = {0x8727CFFF,0x4868,0x4EC6,{0xAD,0x5B,0x81,0xB9,0x85,0x21,0xD1,0xAB}};
 static HRESULT (WINAPI *_os_SHCreateItemFromIDList)(ITEMIDLIST *pidl,REFIID riid,void **ppv) = 0;
 static HRESULT (WINAPI *_os_SHGetPropertyStoreFromIDList)(ITEMIDLIST *pidl,int flags,REFIID riid,void **ppv) = 0;
 
@@ -895,8 +900,12 @@ void os_init(void)
 		os_GdiplusShutdown = (void *)_os_get_proc_address(_os_gdiplus_hmodule,"GdiplusShutdown");
 		os_GdipLoadImageFromStream = (void *)_os_get_proc_address(_os_gdiplus_hmodule,"GdipLoadImageFromStream");
 		os_GdipLoadImageFromStreamICM = (void *)_os_get_proc_address(_os_gdiplus_hmodule,"GdipLoadImageFromStreamICM");
+		os_GdipLoadImageFromFile = (void *)_os_get_proc_address(_os_gdiplus_hmodule,"GdipLoadImageFromFile");
 		os_GdipGetImageWidth = (void *)_os_get_proc_address(_os_gdiplus_hmodule,"GdipGetImageWidth");
 		os_GdipGetImageHeight = (void *)_os_get_proc_address(_os_gdiplus_hmodule,"GdipGetImageHeight");
+		os_GdipGetImagePixelFormat = (void *)_os_get_proc_address(_os_gdiplus_hmodule,"GdipGetImagePixelFormat");
+		os_GdipGetImageHorizontalResolution = (void *)_os_get_proc_address(_os_gdiplus_hmodule,"GdipGetImageHorizontalResolution");
+		os_GdipGetImageVerticalResolution = (void *)_os_get_proc_address(_os_gdiplus_hmodule,"GdipGetImageVerticalResolution");
 		os_GdipImageGetFrameDimensionsCount = (void *)_os_get_proc_address(_os_gdiplus_hmodule,"GdipImageGetFrameDimensionsCount");
 		os_GdipImageGetFrameDimensionsList = (void *)_os_get_proc_address(_os_gdiplus_hmodule,"GdipImageGetFrameDimensionsList");
 		os_GdipImageGetFrameCount = (void *)_os_get_proc_address(_os_gdiplus_hmodule,"GdipImageGetFrameCount");
@@ -1632,6 +1641,643 @@ int os_get_orientation(const wchar_t *filename)
 	}
 	
 	return ret;
+}
+
+// v3.7: 图片元数据读取。
+// 首选 Windows 属性系统；失败/缺字段时用 GDI+ 属性回退。
+// 所有异常都吞掉，元数据永远不能让看图主流程崩溃。
+
+static int _os_ps_get(_os_IPropertyStore_t *ps,const GUID *fmtid,DWORD pid,PROPVARIANT *pv)
+{
+	_os_PROPERTYKEY_t key;
+	
+	PropVariantInit(pv);
+	os_copy_memory(&key.fmtid,fmtid,sizeof(GUID));
+	key.pid = pid;
+	
+	return SUCCEEDED(ps->lpVtbl->GetValue(ps,&key,pv));
+}
+
+static void _os_pv_string(const PROPVARIANT *pv,wchar_t *buf,int buf_size)
+{
+	buf[0] = 0;
+	
+	if (pv->vt == VT_LPWSTR)
+	{
+		if (pv->pwszVal)
+		{
+			string_copy_with_bufsize(buf,buf_size,pv->pwszVal);
+		}
+	}
+	else
+	if (pv->vt == VT_BSTR)
+	{
+		if (pv->bstrVal)
+		{
+			string_copy_with_bufsize(buf,buf_size,pv->bstrVal);
+		}
+	}
+}
+
+static double _os_pv_double(const PROPVARIANT *pv)
+{
+	switch(pv->vt)
+	{
+		case VT_R8: return pv->dblVal;
+		case VT_R4: return (double)pv->fltVal;
+		case VT_UI8: return (double)pv->uhVal.QuadPart;
+		case VT_I8: return (double)pv->hVal.QuadPart;
+		case VT_UI4: return (double)pv->ulVal;
+		case VT_I4: return (double)pv->lVal;
+		case VT_UI2: return (double)pv->uiVal;
+		case VT_I2: return (double)pv->iVal;
+	}
+	
+	return 0.0;
+}
+
+static int _os_pv_is_number(const PROPVARIANT *pv)
+{
+	switch(pv->vt)
+	{
+		case VT_R8:
+		case VT_R4:
+		case VT_UI8:
+		case VT_I8:
+		case VT_UI4:
+		case VT_I4:
+		case VT_UI2:
+		case VT_I2:
+			return 1;
+	}
+	
+	return 0;
+}
+
+static int _os_pv_int(const PROPVARIANT *pv)
+{
+	double value;
+	
+	value = _os_pv_double(pv);
+	if (value != value) return 0;
+	if (value > 2147483647.0) return 2147483647;
+	if (value < (-2147483647.0 - 1.0)) return (-2147483647 - 1);
+	
+	return (int)value;
+}
+
+static void _os_pv_datetime(const PROPVARIANT *pv,wchar_t *buf,int buf_size)
+{
+	buf[0] = 0;
+	
+	if (pv->vt == VT_FILETIME)
+	{
+		SYSTEMTIME st;
+		
+		// EXIF 拍摄时间本身不带时区，属性系统返回的 FILETIME 按原样显示，
+		// 不再做一次本地时区转换，避免拍摄时间整体偏移。
+		if (FileTimeToSystemTime(&pv->filetime,&st))
+		{
+			wsprintfW(buf,L"%04d-%02d-%02d %02d:%02d:%02d",
+				st.wYear,st.wMonth,st.wDay,st.wHour,st.wMinute,st.wSecond);
+		}
+	}
+	else
+	{
+		_os_pv_string(pv,buf,buf_size);
+		
+		// EXIF 常见格式 "YYYY:MM:DD HH:MM:SS"，把它变成更常见的短横线格式。
+		if ((buf[4] == ':') && (buf[7] == ':'))
+		{
+			buf[4] = '-';
+			buf[7] = '-';
+		}
+	}
+}
+
+static int _os_pv_dms(const PROPVARIANT *pv,double out[3])
+{
+	out[0] = 0.0;
+	out[1] = 0.0;
+	out[2] = 0.0;
+	
+	if ((pv->vt == (VT_VECTOR | VT_R8)) && (pv->cadbl.pElems) && (pv->cadbl.cElems))
+	{
+		UINT count;
+		
+		count = pv->cadbl.cElems;
+		if (count > 3)
+		{
+			count = 3;
+		}
+		
+		if (count > 0) out[0] = pv->cadbl.pElems[0];
+		if (count > 1) out[1] = pv->cadbl.pElems[1];
+		if (count > 2) out[2] = pv->cadbl.pElems[2];
+		
+		// 畸形坐标可能是 NaN/负数/超大值，先钳制，避免 UI 转 int 未定义。
+		{
+			UINT i;
+			
+			for(i=0;i<3;i++)
+			{
+				if (out[i] != out[i])
+				{
+					out[i] = 0.0;
+				}
+				if (out[i] < 0.0)
+				{
+					out[i] = -out[i];
+				}
+				if (out[i] > 3600.0)
+				{
+					out[i] = 3600.0;
+				}
+			}
+		}
+		
+		return 1;
+	}
+	
+	if ((pv->vt == VT_R8) || (pv->vt == VT_R4))
+	{
+		out[0] = _os_pv_double(pv);
+		if (out[0] != out[0]) out[0] = 0.0;
+		if (out[0] < 0.0) out[0] = -out[0];
+		if (out[0] > 3600.0) out[0] = 3600.0;
+		
+		return 1;
+	}
+	
+	return 0;
+}
+
+static void _os_read_metadata_props(_os_IPropertyStore_t *ps,os_image_metadata_t *m)
+{
+	PROPVARIANT pv;
+	
+#define OS_PS_STRING(pid,field) \
+	do { if (_os_ps_get(ps,&_os_FMTID_ImageProperties,pid,&pv)) { _os_pv_string(&pv,m->field,sizeof(m->field)/sizeof(wchar_t)); PropVariantClear(&pv); } } while(0)
+#define OS_PS_DOUBLE(pid,field,hasfield) \
+	do { if (_os_ps_get(ps,&_os_FMTID_ImageProperties,pid,&pv)) { if (_os_pv_is_number(&pv)) { m->field = _os_pv_double(&pv); m->hasfield = 1; } PropVariantClear(&pv); } } while(0)
+#define OS_PS_INT(pid,field,hasfield) \
+	do { if (_os_ps_get(ps,&_os_FMTID_ImageProperties,pid,&pv)) { if (_os_pv_is_number(&pv)) { m->field = _os_pv_int(&pv); m->hasfield = 1; } PropVariantClear(&pv); } } while(0)
+	
+	OS_PS_STRING(270,image_description);
+	OS_PS_STRING(271,camera_make);
+	OS_PS_STRING(272,camera_model);
+	OS_PS_STRING(305,software);
+	OS_PS_STRING(315,artist);
+	OS_PS_STRING(33432,copyright);
+	OS_PS_STRING(42036,lens);
+	
+	if (_os_ps_get(ps,&_os_FMTID_ImageProperties,306,&pv))
+	{
+		_os_pv_datetime(&pv,m->date_taken,sizeof(m->date_taken)/sizeof(wchar_t));
+		PropVariantClear(&pv);
+	}
+	if (_os_ps_get(ps,&_os_FMTID_ImageProperties,36867,&pv))
+	{
+		wchar_t date_buf[64];
+		
+		_os_pv_datetime(&pv,date_buf,sizeof(date_buf)/sizeof(wchar_t));
+		if (date_buf[0])
+		{
+			string_copy(m->date_taken,date_buf);
+		}
+		PropVariantClear(&pv);
+	}
+	
+	OS_PS_DOUBLE(33434,exposure_time,has_exposure_time);
+	OS_PS_DOUBLE(33437,fnumber,has_fnumber);
+	OS_PS_INT(34855,iso,has_iso);
+	OS_PS_DOUBLE(37386,focal_length,has_focal_length);
+	OS_PS_DOUBLE(41989,focal_length_35mm,has_focal_length_35mm);
+	OS_PS_DOUBLE(37380,exposure_bias,has_exposure_bias);
+	OS_PS_INT(37385,flash,has_flash);
+	OS_PS_INT(37383,metering,has_metering);
+	OS_PS_INT(41987,white_balance,has_white_balance);
+	OS_PS_INT(34850,exposure_program,has_exposure_program);
+	OS_PS_INT(274,orientation,has_orientation);
+	
+	if (_os_ps_get(ps,&_os_FMTID_ImageProperties,36864,&pv))
+	{
+		_os_pv_string(&pv,m->exif_version,sizeof(m->exif_version)/sizeof(wchar_t));
+		PropVariantClear(&pv);
+	}
+	if (_os_ps_get(ps,&_os_FMTID_ImageProperties,40961,&pv))
+	{
+		int color_space;
+		
+		color_space = _os_pv_int(&pv);
+		if (color_space == 1)
+		{
+			string_copy_utf8_string(m->color_space,(const utf8_t *)"sRGB");
+		}
+		else
+		if (color_space)
+		{
+			wsprintfW(m->color_space,L"%d",color_space);
+		}
+		PropVariantClear(&pv);
+	}
+	
+	if (_os_ps_get(ps,&_os_FMTID_GPS,100,&pv))
+	{
+		if (_os_pv_dms(&pv,m->gps_latitude))
+		{
+			m->has_gps_latitude = 1;
+		}
+		PropVariantClear(&pv);
+	}
+	if (_os_ps_get(ps,&_os_FMTID_GPS,101,&pv))
+	{
+		if (_os_pv_dms(&pv,m->gps_longitude))
+		{
+			m->has_gps_longitude = 1;
+		}
+		PropVariantClear(&pv);
+	}
+	if (_os_ps_get(ps,&_os_FMTID_GPS,103,&pv))
+	{
+		_os_pv_string(&pv,m->gps_latitude_ref,sizeof(m->gps_latitude_ref)/sizeof(wchar_t));
+		PropVariantClear(&pv);
+	}
+	if (_os_ps_get(ps,&_os_FMTID_GPS,104,&pv))
+	{
+		_os_pv_string(&pv,m->gps_longitude_ref,sizeof(m->gps_longitude_ref)/sizeof(wchar_t));
+		PropVariantClear(&pv);
+	}
+	if (_os_ps_get(ps,&_os_FMTID_GPS,102,&pv))
+	{
+		if (_os_pv_is_number(&pv))
+		{
+			m->gps_altitude = _os_pv_double(&pv);
+			m->has_gps_altitude = 1;
+		}
+		PropVariantClear(&pv);
+	}
+	if (_os_ps_get(ps,&_os_FMTID_GPS,106,&pv))
+	{
+		if (_os_pv_is_number(&pv))
+		{
+			m->gps_direction = _os_pv_double(&pv);
+			m->has_gps_direction = 1;
+		}
+		PropVariantClear(&pv);
+	}
+	
+#undef OS_PS_STRING
+#undef OS_PS_DOUBLE
+#undef OS_PS_INT
+}
+
+static os_PropertyItem_t *_os_gdiplus_get_item(void *image,PROPID tag,UINT *out_size)
+{
+	UINT size;
+	void *buffer;
+	
+	if ((!os_GdipGetPropertyItemSize) || (!os_GdipGetPropertyItem))
+	{
+		return 0;
+	}
+	
+	size = 0;
+	if (os_GdipGetPropertyItemSize(image,tag,&size) != 0)
+	{
+		return 0;
+	}
+	if (!size)
+	{
+		return 0;
+	}
+	
+	// 防止畸形元数据请求超大内存。
+	if (size > 1024 * 1024)
+	{
+		return 0;
+	}
+	
+	buffer = mem_alloc(size);
+	if (!buffer)
+	{
+		return 0;
+	}
+	
+	if (os_GdipGetPropertyItem(image,tag,size,buffer) != 0)
+	{
+		mem_free(buffer);
+		return 0;
+	}
+	
+	*out_size = size;
+	
+	return (os_PropertyItem_t *)buffer;
+}
+
+static void _os_gdiplus_string(void *image,PROPID tag,wchar_t *buf,int buf_size)
+{
+	UINT size;
+	os_PropertyItem_t *item;
+	
+	buf[0] = 0;
+	
+	item = _os_gdiplus_get_item(image,tag,&size);
+	if (item)
+	{
+		if ((item->type == 2) && (item->value) && (item->length))
+		{
+			int converted;
+			
+			converted = MultiByteToWideChar(CP_ACP,0,(const char *)item->value,(int)item->length,buf,buf_size);
+			if (converted > 0)
+			{
+				if (converted >= buf_size)
+				{
+					converted = buf_size - 1;
+				}
+				buf[converted] = 0;
+			}
+			else
+			{
+				buf[0] = 0;
+			}
+		}
+		else
+		if ((item->type == 7) && (item->value) && (item->length >= 4))
+		{
+			wsprintfW(buf,L"%c%c%c%c",
+				((const char *)item->value)[0],
+				((const char *)item->value)[1],
+				((const char *)item->value)[2],
+				((const char *)item->value)[3]);
+		}
+		
+		mem_free(item);
+	}
+}
+
+static int _os_gdiplus_uint(void *image,PROPID tag,int *out)
+{
+	UINT size;
+	os_PropertyItem_t *item;
+	int ret;
+	
+	ret = 0;
+	item = _os_gdiplus_get_item(image,tag,&size);
+	if (item)
+	{
+		if ((item->type == 3) && (item->value) && (item->length >= 2))
+		{
+			*out = (int)(*(USHORT *)item->value);
+			ret = 1;
+		}
+		else
+		if ((item->type == 4) && (item->value) && (item->length >= 4))
+		{
+			*out = (int)(*(ULONG *)item->value);
+			ret = 1;
+		}
+		
+		mem_free(item);
+	}
+	
+	return ret;
+}
+
+static int _os_gdiplus_double(void *image,PROPID tag,double *out)
+{
+	UINT size;
+	os_PropertyItem_t *item;
+	int ret;
+	
+	ret = 0;
+	item = _os_gdiplus_get_item(image,tag,&size);
+	if (item)
+	{
+		if ((item->type == 5) && (item->value) && (item->length >= 8))
+		{
+			ULONG *v;
+			
+			v = (ULONG *)item->value;
+			if (v[1])
+			{
+				*out = (double)v[0] / (double)v[1];
+				ret = 1;
+			}
+		}
+		else
+		if ((item->type == 10) && (item->value) && (item->length >= 8))
+		{
+			LONG *v;
+			
+			v = (LONG *)item->value;
+			if (v[1])
+			{
+				*out = (double)v[0] / (double)v[1];
+				ret = 1;
+			}
+		}
+		else
+		if ((item->type == 3) && (item->value) && (item->length >= 2))
+		{
+			*out = (double)(*(USHORT *)item->value);
+			ret = 1;
+		}
+		else
+		if ((item->type == 4) && (item->value) && (item->length >= 4))
+		{
+			*out = (double)(*(ULONG *)item->value);
+			ret = 1;
+		}
+		
+		mem_free(item);
+	}
+	
+	return ret;
+}
+
+static void _os_read_metadata_gdiplus(const wchar_t *filename,os_image_metadata_t *m)
+{
+	void *image;
+	
+	if ((!os_GdipLoadImageFromFile) || (!os_GdipDisposeImage))
+	{
+		return;
+	}
+	
+	image = 0;
+	if (os_GdipLoadImageFromFile(filename,&image) != 0)
+	{
+		return;
+	}
+	
+	__try
+	{
+		int value;
+		double dvalue;
+		
+		if (!m->camera_make[0]) _os_gdiplus_string(image,271,m->camera_make,sizeof(m->camera_make)/sizeof(wchar_t));
+		if (!m->camera_model[0]) _os_gdiplus_string(image,272,m->camera_model,sizeof(m->camera_model)/sizeof(wchar_t));
+		if (!m->lens[0]) _os_gdiplus_string(image,42036,m->lens,sizeof(m->lens)/sizeof(wchar_t));
+		if (!m->software[0]) _os_gdiplus_string(image,305,m->software,sizeof(m->software)/sizeof(wchar_t));
+		if (!m->image_description[0]) _os_gdiplus_string(image,270,m->image_description,sizeof(m->image_description)/sizeof(wchar_t));
+		if (!m->artist[0]) _os_gdiplus_string(image,315,m->artist,sizeof(m->artist)/sizeof(wchar_t));
+		if (!m->copyright[0]) _os_gdiplus_string(image,33432,m->copyright,sizeof(m->copyright)/sizeof(wchar_t));
+		if (!m->exif_version[0]) _os_gdiplus_string(image,36864,m->exif_version,sizeof(m->exif_version)/sizeof(wchar_t));
+		
+		if (!m->date_taken[0])
+		{
+			_os_gdiplus_string(image,36867,m->date_taken,sizeof(m->date_taken)/sizeof(wchar_t));
+			if (!m->date_taken[0])
+			{
+				_os_gdiplus_string(image,306,m->date_taken,sizeof(m->date_taken)/sizeof(wchar_t));
+			}
+			
+			if ((m->date_taken[4] == ':') && (m->date_taken[7] == ':'))
+			{
+				m->date_taken[4] = '-';
+				m->date_taken[7] = '-';
+			}
+		}
+		
+		if (!m->has_exposure_time && _os_gdiplus_double(image,33434,&dvalue)) { m->exposure_time = dvalue; m->has_exposure_time = 1; }
+		if (!m->has_fnumber && _os_gdiplus_double(image,33437,&dvalue)) { m->fnumber = dvalue; m->has_fnumber = 1; }
+		if (!m->has_iso && _os_gdiplus_uint(image,34855,&value)) { m->iso = value; m->has_iso = 1; }
+		if (!m->has_focal_length && _os_gdiplus_double(image,37386,&dvalue)) { m->focal_length = dvalue; m->has_focal_length = 1; }
+		if (!m->has_focal_length_35mm && _os_gdiplus_uint(image,41989,&value)) { m->focal_length_35mm = (double)value; m->has_focal_length_35mm = 1; }
+		if (!m->has_exposure_bias && _os_gdiplus_double(image,37380,&dvalue)) { m->exposure_bias = dvalue; m->has_exposure_bias = 1; }
+		if (!m->has_flash && _os_gdiplus_uint(image,37385,&value)) { m->flash = value; m->has_flash = 1; }
+		if (!m->has_metering && _os_gdiplus_uint(image,37383,&value)) { m->metering = value; m->has_metering = 1; }
+		if (!m->has_white_balance && _os_gdiplus_uint(image,41987,&value)) { m->white_balance = value; m->has_white_balance = 1; }
+		if (!m->has_exposure_program && _os_gdiplus_uint(image,34850,&value)) { m->exposure_program = value; m->has_exposure_program = 1; }
+		if (!m->has_orientation && _os_gdiplus_uint(image,274,&value)) { m->orientation = value; m->has_orientation = 1; }
+		if (!m->color_space[0] && _os_gdiplus_uint(image,40961,&value))
+		{
+			if (value == 1) string_copy_utf8_string(m->color_space,(const utf8_t *)"sRGB");
+			else if (value) wsprintfW(m->color_space,L"%d",value);
+		}
+	}
+	__except(EXCEPTION_EXECUTE_HANDLER)
+	{
+		debug_printf((const utf8_t *)"GDI+ metadata exception %08x\n",GetExceptionCode());
+	}
+	
+	os_GdipDisposeImage(image);
+}
+
+void os_get_image_metadata(const wchar_t *filename,os_image_metadata_t *metadata)
+{
+	if (!metadata)
+	{
+		return;
+	}
+	
+	os_zero_memory(metadata,sizeof(os_image_metadata_t));
+	
+	if (!filename)
+	{
+		return;
+	}
+	
+	__try
+	{
+		if (_os_SHGetPropertyStoreFromIDList)
+		{
+			ITEMIDLIST *pidl;
+			
+			pidl = os_ILCreateFromPath(filename);
+			if (pidl)
+			{
+				_os_IPropertyStore_t *ps;
+				
+				if (SUCCEEDED(_os_SHGetPropertyStoreFromIDList(pidl,0x10|0x40,&_os_IID_IPropertyStore,&ps)))
+				{
+					if ((ps) && (ps->lpVtbl))
+					{
+						_os_read_metadata_props(ps,metadata);
+						
+						ps->lpVtbl->Release(ps);
+					}
+				}
+				
+				ILFree(pidl);
+			}
+		}
+	}
+	__except(EXCEPTION_EXECUTE_HANDLER)
+	{
+		debug_printf((const utf8_t *)"property store metadata exception %08x\n",GetExceptionCode());
+	}
+	
+	// 属性系统缺少任一核心字段时，用 GDI+ 补齐；核心字段齐全就不重复解析。
+	if ((!metadata->camera_make[0]) ||
+		(!metadata->camera_model[0]) ||
+		(!metadata->date_taken[0]) ||
+		(!metadata->has_exposure_time) ||
+		(!metadata->has_fnumber) ||
+		(!metadata->has_orientation))
+	{
+		_os_read_metadata_gdiplus(filename,metadata);
+	}
+}
+
+void os_get_image_pixel_info(const wchar_t *filename,int *pixel_format,int *dpi_x,int *dpi_y,int *has_alpha)
+{
+	void *image;
+	
+	if (pixel_format) *pixel_format = 0;
+	if (dpi_x) *dpi_x = 96;
+	if (dpi_y) *dpi_y = 96;
+	if (has_alpha) *has_alpha = 0;
+	
+	if ((!filename) || (!os_GdipLoadImageFromFile) || (!os_GdipDisposeImage))
+	{
+		return;
+	}
+	
+	image = 0;
+	if (os_GdipLoadImageFromFile(filename,&image) != 0)
+	{
+		return;
+	}
+	
+	__try
+	{
+		int format;
+		float dpi;
+		UINT flags;
+		
+		format = 0;
+		if ((os_GdipGetImagePixelFormat) && (os_GdipGetImagePixelFormat(image,&format) == 0))
+		{
+			if (pixel_format) *pixel_format = format;
+		}
+		
+		dpi = 96.0f;
+		if ((os_GdipGetImageHorizontalResolution) && (os_GdipGetImageHorizontalResolution(image,&dpi) == 0))
+		{
+			if ((dpi > 0.0f) && (dpi < 100000.0f) && (dpi_x)) *dpi_x = (int)(dpi + 0.5f);
+		}
+		
+		dpi = 96.0f;
+		if ((os_GdipGetImageVerticalResolution) && (os_GdipGetImageVerticalResolution(image,&dpi) == 0))
+		{
+			if ((dpi > 0.0f) && (dpi < 100000.0f) && (dpi_y)) *dpi_y = (int)(dpi + 0.5f);
+		}
+		
+		flags = 0;
+		if ((os_GdipGetImageFlags) && (os_GdipGetImageFlags(image,&flags) == 0))
+		{
+			if (has_alpha) *has_alpha = (flags & 0x00000002) ? 1 : 0;
+		}
+	}
+	__except(EXCEPTION_EXECUTE_HANDLER)
+	{
+		debug_printf((const utf8_t *)"GDI+ pixel info exception %08x\n",GetExceptionCode());
+	}
+	
+	os_GdipDisposeImage(image);
 }
 
 __declspec(noinline) DWORD os_get_window_style(HWND hwnd) 

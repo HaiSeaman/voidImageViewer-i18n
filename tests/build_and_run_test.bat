@@ -37,5 +37,16 @@ rem the --show-bug run must FAIL (it reproduces the pre-fix behaviour).
 "%TESTDIR%test_playlist_delete.exe" --show-bug >nul 2>&1
 if errorlevel 1 (echo pass show-bug regression fails as expected) else (echo FAIL show-bug should have failed & exit /b 1)
 
+rem v3.7: real config path-list test (links src/config.c, ini.c, string.c, utf8.c, mem.c, wchar.c)
+cl /nologo /utf-8 /W3 /DUNICODE /D_UNICODE /Fo"%BUILDDIR%\\" /Fe"%BUILDDIR%\test_config_paths.exe" "%TESTDIR%test_config_paths.c" "%TESTDIR%..\src\config.c" "%TESTDIR%..\src\ini.c" "%TESTDIR%..\src\string.c" "%TESTDIR%..\src\utf8.c" "%TESTDIR%..\src\mem.c" "%TESTDIR%..\src\wchar.c" /link user32.lib shlwapi.lib shell32.lib ole32.lib
+if errorlevel 1 exit /b 1
+"%BUILDDIR%\test_config_paths.exe"
+if errorlevel 1 exit /b 1
+
+cl /nologo /utf-8 /W4 /WX /DUNICODE /D_UNICODE /Fo"%BUILDDIR%\\" /Fe"%BUILDDIR%\test_filter_logic.exe" "%TESTDIR%test_filter_logic.c" /link user32.lib shlwapi.lib
+if errorlevel 1 exit /b 1
+"%BUILDDIR%\test_filter_logic.exe"
+if errorlevel 1 exit /b 1
+
 echo ALL TESTS PASSED
 endlocal
